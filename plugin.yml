@@ -1,0 +1,6 @@
+name: BungeeChatBukkit
+version: 1.0.0
+
+main: au.com.addstar.bc.BungeeChat
+
+softdepend: [Vault]
