@@ -216,6 +216,12 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		mHasUpdated = true;
 		
 		serverName = input.readUTF();
+		String consoleName = input.readUTF();
+		if(consoleName.isEmpty())
+			Formatter.consoleOverride = null;
+		else
+			Formatter.consoleOverride = ChatColor.translateAlternateColorCodes('&', consoleName);
+		
 		Formatter.permissionLevels.clear();
 		
 		int count = input.readShort();

@@ -2,12 +2,15 @@ package au.com.addstar.bc;
 
 import java.util.ArrayList;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class Formatter
 {
 	static ArrayList<PermissionSetting> permissionLevels = new ArrayList<PermissionSetting>();
+	static String consoleOverride = null;
+	
 	private static String mDefaultFormat = "<{DISPLAYNAME}> {MESSAGE}"; 
 	
 	public static PermissionSetting getPermissionLevel(CommandSender sender)
@@ -37,11 +40,15 @@ public class Formatter
 	
 	private static String getDisplayName(CommandSender sender, PermissionSetting level)
 	{
-		// TODO: Allow custom console name
+		String displayName = "%1$s"; 
+		
+		if(consoleOverride != null && sender == Bukkit.getConsoleSender())
+			displayName = consoleOverride;
+		
 		if(level == null)
-			return "%1$s";
+			return displayName;
 		else
-			return level.color + "%1$s";
+			return level.color + displayName;
 	}
 	
 	public static String replaceKeywords(String string, CommandSender sender, PermissionSetting level)
