@@ -33,14 +33,18 @@ public class BungeeChat extends Plugin implements Listener
 		try
 		{
 			mConfig.init();
+			
+			for(ChatChannel channel : mConfig.channels.values())
+			{
+				if(channel.listenPermission == null)
+					channel.listenPermission = channel.permission;
+			}
 		}
 		catch ( InvalidConfigurationException e )
 		{
 			getLogger().severe("Could not load config");
 			e.printStackTrace();
 		}
-		
-		System.out.println(mConfig.permSettings.toString());
 		
 		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);
@@ -75,7 +79,7 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				PermissionSetting setting = entry.getValue();
 
-				output.writeUTF(setting.permission);
+				output.writeUTF((setting.permission == null ? "" : setting.permission));
 				output.writeShort(setting.priority);
 				output.writeUTF(setting.format);
 				output.writeUTF(setting.color);

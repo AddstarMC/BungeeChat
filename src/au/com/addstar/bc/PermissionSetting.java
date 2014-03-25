@@ -10,7 +10,7 @@ public class PermissionSetting extends net.cubespace.Yamler.Config.Config
 		this.priority = priority;
 	}
 	
-	public String format = "";
+	public String format;
 	public String color;
 	public int priority;
 	public String permission;
