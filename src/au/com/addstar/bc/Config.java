@@ -19,6 +19,9 @@ public class Config extends net.cubespace.Yamler.Config.Config
 		channels.put("BCast", new ChatChannel("bcast", "&6[&4Broadcast&6] &a{MESSAGE}", "bungeechat.broadcast", "*"));
 	}
 	
+	@Comment("You can override the name of the console here. Leave blank for no change")
+	public String consoleName = "";
+	
 	@Comment("Here you can set up permission based formats")
 	public Map<String, PermissionSetting> permSettings;
 	

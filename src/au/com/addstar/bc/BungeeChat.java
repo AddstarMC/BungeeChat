@@ -38,6 +38,8 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				if(channel.listenPermission == null)
 					channel.listenPermission = channel.permission;
+				else if(channel.listenPermission.equals("*"))
+					channel.listenPermission = "";
 			}
 		}
 		catch ( InvalidConfigurationException e )
@@ -72,6 +74,7 @@ public class BungeeChat extends Plugin implements Listener
 		{
 			output.writeUTF("Update");
 			output.writeUTF(server.getName());
+			output.writeUTF(mConfig.consoleName);
 			
 			Map<String, PermissionSetting> permissions = mConfig.permSettings;
 			output.writeShort(permissions.size());
