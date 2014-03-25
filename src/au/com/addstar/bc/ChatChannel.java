@@ -1,6 +1,7 @@
 package au.com.addstar.bc;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
@@ -18,7 +19,7 @@ public class ChatChannel
 	{
 		this.name = name;
 		this.command = command;
-		this.format = format;
+		this.format = ChatColor.translateAlternateColorCodes('&', format);
 		if(!permission.isEmpty())
 			this.permission = permission;
 
