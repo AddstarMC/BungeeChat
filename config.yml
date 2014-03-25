@@ -2,7 +2,10 @@ format: <{DISPLAYNAME}> {MESSAGE}
 
 #groupFormat:
 #  default: <{DISPLAYNAME}> {MESSAGE}
- 
+
+groupColors:
+   default: f
+
 channels:
   BCast:
     format: '&6[&4Broadcast&6] &a{MESSAGE}'

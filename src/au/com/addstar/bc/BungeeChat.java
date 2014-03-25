@@ -5,13 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PluginMessageEvent;
@@ -27,44 +25,22 @@ public class BungeeChat extends Plugin implements Listener
 	public void onEnable()
 	{
 		File configFile = new File(getDataFolder(), "config.yml");
-		if(!configFile.exists())
-		{
-			configFile.getParentFile().mkdirs();
-			
-			InputStream stream = getClass().getResourceAsStream("/config.yml");
-			if(stream == null)
-				throw new IllegalStateException("default config.yml is missing!");
-			
-			try
-			{
-				FileOutputStream out = new FileOutputStream(configFile);
-				
-				byte[] buffer = new byte[1024];
-				int read;
-				
-				while((read = stream.read(buffer)) != -1)
-					out.write(buffer, 0, read);
-				
-				out.close();
-			}
-			catch(IOException e)
-			{
-				getLogger().severe("Could not save default config");
-				e.printStackTrace();
-			}
-		}
+		if(!getDataFolder().exists())
+			getDataFolder().mkdirs();
 		
 		mConfig = new Config(configFile);
 		
 		try
 		{
-			mConfig.load();
+			mConfig.init();
 		}
-		catch(IOException e)
+		catch ( InvalidConfigurationException e )
 		{
 			getLogger().severe("Could not load config");
 			e.printStackTrace();
 		}
+		
+		System.out.println(mConfig.permSettings.toString());
 		
 		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);
@@ -92,28 +68,32 @@ public class BungeeChat extends Plugin implements Listener
 		{
 			output.writeUTF("Update");
 			output.writeUTF(server.getName());
-			output.writeUTF(mConfig.getDefaultFormat());
 			
-			Map<String, String> groups = mConfig.getGroupFormats();
-			output.writeShort(groups.size());
-			for(Entry<String, String> entry : groups.entrySet())
+			Map<String, PermissionSetting> permissions = mConfig.permSettings;
+			output.writeShort(permissions.size());
+			for(Entry<String, PermissionSetting> entry : permissions.entrySet())
 			{
-				output.writeUTF(entry.getKey());
-				output.writeUTF(entry.getValue());
+				PermissionSetting setting = entry.getValue();
+
+				output.writeUTF(setting.permission);
+				output.writeShort(setting.priority);
+				output.writeUTF(setting.format);
+				output.writeUTF(setting.color);
 			}
 			
-			List<ChatChannel> channels = mConfig.getChannels();
+			Map<String, ChatChannel> channels = mConfig.channels;
 			output.writeShort(channels.size());
-			for(ChatChannel channel : channels)
+			for(Entry<String, ChatChannel> entry : channels.entrySet())
 			{
-				output.writeUTF(channel.name);
+				ChatChannel channel = entry.getValue();
+				
+				output.writeUTF(entry.getKey());
+				
 				output.writeUTF(channel.command);
 				output.writeUTF(channel.format);
 				output.writeUTF(channel.permission);
-				output.writeUTF(channel.listenPerm);
+				output.writeUTF(channel.listenPermission);
 			}
-			
-			server.sendData("BungeeChat", stream.toByteArray());
 		}
 		catch(IOException e)
 		{
