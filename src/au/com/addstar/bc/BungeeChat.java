@@ -10,11 +10,15 @@ import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
-public class BungeeChat extends JavaPlugin implements PluginMessageListener
+public class BungeeChat extends JavaPlugin implements PluginMessageListener, Listener
 {
 	private static Permission permissionManager;
 	
@@ -22,6 +26,9 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener
 	private static BungeeChat mInstance;
 	
 	private Formatter mFormatter;
+	
+	private boolean mHasRequestedUpdate = false;
+	private boolean mHasUpdated = false;
 	
 	@Override
 	public void onEnable()
@@ -44,6 +51,42 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener
 		Bukkit.getMessenger().registerIncomingPluginChannel(this, "BungeeChat", this);
 		Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeChat");
 		Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+		
+		Bukkit.getPluginManager().registerEvents(this, this);
+		
+		requestUpdate();
+	}
+	
+	private void requestUpdate()
+	{
+		Player player = null;
+		
+		if(Bukkit.getOnlinePlayers().length > 0)
+			player = Bukkit.getOnlinePlayers()[0];
+		else
+			return;
+		
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(stream);
+		
+		try
+		{
+			out.writeUTF("Update");
+		}
+		catch ( IOException e ) 
+		{
+		}
+		
+		player.sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+		
+		mHasRequestedUpdate = true;
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	private void onPlayerJoin(PlayerJoinEvent event)
+	{
+		if(!mHasRequestedUpdate || !mHasUpdated)
+			requestUpdate();
 	}
 	
 	public static void mirrorChat(Player player, String fullChat, String channel)
@@ -124,6 +167,18 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener
 					
 					// TODO: ChatChannels
 					Bukkit.broadcastMessage(message);
+				}
+				else if(subChannel.equals("Update"))
+				{
+					mHasRequestedUpdate = true;
+					mHasUpdated = true;
+					
+					serverName = input.readUTF();
+					mFormatter.mDefaultFormat = input.readUTF();
+					mFormatter.mChatFormats.clear();
+					int count = input.readShort();
+					for(int i = 0; i < count; ++i)
+						mFormatter.mChatFormats.put(input.readUTF(), input.readUTF());
 				}
 			}
 		}

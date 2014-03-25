@@ -6,8 +6,8 @@ import org.bukkit.entity.Player;
 
 public class Formatter
 {
-	private HashMap<String, String> mChatFormats = new HashMap<String, String>();
-	private String mDefaultFormat = "[{GROUP}] <{DISPLAYNAME}> {MESSAGE}"; 
+	HashMap<String, String> mChatFormats = new HashMap<String, String>();
+	String mDefaultFormat = "[{GROUP}] <{DISPLAYNAME}> {MESSAGE}"; 
 	
 	public String getChatFormat(Player player)
 	{
