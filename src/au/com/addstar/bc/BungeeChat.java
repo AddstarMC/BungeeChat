@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 
 import net.milkbowl.vault.permission.Permission;
@@ -30,8 +31,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	public static String serverName = "ERROR";
 	private static BungeeChat mInstance;
 	
-	private Formatter mFormatter;
-	
 	private boolean mHasRequestedUpdate = false;
 	private boolean mHasUpdated = false;
 	
@@ -48,16 +47,9 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		else
 			permissionManager = null;
 		
-		if(isBPermsAvailable())
-			BPermsCompat.initialize();
-		
-		mFormatter = new Formatter();
-		
-		Bukkit.getPluginManager().registerEvents(new ChatHandler(mFormatter), this);
-		Bukkit.getMessenger().registerIncomingPluginChannel(this, "BungeeCord", this);
+		Bukkit.getPluginManager().registerEvents(new ChatHandler(), this);
 		Bukkit.getMessenger().registerIncomingPluginChannel(this, "BungeeChat", this);
 		Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeChat");
-		Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 		
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
@@ -100,7 +92,9 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	private void onPlayerJoin(PlayerJoinEvent event)
 	{
 		if(!mHasRequestedUpdate || !mHasUpdated)
+		{
 			requestUpdate();
+		}
 	}
 	
 	private boolean processCommands(CommandSender sender, String message)
@@ -192,8 +186,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 		catch(UnsupportedOperationException e)
 		{
-			if(isBPermsAvailable())
-				return BPermsCompat.getPrimaryGroup(player);
 			return null;
 		}
 	}
@@ -209,8 +201,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 		catch(UnsupportedOperationException e)
 		{
-			if(isBPermsAvailable())
-				return BPermsCompat.isInGroup(player, group);
 			return false;
 		}
 	}
@@ -226,11 +216,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		mHasUpdated = true;
 		
 		serverName = input.readUTF();
-		mFormatter.mDefaultFormat = input.readUTF();
-		mFormatter.mChatFormats.clear();
+		Formatter.permissionLevels.clear();
+		
 		int count = input.readShort();
 		for(int i = 0; i < count; ++i)
-			mFormatter.mChatFormats.put(input.readUTF(), input.readUTF());
+			Formatter.permissionLevels.add(new PermissionSetting(input.readUTF(), input.readShort(), input.readUTF(), input.readUTF()));
+		
+		Collections.sort(Formatter.permissionLevels);
 		
 		for(ChatChannel channel : mChannels.values())
 			channel.unregisterChannel();

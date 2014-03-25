@@ -54,8 +54,10 @@ public class ChatChannel
 	
 	public void say(CommandSender sender, String message)
 	{
+		PermissionSetting level = Formatter.getPermissionLevel(sender);
+		
 		message = BungeeChat.colorize(message, sender);
-		String newFormat = Formatter.replaceKeywords(format, sender);
+		String newFormat = Formatter.replaceKeywords(format, sender, level);
 		String senderName;
 		
 		if(sender instanceof Player)

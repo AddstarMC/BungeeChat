@@ -1,37 +1,52 @@
 package au.com.addstar.bc;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class Formatter
 {
-	HashMap<String, String> mChatFormats = new HashMap<String, String>();
-	String mDefaultFormat = "[{GROUP}] <{DISPLAYNAME}> {MESSAGE}"; 
+	static ArrayList<PermissionSetting> permissionLevels = new ArrayList<PermissionSetting>();
+	private static String mDefaultFormat = "<{DISPLAYNAME}> {MESSAGE}"; 
 	
-	public String getChatFormat(Player player)
+	public static PermissionSetting getPermissionLevel(CommandSender sender)
 	{
-		String group = BungeeChat.getPrimaryGroup(player);
+		PermissionSetting level = null;
+		for(PermissionSetting setting : permissionLevels)
+		{
+			if(setting.permission == null || sender.hasPermission(setting.permission))
+				level = setting;
+		}
 		
-		if(group == null)
-			return mDefaultFormat;
-		
-		group = mChatFormats.get(group);
-		if(group == null)
-			return mDefaultFormat;
-		
-		return group;
+		return level;
 	}
 	
-	public String getChatFormatForUse(Player player)
+	public static String getChatFormat(PermissionSetting level)
 	{
-		return replaceKeywords(getChatFormat(player), player);
+		if(level != null)
+			return level.format;
+		else
+			return mDefaultFormat;
 	}
 	
-	public static String replaceKeywords(String string, CommandSender sender)
+	public static String getChatFormatForUse(Player player, PermissionSetting level)
 	{
-		string = string.replace("{DISPLAYNAME}", "%1$s");
+		return replaceKeywords(getChatFormat(level), player, level);
+	}
+	
+	private static String getDisplayName(CommandSender sender, PermissionSetting level)
+	{
+		// TODO: Allow custom console name
+		if(level == null)
+			return "%1$s";
+		else
+			return level.color + "%1$s";
+	}
+	
+	public static String replaceKeywords(String string, CommandSender sender, PermissionSetting level)
+	{
+		string = string.replace("{DISPLAYNAME}", getDisplayName(sender, level));
 		string = string.replace("{MESSAGE}", "%2$s");
 
 		string = string.replace("{SERVER}", BungeeChat.serverName);

@@ -7,17 +7,12 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class ChatHandler implements Listener
 {
-	private Formatter mFormatter;
-	
-	public ChatHandler(Formatter formatter)
-	{
-		mFormatter = formatter;
-	}
-	
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
 	private void onPlayerChatLowest(AsyncPlayerChatEvent event)
 	{
-		event.setFormat(mFormatter.getChatFormatForUse(event.getPlayer()));
+		PermissionSetting level = Formatter.getPermissionLevel(event.getPlayer());
+		
+		event.setFormat(Formatter.getChatFormatForUse(event.getPlayer(), level));
 		event.setMessage(BungeeChat.colorize(event.getMessage(), event.getPlayer()));
 	}
 	
