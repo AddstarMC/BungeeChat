@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PluginMessageEvent;
@@ -30,6 +31,17 @@ public class BungeeChat extends Plugin implements Listener
 		
 		mConfig = new Config(configFile);
 		
+		loadConfig();
+		
+		getProxy().registerChannel("BungeeChat");
+		getProxy().getPluginManager().registerListener(this, this);
+		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
+		
+		resync();
+	}
+	
+	public boolean loadConfig()
+	{
 		try
 		{
 			mConfig.init();
@@ -41,16 +53,18 @@ public class BungeeChat extends Plugin implements Listener
 				else if(channel.listenPermission.equals("*"))
 					channel.listenPermission = "";
 			}
+			return true;
 		}
 		catch ( InvalidConfigurationException e )
 		{
 			getLogger().severe("Could not load config");
 			e.printStackTrace();
+			return false;
 		}
-		
-		getProxy().registerChannel("BungeeChat");
-		getProxy().getPluginManager().registerListener(this, this);
-		
+	}
+	
+	public void resync()
+	{
 		for(ServerInfo server : getProxy().getServers().values())
 			sendInfo(server);
 	}
@@ -123,6 +137,9 @@ public class BungeeChat extends Plugin implements Listener
 				
 				if(subChannel.equals("Mirror"))
 				{
+					input.readUTF();
+					String message = input.readUTF();
+					getProxy().getConsole().sendMessage(new TextComponent(message));
 					mirrorChat(event.getData().clone(), (Server)event.getSender());
 				}
 				else if(subChannel.equals("Update"))
