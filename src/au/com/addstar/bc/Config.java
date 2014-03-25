@@ -3,8 +3,10 @@ package au.com.addstar.bc;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +18,8 @@ public class Config
 {
 	private HashMap<String, String> mFormats = new HashMap<String, String>();
 	private String mDefaultFormat = "<{DISPLAYNAME}> {MESSAGE}";
+	
+	private ArrayList<ChatChannel> mChannels = new ArrayList<ChatChannel>();
 	
 	private File mFile;
 	private Map<String, Object> mRootMap;
@@ -46,7 +50,8 @@ public class Config
 		}
 		
 		mDefaultFormat = ChatColor.translateAlternateColorCodes('&', getString("format", "<{DISPLAYNAME}> {MESSAGE}"));
-		mFormats = new HashMap<String, String>();
+		mFormats.clear();
+		mChannels.clear();
 		
 		if(isSection("groupFormat"))
 		{
@@ -54,6 +59,27 @@ public class Config
 			{
 				String format = ChatColor.translateAlternateColorCodes('&', getString("groupFormat." + key, "<{DISPLAYNAME}> {MESSAGE}"));
 				mFormats.put(key, format);
+			}
+		}
+		
+		if(isSection("channels"))
+		{
+			for(String key : getKeys("channels"))
+			{
+				String format = ChatColor.translateAlternateColorCodes('&', getString("channels." + key + ".format", ""));
+				String command = getString("channels." + key + ".command", "");
+				String permission = getString("channels." + key + ".permission", "");
+				String listenPerm = getString("channels." + key + ".permission-listen", permission);
+				if(listenPerm.equals("*"))
+					listenPerm = "";
+				
+				if(format.isEmpty() || command.isEmpty())
+				{
+					System.err.println("Error loading chat channel \"" + key + "\" settings. The format or command is empty.");
+					continue;
+				}
+				
+				mChannels.add(new ChatChannel(key, command, format, permission, listenPerm));
 			}
 		}
 	}
@@ -68,6 +94,11 @@ public class Config
 		return mFormats;
 	}
 	
+	public List<ChatChannel> getChannels()
+	{
+		return mChannels;
+	}
+	
 	@SuppressWarnings( "unchecked" )
 	private Map<String, Object> getMap(String path)
 	{
@@ -79,7 +110,7 @@ public class Config
 		
 		for(int i = 0; i < parts.length; ++i)
 		{
-			Object sub = map.get(parts[0]);
+			Object sub = map.get(parts[i]);
 			if(!(sub instanceof Map<?,?>))
 				return Collections.emptyMap();
 			

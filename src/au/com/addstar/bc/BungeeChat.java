@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -99,6 +100,17 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				output.writeUTF(entry.getKey());
 				output.writeUTF(entry.getValue());
+			}
+			
+			List<ChatChannel> channels = mConfig.getChannels();
+			output.writeShort(channels.size());
+			for(ChatChannel channel : channels)
+			{
+				output.writeUTF(channel.name);
+				output.writeUTF(channel.command);
+				output.writeUTF(channel.format);
+				output.writeUTF(channel.permission);
+				output.writeUTF(channel.listenPerm);
 			}
 			
 			server.sendData("BungeeChat", stream.toByteArray());

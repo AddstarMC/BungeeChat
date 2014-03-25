@@ -3,8 +3,13 @@ format: <{DISPLAYNAME}> {MESSAGE}
 #groupFormat:
 #  default: <{DISPLAYNAME}> {MESSAGE}
  
-#channels:
+channels:
+  BCast:
+    format: '&6[&4Broadcast&6] &a{MESSAGE}'
+    command: bcast
+    permission: bungeechat.broadcast
+    permission-listen: '*'
 #  ModChat:
-#    prefix: [ModChat]
-#    command: /mc
+#    format: '[ModChat] <{DISPLAYNAME}> {MESSAGE}'
+#    command: mc
 #    permission: someperm.modchat
