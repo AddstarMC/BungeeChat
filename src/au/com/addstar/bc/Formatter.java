@@ -2,6 +2,7 @@ package au.com.addstar.bc;
 
 import java.util.HashMap;
 
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class Formatter
@@ -25,16 +26,29 @@ public class Formatter
 	
 	public String getChatFormatForUse(Player player)
 	{
-		String format = getChatFormat(player);
+		return replaceKeywords(getChatFormat(player), player);
+	}
+	
+	public static String replaceKeywords(String string, CommandSender sender)
+	{
+		string = string.replace("{DISPLAYNAME}", "%1$s");
+		string = string.replace("{MESSAGE}", "%2$s");
+
+		string = string.replace("{SERVER}", BungeeChat.serverName);
 		
-		format = format.replace("{DISPLAYNAME}", "%1$s");
-		format = format.replace("{MESSAGE}", "%2$s");
+		if(sender instanceof Player)
+		{
+			Player player = (Player)sender;
+			String group = BungeeChat.getPrimaryGroup(player);
+			string = string.replace("{GROUP}", (group != null ? group : "Default"));
+			string = string.replace("{WORLD}", player.getWorld().getName());
+		}
+		else
+		{
+			string = string.replace("{GROUP}", "Server");
+			string = string.replace("{WORLD}", "");
+		}
 		
-		String group = BungeeChat.getPrimaryGroup(player);
-		format = format.replace("{GROUP}", (group != null ? group : "Default"));
-		format = format.replace("{SERVER}", BungeeChat.serverName);
-		format = format.replace("{WORLD}", player.getWorld().getName());
-		
-		return format;
+		return string;
 	}
 }

@@ -5,15 +5,20 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -29,6 +34,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	private boolean mHasRequestedUpdate = false;
 	private boolean mHasUpdated = false;
+	
+	private HashMap<String, ChatChannel> mChannels = new HashMap<String, ChatChannel>();
 	
 	@Override
 	public void onEnable()
@@ -55,6 +62,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
 		requestUpdate();
+	}
+	
+	@Override
+	public void onDisable()
+	{
+		for(ChatChannel channel : mChannels.values())
+			channel.unregisterChannel();
 	}
 	
 	private void requestUpdate()
@@ -87,6 +101,66 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	{
 		if(!mHasRequestedUpdate || !mHasUpdated)
 			requestUpdate();
+	}
+	
+	private boolean processCommands(CommandSender sender, String message)
+	{
+		String command;
+		int pos = message.indexOf(' ');
+		if(pos == -1)
+		{
+			command = message;
+			message = null;
+		}
+		else
+		{
+			command = message.substring(0, pos);
+			message = message.substring(pos+1);
+		}
+		
+		for(ChatChannel channel : mChannels.values())
+		{
+			if(channel.command.equals(command))
+			{
+				if(channel.permission != null && !sender.hasPermission(channel.permission))
+					break;
+				
+				if(message != null)
+					channel.say(sender, message);
+				
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	private void onPlayerCommand(PlayerCommandPreprocessEvent event)
+	{
+		if(processCommands(event.getPlayer(), event.getMessage().substring(1)))
+		{
+			event.setMessage("/nullcmd");
+			event.setCancelled(true);
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	private void onServerCommand(ServerCommandEvent event)
+	{
+		if(processCommands(event.getSender(), event.getCommand()))
+		{
+			event.setCommand("/nullcmd");
+		}
+	}
+	
+	public static void mirrorChat(String fullChat, String channel)
+	{
+		Player[] players = Bukkit.getOnlinePlayers();
+		if(players.length != 0)
+			mirrorChat(players[0], fullChat, channel);
+		// Cant send it without any players :(
+		// TODO: This can be a problem if the console uses a sub chat without any players on this specific server
 	}
 	
 	public static void mirrorChat(Player player, String fullChat, String channel)
@@ -145,6 +219,32 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	{
 		return Bukkit.getPluginManager().isPluginEnabled("BungeePermsBukkit");
 	}
+	
+	private void update(DataInputStream input) throws IOException
+	{
+		mHasRequestedUpdate = true;
+		mHasUpdated = true;
+		
+		serverName = input.readUTF();
+		mFormatter.mDefaultFormat = input.readUTF();
+		mFormatter.mChatFormats.clear();
+		int count = input.readShort();
+		for(int i = 0; i < count; ++i)
+			mFormatter.mChatFormats.put(input.readUTF(), input.readUTF());
+		
+		for(ChatChannel channel : mChannels.values())
+			channel.unregisterChannel();
+		
+		mChannels.clear();
+		
+		count = input.readShort();
+		for(int i = 0; i < count; ++i)
+		{
+			ChatChannel channel = new ChatChannel(input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF());
+			channel.registerChannel();
+			mChannels.put(channel.name, channel);
+		}
+	}
 
 	@Override
 	public void onPluginMessageReceived( String channel, Player player, byte[] data )
@@ -165,25 +265,73 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					String chatChannel = input.readUTF();
 					String message = input.readUTF();
 					
-					// TODO: ChatChannels
-					Bukkit.broadcastMessage(message);
+					if(chatChannel.isEmpty())
+						Bukkit.broadcastMessage(message);
+					else
+					{
+						ChatChannel channelObj = mChannels.get(chatChannel);
+						if(channelObj != null)
+						{
+							if(channelObj.listenPermission != null)
+								Bukkit.broadcast(message, channelObj.listenPermission);
+							else
+								Bukkit.broadcastMessage(message);
+						}
+					}
 				}
 				else if(subChannel.equals("Update"))
 				{
-					mHasRequestedUpdate = true;
-					mHasUpdated = true;
-					
-					serverName = input.readUTF();
-					mFormatter.mDefaultFormat = input.readUTF();
-					mFormatter.mChatFormats.clear();
-					int count = input.readShort();
-					for(int i = 0; i < count; ++i)
-						mFormatter.mChatFormats.put(input.readUTF(), input.readUTF());
+					update(input);
 				}
 			}
 		}
 		catch(IOException e) 
 		{
 		}
+	}
+	
+	public static String colorize(String message, CommandSender sender)
+	{
+		int pos = -1;
+		char colorChar = '&';
+		
+		StringBuffer buffer = new StringBuffer(message);
+		
+		boolean hasColor = sender.hasPermission("bungeechat.color");
+		boolean hasReset = sender.hasPermission("bungeechat.format.reset");
+		boolean hasBold = sender.hasPermission("bungeechat.format.bold");
+		boolean hasItalic = sender.hasPermission("bungeechat.format.italic");
+		boolean hasUnderline = sender.hasPermission("bungeechat.format.underline");
+		boolean hasStrikethrough = sender.hasPermission("bungeechat.format.strikethrough");
+		boolean hasMagic = sender.hasPermission("bungeechat.format.magic");
+		
+		while((pos = message.indexOf(colorChar, pos+1)) != -1)
+		{
+			if(message.length() > pos + 1)
+			{
+				char atPos = Character.toLowerCase(message.charAt(pos+1));
+				
+				boolean allow = false;
+				if(((atPos >= '0' && atPos <= '9') || (atPos >= 'a' && atPos <= 'f')) && hasColor)
+					allow = true;
+				else if(atPos == 'r' && hasReset)
+					allow = true;
+				else if(atPos == 'l' && hasBold)
+					allow = true;
+				else if(atPos == 'm' && hasStrikethrough)
+					allow = true;
+				else if(atPos == 'n' && hasUnderline)
+					allow = true;
+				else if(atPos == 'o' && hasItalic)
+					allow = true;
+				else if(atPos == 'k' && hasMagic)
+					allow = true;
+				
+				if(allow)
+					buffer.setCharAt(pos, ChatColor.COLOR_CHAR);
+			}
+		}
+		
+		return buffer.toString();
 	}
 }

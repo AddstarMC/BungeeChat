@@ -18,11 +18,12 @@ public class ChatHandler implements Listener
 	private void onPlayerChatLowest(AsyncPlayerChatEvent event)
 	{
 		event.setFormat(mFormatter.getChatFormatForUse(event.getPlayer()));
+		event.setMessage(BungeeChat.colorize(event.getMessage(), event.getPlayer()));
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerChatFinal(AsyncPlayerChatEvent event)
 	{
-		BungeeChat.mirrorChat(event.getPlayer(), String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage()), "Default"); 
+		BungeeChat.mirrorChat(event.getPlayer(), String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage()), ""); 
 	}
 }
