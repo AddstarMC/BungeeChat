@@ -98,6 +98,8 @@ public class BungeeChat extends Plugin implements Listener
 				output.writeUTF(channel.permission);
 				output.writeUTF(channel.listenPermission);
 			}
+			
+			server.sendData("BungeeChat", stream.toByteArray());
 		}
 		catch(IOException e)
 		{
