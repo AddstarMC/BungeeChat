@@ -1,0 +1,10 @@
+format: <{DISPLAYNAME}> {MESSAGE}
+
+#groupFormat:
+#  default: <{DISPLAYNAME}> {MESSAGE}
+ 
+#channels:
+#  ModChat:
+#    prefix: [ModChat]
+#    command: /mc
+#    permission: someperm.modchat
