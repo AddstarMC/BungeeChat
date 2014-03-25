@@ -23,6 +23,6 @@ public class ChatHandler implements Listener
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerChatFinal(AsyncPlayerChatEvent event)
 	{
-		// TODO: Mirror to bungee
+		BungeeChat.mirrorChat(event.getPlayer(), String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage()), "Default"); 
 	}
 }
