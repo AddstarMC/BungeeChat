@@ -1,14 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>au.com.addstar</groupId>
-    <artifactId>BungeeChat</artifactId>
-    <version>1.0.0.${env.BUILD_NUMBER}</version>
-    <relativePath>..</relativePath>
-  </parent>
+  <groupId>au.com.addstar</groupId>
+  <artifactId>BungeeChat</artifactId>
+  <version>1.0.0.${env.BUILD_NUMBER}</version>
+  <packaging>pom</packaging>
+  <name>BungeeChat</name>
   
-  <artifactId>BungeeChat-Proxy</artifactId>
-  <name>BungeeChat-Proxy</name>
+  <modules>
+    <module>Proxy</module>
+    <module>Bukkit</module>
+  </modules>
 
   <repositories>
     <!-- Addstar repo -->
@@ -44,6 +45,18 @@
   </dependencies>
 
   <build>
-    <sourceDirectory>src</sourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 </project>
