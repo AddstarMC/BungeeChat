@@ -93,7 +93,14 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	{
 		if(!mHasRequestedUpdate || !mHasUpdated)
 		{
-			requestUpdate();
+			Bukkit.getScheduler().runTaskLater(this, new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					requestUpdate();
+				}
+			}, 2);
 		}
 	}
 	
