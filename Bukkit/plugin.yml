@@ -1,0 +1,35 @@
+name: BungeeChatBukkit
+version: 1.0.0
+
+main: au.com.addstar.bc.BungeeChat
+
+softdepend: [Vault]
+
+permissions:
+  bungeechat.color:
+    default: op
+  bungeechat.format.*:
+    default: op
+    children:
+      bungeechat.format.reset: true
+      bungeechat.format.bold: true
+      bungeechat.format.italic: true
+      bungeechat.format.underline: true
+      bungeechat.format.strikethrough: true
+      bungeechat.format.magic: true
+    
+  bungeechat.format.reset:
+    default: op
+  bungeechat.format.bold:
+    default: op
+  bungeechat.format.italic:
+    default: op
+  bungeechat.format.underline:
+    default: op
+  bungeechat.format.strikethrough:
+    default: op
+  bungeechat.format.magic:
+    default: op
+    
+commands:
+  /nullcmd:
