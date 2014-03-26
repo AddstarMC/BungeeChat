@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.milkbowl.vault.permission.Permission;
 
@@ -20,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.server.ServerCommandEvent;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -211,12 +214,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			return false;
 		}
 	}
-	
-	public static boolean isBPermsAvailable()
-	{
-		return Bukkit.getPluginManager().isPluginEnabled("BungeePermsBukkit");
-	}
-	
+
 	private void update(DataInputStream input) throws IOException
 	{
 		mHasRequestedUpdate = true;
@@ -249,6 +247,40 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			channel.registerChannel();
 			mChannels.put(channel.name, channel);
 		}
+		
+		Formatter.keywordsEnabled = input.readBoolean();
+		if(Formatter.keywordsEnabled)
+		{
+			Formatter.keywordPerm = input.readUTF();
+			Formatter.keywordEnabledChannels.clear();
+			Formatter.keywordPatterns.clear();
+			
+			count = input.readShort();
+			for(int i = 0; i < count; ++i)
+				Formatter.keywordEnabledChannels.add(input.readUTF());
+			
+			count = input.readShort();
+			for(int i = 0; i < count; ++i)
+			{
+				try
+				{
+					Pattern pattern = Pattern.compile(input.readUTF(), Pattern.CASE_INSENSITIVE);
+					Formatter.keywordPatterns.put(pattern, input.readUTF());
+				}
+				catch (PatternSyntaxException e)
+				{
+					// Cant happen
+				}
+			}
+			
+			try
+			{
+				Bukkit.getPluginManager().addPermission(new org.bukkit.permissions.Permission(Formatter.keywordPerm, PermissionDefault.OP));
+			}
+			catch(IllegalArgumentException e)
+			{
+			}
+		}
 	}
 
 	@Override
@@ -259,11 +291,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		try
 		{
 			String subChannel = input.readUTF();
-			if(channel.equals("BungeeCord"))
-			{
-				
-			}
-			else if(channel.equals("BungeeChat"))
+			if(channel.equals("BungeeChat"))
 			{
 				if(subChannel.equals("Mirror"))
 				{
@@ -271,7 +299,12 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					String message = input.readUTF();
 					
 					if(chatChannel.isEmpty())
-						Bukkit.broadcastMessage(message);
+						Formatter.broadcastChat(message);
+					else if(chatChannel.equals("~"))
+					{
+						if(Formatter.keywordsEnabled)
+							Bukkit.broadcast(message, Formatter.keywordPerm);
+					}
 					else
 					{
 						ChatChannel channelObj = mChannels.get(chatChannel);
