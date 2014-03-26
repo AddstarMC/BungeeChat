@@ -31,8 +31,8 @@
   <dependencies>
     <dependency>
         <groupId>net.md-5</groupId>
-        <artifactId>BungeeCord</artifactId>
-        <version>1.0</version>
+        <artifactId>bungeecord</artifactId>
+        <version>1.7</version>
     	<type>jar</type>
   	</dependency>
   	

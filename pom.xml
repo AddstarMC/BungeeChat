@@ -30,13 +30,6 @@
   </repositories>
 
   <dependencies>
-    <dependency>
-        <groupId>net.md-5</groupId>
-        <artifactId>BungeeCord</artifactId>
-        <version>1.0</version>
-    	<type>jar</type>
-  	</dependency>
-  	
   	<dependency>
 	  <groupId>net.cubespace</groupId>
 	  <artifactId>Yamler-Core</artifactId>
