@@ -1,13 +1,25 @@
 package au.com.addstar.bc;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 public class PermissionSetting implements Comparable<PermissionSetting>
 {
 	public PermissionSetting(String permission, int priority, String format, String color)
 	{
 		if(!permission.isEmpty())
+		{
 			this.permission = permission;
+			try
+			{
+				Bukkit.getPluginManager().addPermission(new Permission(permission, PermissionDefault.FALSE));
+			}
+			catch(IllegalArgumentException e)
+			{
+			}
+		}
 		
 		this.format = ChatColor.translateAlternateColorCodes('&', format);
 		this.priority = priority;
