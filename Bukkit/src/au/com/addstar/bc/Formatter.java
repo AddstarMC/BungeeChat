@@ -26,6 +26,9 @@ public class Formatter
 	static String keywordPerm;
 	static HashMap<Pattern, String> keywordPatterns = new HashMap<Pattern, String>();
 	
+	static String mPMFormatInbound = "[{DISPLAYNAME} -> Me]: {MESSAGE}";
+	static String mPMFormatOutbound = "[Me -> {DISPLAYNAME}]: {MESSAGE}";
+	
 	public static PermissionSetting getPermissionLevel(CommandSender sender)
 	{
 		PermissionSetting level = null;
@@ -85,6 +88,16 @@ public class Formatter
 		}
 		
 		return string;
+	}
+	
+	public static String getPMFormat(CommandSender to, boolean inbound)
+	{
+		PermissionSetting level = getPermissionLevel(to);
+		
+		if(inbound)
+			return replaceKeywords(mPMFormatInbound, to, level); 
+		else
+			return replaceKeywords(mPMFormatOutbound, to, level);
 	}
 	
 	public static String highlightKeywords(String message, String defaultColour)

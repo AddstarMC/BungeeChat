@@ -30,6 +30,21 @@ permissions:
     default: op
   bungeechat.format.magic:
     default: op
+  
+  bungeechat.message:
+    default: true
+  bungeechat.messagetoggle:
+    default: op
     
 commands:
   /nullcmd:
+  
+  msg:
+    usage: /<command> <player> <message>
+    aliases: [m,whisper,tell,t,w]
+    permission: bungeechat.message
+    
+  reply:
+    usage: /<command> <message>
+    aliases: [r]
+    permission: bungeechat.message

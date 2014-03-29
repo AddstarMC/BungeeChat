@@ -11,18 +11,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
+import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -113,6 +119,8 @@ public class BungeeChat extends Plugin implements Listener
 			output.writeUTF("Update");
 			output.writeUTF(server.getName());
 			output.writeUTF(mConfig.consoleName);
+			output.writeUTF(mConfig.pmFormatIn);
+			output.writeUTF(mConfig.pmFormatOut);
 			
 			Map<String, PermissionSetting> permissions = mConfig.permSettings;
 			output.writeShort(permissions.size());
@@ -266,6 +274,24 @@ public class BungeeChat extends Plugin implements Listener
 		}
 	}
 	
+	private void sendMessage(ProxiedPlayer player, String message)
+	{
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		DataOutputStream output = new DataOutputStream(stream);
+		
+		try
+		{
+			output.writeUTF("Message");
+			output.writeUTF(player.getName());
+			output.writeUTF(message);
+		}
+		catch(IOException e)
+		{
+		}
+		
+		player.getServer().sendData("BungeeChat", stream.toByteArray());
+	}
+	
 	@EventHandler
 	public void onMessage(PluginMessageEvent event)
 	{
@@ -293,11 +319,80 @@ public class BungeeChat extends Plugin implements Listener
 				else if(subChannel.equals("Update"))
 				{
 					sendInfo(((Server)event.getSender()).getInfo());
+					sendPlayerUpdates(((Server)event.getSender()).getInfo());
+				}
+				else if(subChannel.equals("Send"))
+				{
+					String player = input.readUTF();
+					String message = input.readUTF();
+					
+					ProxiedPlayer dest = getProxy().getPlayer(player);
+					if(dest != null)
+						sendMessage(dest, message);
 				}
 			}
 			catch(IOException e)
 			{
 			}
 		}
+	}
+	
+	private void sendPlayerUpdates(ServerInfo server)
+	{
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		DataOutputStream output = new DataOutputStream(stream);
+		
+		try
+		{
+			output.writeUTF("UpdatePlayers");
+			
+			Collection<ProxiedPlayer> players = getProxy().getPlayers();
+			output.writeShort(players.size());
+			
+			for(ProxiedPlayer player : players)
+				output.writeUTF(player.getName());
+			
+			byte[] data = stream.toByteArray();
+			
+			if(server == null)
+			{
+				for(ServerInfo s : getProxy().getServers().values())
+					s.sendData("BungeeChat", data);
+			}
+			else
+				server.sendData("BungeeChat", data);
+				
+		}
+		catch(IOException e)
+		{
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerJoin(PostLoginEvent event)
+	{
+		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				sendPlayerUpdates(null);
+			}
+			
+		}, 10, TimeUnit.MILLISECONDS);
+	}
+	
+	@EventHandler
+	public void onPlayerDC(PlayerDisconnectEvent event)
+	{
+		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				sendPlayerUpdates(null);
+			}
+			
+		}, 10, TimeUnit.MILLISECONDS);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.cubespace.Yamler.Config.Comment;
+import net.cubespace.Yamler.Config.Path;
 
 public class Config extends net.cubespace.Yamler.Config.Config
 {
@@ -23,6 +24,11 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	
 	@Comment("You can override the name of the console here. Leave blank for no change")
 	public String consoleName = "";
+	
+	@Path("PM-format-in")
+	public String pmFormatIn = "[{DISPLAYNAME}&r -> Me]: {MESSAGE}";
+	@Path("PM-format-out")
+	public String pmFormatOut = "[Me -> {DISPLAYNAME}&r]: {MESSAGE}";
 	
 	@Comment("Here you can set up permission based formats")
 	public Map<String, PermissionSetting> permSettings;

@@ -5,8 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -29,7 +32,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 
 public class BungeeChat extends JavaPlugin implements PluginMessageListener, Listener
 {
-	private static Permission permissionManager;
+	static Permission permissionManager;
 	
 	public static String serverName = "ERROR";
 	private static BungeeChat mInstance;
@@ -38,6 +41,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	private boolean mHasUpdated = false;
 	
 	private HashMap<String, ChatChannel> mChannels = new HashMap<String, ChatChannel>();
+	private ArrayList<String> mAllPlayers = new ArrayList<String>();
 	
 	@Override
 	public void onEnable()
@@ -57,6 +61,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
 		requestUpdate();
+		
+		MessageCommand cmd = new MessageCommand();
+		
+		getCommand("msg").setExecutor(cmd);
+		getCommand("msg").setTabCompleter(cmd);
+		getCommand("reply").setExecutor(cmd);
+		getCommand("reply").setTabCompleter(cmd);
 	}
 	
 	@Override
@@ -158,6 +169,31 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 	}
 	
+	public static void sendMessage(RemotePlayer player, String message)
+	{
+		Player[] players = Bukkit.getOnlinePlayers();
+		if(players.length != 0)
+			sendMessage(players[0], player, message);
+	}
+	
+	public static void sendMessage(Player sender, RemotePlayer player, String message)
+	{
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(stream);
+		
+		try
+		{
+			out.writeUTF("Send");
+			out.writeUTF(player.getName());
+			out.writeUTF(message);
+		}
+		catch ( IOException e ) 
+		{
+		}
+		
+		sender.sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+	}
+	
 	public static void mirrorChat(String fullChat, String channel)
 	{
 		Player[] players = Bukkit.getOnlinePlayers();
@@ -226,6 +262,9 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			Formatter.consoleOverride = null;
 		else
 			Formatter.consoleOverride = ChatColor.translateAlternateColorCodes('&', consoleName);
+		
+		Formatter.mPMFormatInbound = ChatColor.translateAlternateColorCodes('&', input.readUTF());
+		Formatter.mPMFormatOutbound = ChatColor.translateAlternateColorCodes('&', input.readUTF());
 		
 		Formatter.permissionLevels.clear();
 		
@@ -321,6 +360,22 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 				{
 					update(input);
 				}
+				else if(subChannel.equals("UpdatePlayers"))
+				{
+					int count = input.readShort();
+					mAllPlayers.clear();
+					for(int i = 0; i < count; ++i)
+						mAllPlayers.add(input.readUTF());
+					
+					System.out.println("Got player update: " + mAllPlayers);
+				}
+				else if(subChannel.equals("Message"))
+				{
+					Player ply = Bukkit.getPlayerExact(input.readUTF());
+					String message = input.readUTF();
+					if(ply != null)
+						ply.sendMessage(message);
+				}
 			}
 		}
 		catch(IOException e) 
@@ -371,5 +426,71 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 		
 		return buffer.toString();
+	}
+	
+	public static List<String> matchPlayers(String player)
+	{
+		player = player.toLowerCase();
+		
+		HashSet<String> used = new HashSet<String>();
+		for(Player p : Bukkit.matchPlayer(player))
+			used.add(p.getName());
+
+		for(String name : mInstance.mAllPlayers)
+		{
+			if(name.toLowerCase().startsWith(player))
+				used.add(name);
+		}
+		
+		return new ArrayList<String>(used);
+	}
+	
+	public static CommandSender getPlayer(String name)
+	{
+		if(name.equalsIgnoreCase("console"))
+			return Bukkit.getConsoleSender();
+		
+        String found = null;
+        String lowerName = name.toLowerCase();
+        int delta = Integer.MAX_VALUE;
+        for (String player : mInstance.mAllPlayers) 
+        {
+            if (player.toLowerCase().startsWith(lowerName)) 
+            {
+                int curDelta = player.length() - lowerName.length();
+                if (curDelta < delta) 
+                {
+                    found = player;
+                    delta = curDelta;
+                }
+                if (curDelta == 0) 
+                	break;
+            }
+        }
+        
+        for (Player player : Bukkit.getOnlinePlayers()) 
+        {
+            if (player.getName().toLowerCase().startsWith(lowerName)) 
+            {
+                int curDelta = player.getName().length() - lowerName.length();
+                if (curDelta < delta) 
+                {
+                    found = player.getName();
+                    delta = curDelta;
+                }
+                if (curDelta == 0) 
+                	break;
+            }
+        }
+        
+        if(found == null)
+        	return null;
+        
+        Player player = Bukkit.getPlayerExact(found);
+        
+        if(player != null)
+        	return player;
+        
+        return new RemotePlayer(found);
 	}
 }
