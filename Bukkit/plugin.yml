@@ -35,6 +35,8 @@ permissions:
     default: true
   bungeechat.messagetoggle:
     default: op
+  bungeechat.socialspy:
+    default: op
     
 commands:
   /nullcmd:
@@ -42,9 +44,16 @@ commands:
   msg:
     usage: /<command> <player> <message>
     aliases: [m,whisper,tell,t,w]
+    description: Sends a message to <player>
     permission: bungeechat.message
     
   reply:
     usage: /<command> <message>
     aliases: [r]
+    description: Sends a reply message to the last person you messaged, or that messaged you
     permission: bungeechat.message
+
+  socialspy:
+    usage: /<command>
+    description: Toggles social spy
+    permission: bungeechat.socialspy

@@ -9,6 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.permissions.Permissible;
 
+import au.com.addstar.bc.utils.Utilities;
+
 public class ChatHandler implements Listener
 {
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
@@ -57,7 +59,7 @@ public class ChatHandler implements Listener
 		else
 		{
 			newMessage = String.format(event.getFormat(), event.getPlayer().getDisplayName(), newMessage);
-			Formatter.broadcastNoConsole(newMessage, Formatter.keywordPerm);
+			Utilities.broadcast(newMessage, Formatter.keywordPerm, Utilities.NO_CONSOLE);
 			BungeeChat.mirrorChat(newMessage, "~");
 		}
 	}

@@ -14,6 +14,9 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 
+import au.com.addstar.bc.utils.NoPermissionChecker;
+import au.com.addstar.bc.utils.Utilities;
+
 public class Formatter
 {
 	static ArrayList<PermissionSetting> permissionLevels = new ArrayList<PermissionSetting>();
@@ -138,14 +141,7 @@ public class Formatter
 		if(!keywordsEnabled)
 			Bukkit.broadcastMessage(message);
 		else
-		{
-			// Broadcast to everyone that has the normal perm, but not the highlight perm
-			for(Permissible permissible : Bukkit.getPluginManager().getPermissionSubscriptions(Server.BROADCAST_CHANNEL_USERS))
-			{
-				if(permissible instanceof CommandSender && permissible.hasPermission(Server.BROADCAST_CHANNEL_USERS) && !permissible.hasPermission(keywordPerm))
-					((CommandSender)permissible).sendMessage(message);
-			}
-		}
+			Utilities.broadcast(message, Server.BROADCAST_CHANNEL_USERS, new NoPermissionChecker(keywordPerm));
 	}
 	
 	public static void broadcastNoConsole(String message, String perm)

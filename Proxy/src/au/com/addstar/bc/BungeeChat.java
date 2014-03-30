@@ -40,6 +40,7 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
 	private HashMap<String, String> mLastMsgTarget = new HashMap<String, String>();
+	private HashMap<String, Boolean> mSocialSpyValue = new HashMap<String, Boolean>();
 	
 	@Override
 	public void onEnable()
@@ -166,6 +167,10 @@ public class BungeeChat extends Plugin implements Listener
 					output.writeUTF(entry.getValue());
 				}
 			}
+			
+			output.writeShort(mConfig.socialSpyKeywords.size());
+			for(String keyword : mConfig.socialSpyKeywords)
+				output.writeUTF(keyword);
 			
 			server.sendData("BungeeChat", stream.toByteArray());
 		}
@@ -334,7 +339,7 @@ public class BungeeChat extends Plugin implements Listener
 					
 					// Mirror chat to proxy console
 					String chatChannel = input.readUTF();
-					if(!chatChannel.equals("~")) // Ignore the highlighter channel
+					if(!chatChannel.startsWith("~")) // Ignore special channels
 					{
 						String message = input.readUTF();
 						getProxy().getConsole().sendMessage(new TextComponent(message));
@@ -361,6 +366,13 @@ public class BungeeChat extends Plugin implements Listener
 					
 					mLastMsgTarget.put(player, target);
 					setLastMsgTarget(player, target, ((Server)event.getSender()).getInfo());
+				}
+				else if(subChannel.equals("SocialSpy"))
+				{
+					String player = input.readUTF();
+					boolean on = input.readBoolean();
+					
+					mSocialSpyValue.put(player, on);
 				}
 			}
 			catch(IOException e)
@@ -446,6 +458,23 @@ public class BungeeChat extends Plugin implements Listener
 					output.writeUTF("MsgTarget");
 					output.writeUTF(event.getPlayer().getName());
 					output.writeUTF(target == null ? "" : target);
+				}
+				catch(IOException e)
+				{
+				}
+				
+				event.getPlayer().getServer().sendData("BungeeChat", stream.toByteArray());
+				
+				Boolean value = mSocialSpyValue.get(event.getPlayer().getName());
+				
+				stream = new ByteArrayOutputStream();
+				output = new DataOutputStream(stream);
+				
+				try
+				{
+					output.writeUTF("SocialSpy");
+					output.writeUTF(event.getPlayer().getName());
+					output.writeByte(value == null ? 2 : (value ? 1 : 0));
 				}
 				catch(IOException e)
 				{

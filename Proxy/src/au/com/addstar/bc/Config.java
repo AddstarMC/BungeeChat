@@ -1,7 +1,10 @@
 package au.com.addstar.bc;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.cubespace.Yamler.Config.Comment;
@@ -20,6 +23,8 @@ public class Config extends net.cubespace.Yamler.Config.Config
 		channels.put("BCast", new ChatChannel("bcast", "&6[&4Broadcast&6] &a{MESSAGE}", "bungeechat.broadcast", "*"));
 		
 		keywordHighlighter = new KeywordHighlighterSettings();
+		
+		socialSpyKeywords = new ArrayList<String>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply"));
 	}
 	
 	@Comment("You can override the name of the console here. Leave blank for no change")
@@ -38,4 +43,6 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	
 	@Comment("Keyword highlighter allows you to show some words as highlighted to some users")
 	public KeywordHighlighterSettings keywordHighlighter;
+	
+	public List<String> socialSpyKeywords;
 }
