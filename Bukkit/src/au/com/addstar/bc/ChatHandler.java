@@ -43,7 +43,7 @@ public class ChatHandler implements Listener
 	private void onPlayerChatFinal(AsyncPlayerChatEvent event)
 	{
 		String message = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
-		BungeeChat.mirrorChat(event.getPlayer(), message, "");
+		BungeeChat.mirrorChat(message, "");
 		
 		if(!Formatter.keywordsEnabled)
 			return;
@@ -51,14 +51,14 @@ public class ChatHandler implements Listener
 		String newMessage = Formatter.highlightKeywords(event.getMessage(), ChatColor.getLastColors(event.getFormat()));
 		if(newMessage == null)
 		{
-			BungeeChat.mirrorChat(event.getPlayer(), message, "~");
+			BungeeChat.mirrorChat(message, "~");
 			return;
 		}
 		else
 		{
 			newMessage = String.format(event.getFormat(), event.getPlayer().getDisplayName(), newMessage);
 			Formatter.broadcastNoConsole(newMessage, Formatter.keywordPerm);
-			BungeeChat.mirrorChat(event.getPlayer(), newMessage, "~");
+			BungeeChat.mirrorChat(newMessage, "~");
 		}
 	}
 }

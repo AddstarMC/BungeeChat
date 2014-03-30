@@ -1,9 +1,7 @@
 package au.com.addstar.bc;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,18 +87,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		else
 			return;
 		
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream out = new DataOutputStream(stream);
-		
-		try
-		{
-			out.writeUTF("Update");
-		}
-		catch ( IOException e ) 
-		{
-		}
-		
-		player.sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+		new MessageOutput("BungeeChat", "Update").send(player, mInstance);
 		
 		mHasRequestedUpdate = true;
 	}
@@ -194,54 +181,18 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	public static void sendMessage(RemotePlayer player, String message)
 	{
-		Player[] players = Bukkit.getOnlinePlayers();
-		if(players.length != 0)
-			sendMessage(players[0], player, message);
-	}
-	
-	public static void sendMessage(Player sender, RemotePlayer player, String message)
-	{
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream out = new DataOutputStream(stream);
-		
-		try
-		{
-			out.writeUTF("Send");
-			out.writeUTF(player.getName());
-			out.writeUTF(message);
-		}
-		catch ( IOException e ) 
-		{
-		}
-		
-		sender.sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+		new MessageOutput("BungeeChat", "Send")
+			.writeUTF(player.getName())
+			.writeUTF(message)
+			.send(mInstance);
 	}
 	
 	public static void mirrorChat(String fullChat, String channel)
 	{
-		Player[] players = Bukkit.getOnlinePlayers();
-		if(players.length != 0)
-			mirrorChat(players[0], fullChat, channel);
-		// Cant send it without any players :(
-		// TODO: This can be a problem if the console uses a sub chat without any players on this specific server
-	}
-	
-	public static void mirrorChat(Player player, String fullChat, String channel)
-	{
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream out = new DataOutputStream(stream);
-		
-		try
-		{
-			out.writeUTF("Mirror");
-			out.writeUTF(channel);
-			out.writeUTF(fullChat);
-		}
-		catch ( IOException e ) 
-		{
-		}
-		
-		player.sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+		new MessageOutput("BungeeChat", "Mirror")
+			.writeUTF(channel)
+			.writeUTF(fullChat)
+			.send(mInstance);
 	}
 	
 	public static String getPrimaryGroup(Player player)
@@ -548,22 +499,10 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		if(!(sender instanceof Player) && !(sender instanceof RemotePlayer))
 			return;
 		
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream output = new DataOutputStream(stream);
-		
-		try
-		{
-			output.writeUTF("MsgTarget");
-			output.writeUTF(sender.getName());
-			output.writeUTF(target.getName());
-		}
-		catch(IOException e)
-		{
-		}
-		
-		Player[] players = Bukkit.getOnlinePlayers();
-		if(players.length != 0)
-			players[0].sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+		new MessageOutput("BungeeChat", "MsgTarget")
+			.writeUTF(sender.getName())
+			.writeUTF(target.getName())
+			.send(mInstance);
 	}
 	
 	public static CommandSender getLastMsgTarget(CommandSender sender)
