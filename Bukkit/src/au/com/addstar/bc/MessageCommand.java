@@ -54,6 +54,9 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 			String message = concat(args, 1);
 			message = BungeeChat.colorize(message, sender);
 			
+			if(ChatColor.stripColor(message).trim().isEmpty())
+				return false;
+			
 			String displayName = player.getName();
 			if(player instanceof Player)
 				displayName = ((Player)player).getDisplayName();
@@ -97,6 +100,9 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 			
 			String message = concat(args, 0);
 			message = BungeeChat.colorize(message, sender);
+			
+			if(ChatColor.stripColor(message).trim().isEmpty())
+				return false;
 			
 			String displayName = player.getName();
 			if(player instanceof Player)

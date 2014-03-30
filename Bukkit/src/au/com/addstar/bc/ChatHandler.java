@@ -20,6 +20,9 @@ public class ChatHandler implements Listener
 		
 		event.setFormat(Formatter.getChatFormatForUse(event.getPlayer(), level));
 		event.setMessage(BungeeChat.colorize(event.getMessage(), event.getPlayer()));
+		
+		if(ChatColor.stripColor(event.getMessage()).trim().isEmpty())
+			event.setCancelled(true);
 	}
 	
 	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
