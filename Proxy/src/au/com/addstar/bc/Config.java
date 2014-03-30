@@ -3,7 +3,7 @@ package au.com.addstar.bc;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -16,8 +16,8 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	{
 		super(file.getPath(), "BungeeChat config");
 		
-		permSettings = new HashMap<String, PermissionSetting>();
-		channels = new HashMap<String, ChatChannel>();
+		permSettings = new LinkedHashMap<String, PermissionSetting>();
+		channels = new LinkedHashMap<String, ChatChannel>();
 		
 		permSettings.put("default", new PermissionSetting("<{DISPLAYNAME}>: {MESSAGE}", "f", 0));
 		channels.put("BCast", new ChatChannel("bcast", "&6[&4Broadcast&6] &a{MESSAGE}", "bungeechat.broadcast", "*"));
