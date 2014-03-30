@@ -45,7 +45,7 @@ public class ChatHandler implements Listener
 	private void onPlayerChatFinal(AsyncPlayerChatEvent event)
 	{
 		String message = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
-		BungeeChat.mirrorChat(message, "");
+		BungeeChat.mirrorChat(message, ChannelType.Default.getName());
 		
 		if(!Formatter.keywordsEnabled)
 			return;
@@ -53,14 +53,31 @@ public class ChatHandler implements Listener
 		String newMessage = Formatter.highlightKeywords(event.getMessage(), ChatColor.getLastColors(event.getFormat()));
 		if(newMessage == null)
 		{
-			BungeeChat.mirrorChat(message, "~");
+			BungeeChat.mirrorChat(message, ChannelType.KeywordHighlight.getName());
 			return;
 		}
 		else
 		{
 			newMessage = String.format(event.getFormat(), event.getPlayer().getDisplayName(), newMessage);
 			Utilities.broadcast(newMessage, Formatter.keywordPerm, Utilities.NO_CONSOLE);
-			BungeeChat.mirrorChat(newMessage, "~");
+			BungeeChat.mirrorChat(newMessage, ChannelType.KeywordHighlight.getName());
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	private void onChatChannel(ChatChannelEvent event)
+	{
+		switch(event.getChannelType())
+		{
+		case Default:
+			Formatter.broadcastChat(event.getMessage());
+			break;
+		case KeywordHighlight:
+			if(Formatter.keywordsEnabled)
+				Bukkit.broadcast(event.getMessage(), Formatter.keywordPerm);
+			break;
+		default:
+			break;
 		}
 	}
 }

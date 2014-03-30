@@ -10,10 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.permissions.Permissible;
-
 import au.com.addstar.bc.utils.NoPermissionChecker;
 import au.com.addstar.bc.utils.Utilities;
 
@@ -142,14 +139,5 @@ public class Formatter
 			Bukkit.broadcastMessage(message);
 		else
 			Utilities.broadcast(message, Server.BROADCAST_CHANNEL_USERS, new NoPermissionChecker(keywordPerm));
-	}
-	
-	public static void broadcastNoConsole(String message, String perm)
-	{
-		for(Permissible permissible : Bukkit.getPluginManager().getPermissionSubscriptions(perm))
-		{
-			if(permissible instanceof CommandSender && permissible.hasPermission(perm) && !(permissible instanceof ConsoleCommandSender))
-				((CommandSender)permissible).sendMessage(message);
-		}
 	}
 }

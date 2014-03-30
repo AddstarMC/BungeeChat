@@ -15,23 +15,18 @@ import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
-
-import au.com.addstar.bc.utils.Utilities;
 
 public class BungeeChat extends JavaPlugin implements PluginMessageListener, Listener
 {
@@ -43,11 +38,12 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	private boolean mHasRequestedUpdate = false;
 	private boolean mHasUpdated = false;
 	
-	private HashMap<String, ChatChannel> mChannels = new HashMap<String, ChatChannel>();
+	
 	private ArrayList<String> mAllPlayers = new ArrayList<String>();
 	private HashMap<CommandSender, String> mLastMsgTarget = new HashMap<CommandSender, String>();
-	private HashMap<CommandSender, Boolean> mSocialSpyOn = new HashMap<CommandSender, Boolean>();
-	private HashSet<String> mSocialSpyKeywords = new HashSet<String>();
+	
+	private ChatChannelManager mChatChannels;
+	private SocialSpyHandler mSocialSpyHandler;
 	
 	@Override
 	public void onEnable()
@@ -66,6 +62,9 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
+		mChatChannels = new ChatChannelManager(this);
+		mSocialSpyHandler = new SocialSpyHandler(this);
+		
 		requestUpdate();
 		
 		MessageCommand cmd = new MessageCommand();
@@ -74,44 +73,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		getCommand("msg").setTabCompleter(cmd);
 		getCommand("reply").setExecutor(cmd);
 		getCommand("reply").setTabCompleter(cmd);
+		getCommand("socialspy").setExecutor(mSocialSpyHandler);
 	}
 	
 	@Override
 	public void onDisable()
 	{
-		for(ChatChannel channel : mChannels.values())
-			channel.unregisterChannel();
-	}
-	
-	@Override
-	public boolean onCommand( CommandSender sender, Command command, String label, String[] args )
-	{
-		if(command.getName().equals("socialspy"))
-		{
-			if(!(sender instanceof Player))
-				return false;
-			
-			Boolean on = mSocialSpyOn.get(sender);
-			if(on == null)
-				on = true;
-			else
-				on = !on;
-			
-			if(on)
-				sender.sendMessage(ChatColor.GREEN + "SocialSpy now on");
-			else
-				sender.sendMessage(ChatColor.GREEN + "SocialSpy now off");
-			
-			mSocialSpyOn.put(sender, on);
-			new MessageOutput("BungeeChat", "SocialSpy")
-				.writeUTF(sender.getName())
-				.writeBoolean(on)
-				.send(this);
-			
-			return true;
-		}
-		
-		return false;
+		mChatChannels.unregisterAll();
 	}
 	
 	private void requestUpdate()
@@ -131,10 +99,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerJoin(PlayerJoinEvent event)
 	{
-		String target = mLastMsgTarget.remove(new RemotePlayer(event.getPlayer().getName()));
-		if(target != null)
-			mLastMsgTarget.put(event.getPlayer(), target);
-		
 		if(!mHasRequestedUpdate || !mHasUpdated)
 		{
 			Bukkit.getScheduler().runTaskLater(this, new Runnable()
@@ -148,78 +112,16 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 	}
 	
-	private boolean processCommands(CommandSender sender, String message)
-	{
-		String command;
-		int pos = message.indexOf(' ');
-		if(pos == -1)
-		{
-			command = message;
-			message = null;
-		}
-		else
-		{
-			command = message.substring(0, pos);
-			message = message.substring(pos+1);
-		}
-		
-		for(ChatChannel channel : mChannels.values())
-		{
-			if(channel.command.equals(command))
-			{
-				if(channel.permission != null && !sender.hasPermission(channel.permission))
-					break;
-				
-				if(message != null)
-					channel.say(sender, message);
-				
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
-	private void onPlayerCommand(PlayerCommandPreprocessEvent event)
-	{
-		String command = event.getMessage().split(" ")[0];
-		if(mSocialSpyKeywords.contains(command.toLowerCase()))
-		{
-			Utilities.broadcast(event.getMessage(), "bungeechat.socialspy", event.getPlayer(), Utilities.SOCIAL_SPY_ENABLED);
-			mirrorChat(event.getMessage(), "~SS");
-		}
-		
-		if(processCommands(event.getPlayer(), event.getMessage().substring(1)))
-		{
-			event.setMessage("/nullcmd");
-			event.setCancelled(true);
-		}
-	}
-	
-	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
-	private void onServerCommand(ServerCommandEvent event)
-	{
-		if(processCommands(event.getSender(), event.getCommand()))
-		{
-			event.setCommand("/nullcmd");
-		}
-	}
-	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerDC(PlayerQuitEvent event)
 	{
-		String target = mLastMsgTarget.remove(event.getPlayer());
-		if(target != null)
-			mLastMsgTarget.put(new RemotePlayer(event.getPlayer().getName()), target);
+		mLastMsgTarget.remove(event.getPlayer());
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerDC(PlayerKickEvent event)
 	{
-		String target = mLastMsgTarget.remove(event.getPlayer());
-		if(target != null)
-			mLastMsgTarget.put(new RemotePlayer(event.getPlayer().getName()), target);
+		mLastMsgTarget.remove(event.getPlayer());
 	}
 	
 	public static void sendMessage(RemotePlayer player, String message)
@@ -253,21 +155,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 	}
 	
-	public static boolean isInGroup(Player player, String group)
-	{
-		if(permissionManager == null)
-			return false;
-		
-		try
-		{
-			return permissionManager.playerInGroup(player, group);
-		}
-		catch(UnsupportedOperationException e)
-		{
-			return false;
-		}
-	}
-
 	private void update(DataInputStream input) throws IOException
 	{
 		mHasRequestedUpdate = true;
@@ -291,18 +178,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		
 		Collections.sort(Formatter.permissionLevels);
 		
-		for(ChatChannel channel : mChannels.values())
-			channel.unregisterChannel();
-		
-		mChannels.clear();
+		mChatChannels.unregisterAll();
 		
 		count = input.readShort();
 		for(int i = 0; i < count; ++i)
-		{
-			ChatChannel channel = new ChatChannel(input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF());
-			channel.registerChannel();
-			mChannels.put(channel.name, channel);
-		}
+			mChatChannels.register(input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF());
 		
 		Formatter.keywordsEnabled = input.readBoolean();
 		if(Formatter.keywordsEnabled)
@@ -338,10 +218,10 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			}
 		}
 		
-		mSocialSpyKeywords.clear();
+		mSocialSpyHandler.clearKeywords();
 		count = input.readShort();
 		for(int i = 0; i < count; ++i)
-			mSocialSpyKeywords.add(input.readUTF());
+			mSocialSpyHandler.addKeyword(input.readUTF());
 	}
 
 	@Override
@@ -359,31 +239,9 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					String chatChannel = input.readUTF();
 					String message = input.readUTF();
 					
-					if(chatChannel.isEmpty())
-						Formatter.broadcastChat(message);
-					else if(chatChannel.startsWith("~"))
-					{
-						if(chatChannel.equals("~"))
-						{
-							if(Formatter.keywordsEnabled)
-								Bukkit.broadcast(message, Formatter.keywordPerm);
-						}
-						else if(chatChannel.equals("~SS"))
-						{
-							Utilities.broadcast(message, "bungeechat.socialspy", Utilities.SOCIAL_SPY_ENABLED);
-						}
-					}
-					else
-					{
-						ChatChannel channelObj = mChannels.get(chatChannel);
-						if(channelObj != null)
-						{
-							if(channelObj.listenPermission != null)
-								Bukkit.broadcast(message, channelObj.listenPermission);
-							else
-								Bukkit.broadcastMessage(message);
-						}
-					}
+					ChannelType type = ChannelType.from(chatChannel);
+					
+					Bukkit.getPluginManager().callEvent(new ChatChannelEvent(chatChannel, type, message));
 				}
 				else if(subChannel.equals("Update"))
 				{
@@ -419,11 +277,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					if(player != null)
 					{
 						if(type == 2)
-							mSocialSpyOn.remove(player);
+							mSocialSpyHandler.clearStatus(player);
 						else if(type == 0)
-							mSocialSpyOn.put(player, false);
+							mSocialSpyHandler.setStatus(player, false);
 						else
-							mSocialSpyOn.put(player, true);
+							mSocialSpyHandler.setStatus(player, true);
 					}
 				}
 			}
@@ -585,11 +443,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		return getPlayerExact(target);
 	}
 
-	public static boolean isSocialSpyEnabled( CommandSender object )
+	public static boolean isSocialSpyEnabled( CommandSender player )
 	{
-		if(mInstance.mSocialSpyOn.containsKey(object))
-			return mInstance.mSocialSpyOn.get(object);
-		
-		return false;
+		return mInstance.mSocialSpyHandler.isEnabled(player);
 	}
 }
