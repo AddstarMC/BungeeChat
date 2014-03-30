@@ -77,12 +77,53 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 				sender.sendMessage(fullMessageOut);
 			}
 			
+			BungeeChat.setLastMsgTarget(sender, player);
+			BungeeChat.setLastMsgTarget(player, sender);
+			
 			return true;
 		}
 		else if(command.getName().equals("reply"))
 		{
 			if(args.length == 0)
 				return false;
+			
+			CommandSender player = BungeeChat.getLastMsgTarget(sender);
+			if(player == null)
+			{
+				sender.sendMessage(ChatColor.RED + "You have nobody to reply to");
+				return true;
+			}
+			
+			String message = concat(args, 0);
+			
+			String displayName = player.getName();
+			if(player instanceof Player)
+				displayName = ((Player)player).getDisplayName();
+			
+			String displayNameIn = player.getName();
+			if(sender instanceof Player)
+				displayNameIn = ((Player)sender).getDisplayName();
+			
+			String fullMessageOut = String.format(Formatter.getPMFormat(player, false), displayName, message);
+			String fullMessageIn = String.format(Formatter.getPMFormat(sender, true), displayNameIn, message);
+			
+			if(player instanceof RemotePlayer)
+			{
+				// Remote
+				sender.sendMessage(fullMessageOut);
+				BungeeChat.sendMessage((RemotePlayer)player, fullMessageIn);
+			}
+			else
+			{
+				// Local
+				player.sendMessage(fullMessageIn);
+				sender.sendMessage(fullMessageOut);
+			}
+			
+			BungeeChat.setLastMsgTarget(sender, player);
+			BungeeChat.setLastMsgTarget(player, sender);
+			
+			return true;
 		}
 		return false;
 	}

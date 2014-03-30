@@ -24,6 +24,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -42,6 +44,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	private HashMap<String, ChatChannel> mChannels = new HashMap<String, ChatChannel>();
 	private ArrayList<String> mAllPlayers = new ArrayList<String>();
+	private HashMap<CommandSender, String> mLastMsgTarget = new HashMap<CommandSender, String>();
 	
 	@Override
 	public void onEnable()
@@ -105,6 +108,10 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerJoin(PlayerJoinEvent event)
 	{
+		String target = mLastMsgTarget.remove(new RemotePlayer(event.getPlayer().getName()));
+		if(target != null)
+			mLastMsgTarget.put(event.getPlayer(), target);
+		
 		if(!mHasRequestedUpdate || !mHasUpdated)
 		{
 			Bukkit.getScheduler().runTaskLater(this, new Runnable()
@@ -167,6 +174,22 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		{
 			event.setCommand("/nullcmd");
 		}
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	private void onPlayerDC(PlayerQuitEvent event)
+	{
+		String target = mLastMsgTarget.remove(event.getPlayer());
+		if(target != null)
+			mLastMsgTarget.put(new RemotePlayer(event.getPlayer().getName()), target);
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	private void onPlayerDC(PlayerKickEvent event)
+	{
+		String target = mLastMsgTarget.remove(event.getPlayer());
+		if(target != null)
+			mLastMsgTarget.put(new RemotePlayer(event.getPlayer().getName()), target);
 	}
 	
 	public static void sendMessage(RemotePlayer player, String message)
@@ -366,8 +389,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					mAllPlayers.clear();
 					for(int i = 0; i < count; ++i)
 						mAllPlayers.add(input.readUTF());
-					
-					System.out.println("Got player update: " + mAllPlayers);
 				}
 				else if(subChannel.equals("Message"))
 				{
@@ -375,6 +396,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					String message = input.readUTF();
 					if(ply != null)
 						ply.sendMessage(message);
+				}
+				else if(subChannel.equals("MsgTarget"))
+				{
+					String playerName = input.readUTF();
+					String target = input.readUTF();
+					
+					mLastMsgTarget.put(getPlayerExact(playerName), target);
 				}
 			}
 		}
@@ -492,5 +520,58 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
         	return player;
         
         return new RemotePlayer(found);
+	}
+	
+	public static CommandSender getPlayerExact(String name)
+	{
+		if(name.equalsIgnoreCase("console"))
+			return Bukkit.getConsoleSender();
+		
+		CommandSender player = Bukkit.getPlayerExact(name);
+		if(player != null)
+			return player;
+		
+		for (String ply : mInstance.mAllPlayers) 
+        {
+            if (ply.equalsIgnoreCase(name)) 
+            	return new RemotePlayer(ply);
+        }
+		
+		return null;
+	}
+	
+	
+	public static void setLastMsgTarget(CommandSender sender, CommandSender target)
+	{
+		mInstance.mLastMsgTarget.put(sender, target.getName());
+		
+		if(sender instanceof RemotePlayer)
+		{
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			DataOutputStream output = new DataOutputStream(stream);
+			
+			try
+			{
+				output.writeUTF("MsgTarget");
+				output.writeUTF(sender.getName());
+				output.writeUTF(target.getName());
+			}
+			catch(IOException e)
+			{
+			}
+			
+			Player[] players = Bukkit.getOnlinePlayers();
+			if(players.length != 0)
+				players[0].sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+		}
+	}
+	
+	public static CommandSender getLastMsgTarget(CommandSender sender)
+	{
+		String target = mInstance.mLastMsgTarget.get(sender);
+		if(target == null)
+			return null;
+		
+		return getPlayerExact(target);
 	}
 }

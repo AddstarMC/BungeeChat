@@ -292,6 +292,30 @@ public class BungeeChat extends Plugin implements Listener
 		player.getServer().sendData("BungeeChat", stream.toByteArray());
 	}
 	
+	private void setLastMsgTarget(String player, String target, ServerInfo from)
+	{
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		DataOutputStream output = new DataOutputStream(stream);
+		
+		try
+		{
+			output.writeUTF("MsgTarget");
+			output.writeUTF(player);
+			output.writeUTF(target);
+		}
+		catch(IOException e)
+		{
+		}
+		
+		byte[] data = stream.toByteArray();
+		
+		for(ServerInfo server : getProxy().getServers().values())
+		{
+			if(server != from)
+				server.sendData("BungeeChat", data);
+		}
+	}
+	
 	@EventHandler
 	public void onMessage(PluginMessageEvent event)
 	{
@@ -329,6 +353,13 @@ public class BungeeChat extends Plugin implements Listener
 					ProxiedPlayer dest = getProxy().getPlayer(player);
 					if(dest != null)
 						sendMessage(dest, message);
+				}
+				else if(subChannel.equals("MsgTarget"))
+				{
+					String player = input.readUTF();
+					String target = input.readUTF();
+					
+					setLastMsgTarget(player, target, ((Server)event.getSender()).getInfo());
 				}
 			}
 			catch(IOException e)
