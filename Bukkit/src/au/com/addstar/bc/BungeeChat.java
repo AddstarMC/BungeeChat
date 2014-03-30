@@ -545,25 +545,25 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	{
 		mInstance.mLastMsgTarget.put(sender, target.getName());
 		
-		if(sender instanceof RemotePlayer)
+		if(!(sender instanceof Player) && !(sender instanceof RemotePlayer))
+			return;
+		
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		DataOutputStream output = new DataOutputStream(stream);
+		
+		try
 		{
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			DataOutputStream output = new DataOutputStream(stream);
-			
-			try
-			{
-				output.writeUTF("MsgTarget");
-				output.writeUTF(sender.getName());
-				output.writeUTF(target.getName());
-			}
-			catch(IOException e)
-			{
-			}
-			
-			Player[] players = Bukkit.getOnlinePlayers();
-			if(players.length != 0)
-				players[0].sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
+			output.writeUTF("MsgTarget");
+			output.writeUTF(sender.getName());
+			output.writeUTF(target.getName());
 		}
+		catch(IOException e)
+		{
+		}
+		
+		Player[] players = Bukkit.getOnlinePlayers();
+		if(players.length != 0)
+			players[0].sendPluginMessage(mInstance, "BungeeChat", stream.toByteArray());
 	}
 	
 	public static CommandSender getLastMsgTarget(CommandSender sender)

@@ -29,6 +29,7 @@ import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -38,6 +39,7 @@ public class BungeeChat extends Plugin implements Listener
 	private Config mConfig;
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
+	private HashMap<String, String> mLastMsgTarget = new HashMap<String, String>();
 	
 	@Override
 	public void onEnable()
@@ -297,6 +299,10 @@ public class BungeeChat extends Plugin implements Listener
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream output = new DataOutputStream(stream);
 		
+		ProxiedPlayer pplayer = getProxy().getPlayer(player);
+		if(pplayer.getServer().getInfo() == from)
+			return;
+		
 		try
 		{
 			output.writeUTF("MsgTarget");
@@ -307,13 +313,7 @@ public class BungeeChat extends Plugin implements Listener
 		{
 		}
 		
-		byte[] data = stream.toByteArray();
-		
-		for(ServerInfo server : getProxy().getServers().values())
-		{
-			if(server != from)
-				server.sendData("BungeeChat", data);
-		}
+		pplayer.getServer().sendData("BungeeChat", stream.toByteArray());
 	}
 	
 	@EventHandler
@@ -359,6 +359,7 @@ public class BungeeChat extends Plugin implements Listener
 					String player = input.readUTF();
 					String target = input.readUTF();
 					
+					mLastMsgTarget.put(player, target);
 					setLastMsgTarget(player, target, ((Server)event.getSender()).getInfo());
 				}
 			}
@@ -426,4 +427,33 @@ public class BungeeChat extends Plugin implements Listener
 			
 		}, 10, TimeUnit.MILLISECONDS);
 	}
+	
+	@EventHandler
+	public void onServerSwitch(final ServerSwitchEvent event)
+	{
+		final String target = mLastMsgTarget.get(event.getPlayer().getName());
+		
+		getProxy().getScheduler().schedule(this, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				ByteArrayOutputStream stream = new ByteArrayOutputStream();
+				DataOutputStream output = new DataOutputStream(stream);
+				
+				try
+				{
+					output.writeUTF("MsgTarget");
+					output.writeUTF(event.getPlayer().getName());
+					output.writeUTF(target == null ? "" : target);
+				}
+				catch(IOException e)
+				{
+				}
+				
+				event.getPlayer().getServer().sendData("BungeeChat", stream.toByteArray());
+			}
+		}, 10, TimeUnit.MILLISECONDS);
+	}
+			
 }
