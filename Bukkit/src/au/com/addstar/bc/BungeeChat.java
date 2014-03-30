@@ -69,8 +69,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		
 		MessageCommand cmd = new MessageCommand();
 		
-		getCommand("msg").setExecutor(cmd);
-		getCommand("msg").setTabCompleter(cmd);
+		getCommand("tell").setExecutor(cmd);
+		getCommand("tell").setTabCompleter(cmd);
 		getCommand("reply").setExecutor(cmd);
 		getCommand("reply").setTabCompleter(cmd);
 		getCommand("socialspy").setExecutor(mSocialSpyHandler);

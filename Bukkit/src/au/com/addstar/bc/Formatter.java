@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import au.com.addstar.bc.utils.NoPermissionChecker;
 import au.com.addstar.bc.utils.Utilities;
@@ -31,6 +32,9 @@ public class Formatter
 	
 	public static PermissionSetting getPermissionLevel(CommandSender sender)
 	{
+		if((sender instanceof ConsoleCommandSender) && !permissionLevels.isEmpty())
+			return permissionLevels.get(permissionLevels.size()-1);
+		
 		PermissionSetting level = null;
 		for(PermissionSetting setting : permissionLevels)
 		{

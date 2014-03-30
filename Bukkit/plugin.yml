@@ -33,8 +33,7 @@ permissions:
   
   bungeechat.message:
     default: true
-  bungeechat.messagetoggle:
-    default: op
+
   bungeechat.socialspy:
     default: op
     
