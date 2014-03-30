@@ -39,7 +39,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 	@Override
 	public boolean onCommand( CommandSender sender, Command command, String label, String[] args )
 	{
-		if(command.getName().equals("msg"))
+		if(command.getName().equals("tell"))
 		{
 			if(args.length < 2)
 				return false;

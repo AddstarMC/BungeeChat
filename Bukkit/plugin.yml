@@ -41,9 +41,9 @@ permissions:
 commands:
   /nullcmd:
   
-  msg:
+  tell:
     usage: /<command> <player> <message>
-    aliases: [m,whisper,tell,t,w]
+    aliases: [m,whisper,msg,t,w]
     description: Sends a message to <player>
     permission: bungeechat.message
     
