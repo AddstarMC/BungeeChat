@@ -41,11 +41,13 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
 	private void onPlayerCommand(PlayerCommandPreprocessEvent event)
 	{
-		String command = event.getMessage().split(" ")[0];
+		String command = event.getMessage().split(" ")[0].substring(1);
+		
 		if(mKeywords.contains(command.toLowerCase()))
 		{
-			Utilities.broadcast(event.getMessage(), "bungeechat.socialspy", event.getPlayer(), Utilities.SOCIAL_SPY_ENABLED);
-			BungeeChat.mirrorChat(event.getMessage(), ChannelType.SocialSpy.getName());
+			String message = event.getPlayer().getName() + ": " + event.getMessage();
+			Utilities.broadcast(message, "bungeechat.socialspy", event.getPlayer(), Utilities.SOCIAL_SPY_ENABLED);
+			BungeeChat.mirrorChat(message, ChannelType.SocialSpy.getName());
 		}
 	}
 	
