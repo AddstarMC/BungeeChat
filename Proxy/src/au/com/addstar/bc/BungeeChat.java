@@ -39,8 +39,7 @@ public class BungeeChat extends Plugin implements Listener
 	private Config mConfig;
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
-	private HashMap<String, String> mLastMsgTarget = new HashMap<String, String>();
-	private HashMap<String, Boolean> mSocialSpyValue = new HashMap<String, Boolean>();
+	private PlayerSettingsManager mSettings;
 	
 	@Override
 	public void onEnable()
@@ -48,6 +47,8 @@ public class BungeeChat extends Plugin implements Listener
 		File configFile = new File(getDataFolder(), "config.yml");
 		if(!getDataFolder().exists())
 			getDataFolder().mkdirs();
+		
+		mSettings = new PlayerSettingsManager(new File(getDataFolder(), "players"));
 		
 		saveResource("/keywords.txt", false);
 		
@@ -364,7 +365,7 @@ public class BungeeChat extends Plugin implements Listener
 					String player = input.readUTF();
 					String target = input.readUTF();
 					
-					mLastMsgTarget.put(player, target);
+					mSettings.getSettings(player).lastMsgTarget = target;
 					setLastMsgTarget(player, target, ((Server)event.getSender()).getInfo());
 				}
 				else if(subChannel.equals("SocialSpy"))
@@ -372,7 +373,8 @@ public class BungeeChat extends Plugin implements Listener
 					String player = input.readUTF();
 					boolean on = input.readBoolean();
 					
-					mSocialSpyValue.put(player, on);
+					mSettings.getSettings(player).socialSpyState = (on ? 1 : 0);
+					mSettings.savePlayer(player);
 				}
 			}
 			catch(IOException e)
@@ -413,13 +415,15 @@ public class BungeeChat extends Plugin implements Listener
 	}
 	
 	@EventHandler
-	public void onPlayerJoin(PostLoginEvent event)
+	public void onPlayerJoin(final PostLoginEvent event)
 	{
 		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
 			public void run()
 			{
+				// Load this players settings
+				mSettings.getSettings(event.getPlayer());
 				sendPlayerUpdates(null);
 			}
 			
@@ -443,7 +447,7 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onServerSwitch(final ServerSwitchEvent event)
 	{
-		final String target = mLastMsgTarget.get(event.getPlayer().getName());
+		final PlayerSettings settings = mSettings.getSettings(event.getPlayer());
 		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
@@ -457,15 +461,13 @@ public class BungeeChat extends Plugin implements Listener
 				{
 					output.writeUTF("MsgTarget");
 					output.writeUTF(event.getPlayer().getName());
-					output.writeUTF(target == null ? "" : target);
+					output.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget);
 				}
 				catch(IOException e)
 				{
 				}
 				
 				event.getPlayer().getServer().sendData("BungeeChat", stream.toByteArray());
-				
-				Boolean value = mSocialSpyValue.get(event.getPlayer().getName());
 				
 				stream = new ByteArrayOutputStream();
 				output = new DataOutputStream(stream);
@@ -474,7 +476,7 @@ public class BungeeChat extends Plugin implements Listener
 				{
 					output.writeUTF("SocialSpy");
 					output.writeUTF(event.getPlayer().getName());
-					output.writeByte(value == null ? 2 : (value ? 1 : 0));
+					output.writeByte(settings.socialSpyState);
 				}
 				catch(IOException e)
 				{

@@ -87,7 +87,7 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		
 		Boolean on = mSocialSpyOn.get(sender);
 		if(on == null)
-			on = true;
+			on = false;
 		else
 			on = !on;
 		
