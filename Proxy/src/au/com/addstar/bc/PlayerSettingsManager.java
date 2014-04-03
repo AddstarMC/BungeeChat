@@ -60,6 +60,11 @@ public class PlayerSettingsManager
 		}
 	}
 	
+	public void updateSettings(String player)
+	{
+		updateSettings(BungeeCord.getInstance().getPlayer(player));
+	}
+	
 	public void updateSettings(ProxiedPlayer player)
 	{
 		PlayerSettings settings = getSettings(player);

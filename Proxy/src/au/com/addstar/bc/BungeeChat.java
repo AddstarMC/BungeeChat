@@ -300,28 +300,6 @@ public class BungeeChat extends Plugin implements Listener
 		player.getServer().sendData("BungeeChat", stream.toByteArray());
 	}
 	
-	private void setLastMsgTarget(String player, String target, ServerInfo from)
-	{
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream output = new DataOutputStream(stream);
-		
-		ProxiedPlayer pplayer = getProxy().getPlayer(player);
-		if(pplayer.getServer().getInfo() == from)
-			return;
-		
-		try
-		{
-			output.writeUTF("MsgTarget");
-			output.writeUTF(player);
-			output.writeUTF(target);
-		}
-		catch(IOException e)
-		{
-		}
-		
-		pplayer.getServer().sendData("BungeeChat", stream.toByteArray());
-	}
-	
 	@EventHandler
 	public void onMessage(PluginMessageEvent event)
 	{
@@ -366,13 +344,24 @@ public class BungeeChat extends Plugin implements Listener
 					String target = input.readUTF();
 					
 					mSettings.getSettings(player).lastMsgTarget = target;
-					setLastMsgTarget(player, target, ((Server)event.getSender()).getInfo());
+					mSettings.updateSettings(player);
 				}
 				else if(subChannel.equals("SyncPlayer"))
 				{
 					String player = input.readUTF();
 					mSettings.getSettings(player).read(input);
 					mSettings.savePlayer(player);
+				}
+				else if(subChannel.equals("MsgCheck"))
+				{
+					String target = input.readUTF();
+					String from = input.readUTF();
+					
+					boolean ok = mSettings.getSettings(target).msgEnabled;
+					new MessageOutput("BungeeChat", "MsgCheck")
+						.writeUTF(from)
+						.writeBoolean(ok)
+						.send(((Server)event.getSender()).getInfo());
 				}
 			}
 			catch(IOException e)

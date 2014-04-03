@@ -68,11 +68,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		requestUpdate();
 		
 		MessageCommand cmd = new MessageCommand();
+		Bukkit.getMessenger().registerIncomingPluginChannel(this, "BungeeChat", cmd);
 		
 		getCommand("tell").setExecutor(cmd);
 		getCommand("tell").setTabCompleter(cmd);
 		getCommand("reply").setExecutor(cmd);
 		getCommand("reply").setTabCompleter(cmd);
+		getCommand("msgtoggle").setExecutor(cmd);
 		getCommand("socialspy").setExecutor(mSocialSpyHandler);
 	}
 	
@@ -459,5 +461,10 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			.writeByte(settings.socialSpyState)
 			.writeBoolean(settings.msgEnabled)
 			.send((Player)player, mInstance);
+	}
+	
+	static BungeeChat getInstance()
+	{
+		return mInstance;
 	}
 }

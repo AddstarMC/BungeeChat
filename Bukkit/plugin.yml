@@ -31,8 +31,12 @@ permissions:
   bungeechat.format.magic:
     default: op
   
+  bungeechat.message.toggle:
+    default: op
   bungeechat.message:
     default: true
+  bungeechat.message.override:
+    default: op
 
   bungeechat.socialspy:
     default: op
@@ -56,3 +60,8 @@ commands:
     usage: /<command>
     description: Toggles social spy
     permission: bungeechat.socialspy
+
+  msgtoggle:
+    usage: /<command>
+    description: Toggles the ability for players to message you
+    permission: bungeechat.message.toggle
