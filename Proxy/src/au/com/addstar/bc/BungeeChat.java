@@ -368,12 +368,10 @@ public class BungeeChat extends Plugin implements Listener
 					mSettings.getSettings(player).lastMsgTarget = target;
 					setLastMsgTarget(player, target, ((Server)event.getSender()).getInfo());
 				}
-				else if(subChannel.equals("SocialSpy"))
+				else if(subChannel.equals("SyncPlayer"))
 				{
 					String player = input.readUTF();
-					boolean on = input.readBoolean();
-					
-					mSettings.getSettings(player).socialSpyState = (on ? 1 : 0);
+					mSettings.getSettings(player).read(input);
 					mSettings.savePlayer(player);
 				}
 			}
@@ -447,42 +445,12 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onServerSwitch(final ServerSwitchEvent event)
 	{
-		final PlayerSettings settings = mSettings.getSettings(event.getPlayer());
-		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				DataOutputStream output = new DataOutputStream(stream);
-				
-				try
-				{
-					output.writeUTF("MsgTarget");
-					output.writeUTF(event.getPlayer().getName());
-					output.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget);
-				}
-				catch(IOException e)
-				{
-				}
-				
-				event.getPlayer().getServer().sendData("BungeeChat", stream.toByteArray());
-				
-				stream = new ByteArrayOutputStream();
-				output = new DataOutputStream(stream);
-				
-				try
-				{
-					output.writeUTF("SocialSpy");
-					output.writeUTF(event.getPlayer().getName());
-					output.writeByte(settings.socialSpyState);
-				}
-				catch(IOException e)
-				{
-				}
-				
-				event.getPlayer().getServer().sendData("BungeeChat", stream.toByteArray());
+				mSettings.updateSettings(event.getPlayer());
 			}
 		}, 10, TimeUnit.MILLISECONDS);
 	}

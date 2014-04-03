@@ -40,7 +40,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	
 	private ArrayList<String> mAllPlayers = new ArrayList<String>();
-	private HashMap<CommandSender, String> mLastMsgTarget = new HashMap<CommandSender, String>();
+	private HashMap<CommandSender, PlayerSettings> mPlayerSettings = new HashMap<CommandSender, PlayerSettings>();
 	
 	private ChatChannelManager mChatChannels;
 	private SocialSpyHandler mSocialSpyHandler;
@@ -115,13 +115,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerDC(PlayerQuitEvent event)
 	{
-		mLastMsgTarget.remove(event.getPlayer());
+		mPlayerSettings.remove(event.getPlayer());
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerDC(PlayerKickEvent event)
 	{
-		mLastMsgTarget.remove(event.getPlayer());
+		mPlayerSettings.remove(event.getPlayer());
 	}
 	
 	public static void sendMessage(RemotePlayer player, String message)
@@ -261,28 +261,12 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					if(ply != null)
 						ply.sendMessage(message);
 				}
-				else if(subChannel.equals("MsgTarget"))
+				else if(subChannel.equals("SyncPlayer"))
 				{
 					String playerName = input.readUTF();
-					String target = input.readUTF();
-					
-					mLastMsgTarget.put(getPlayerExact(playerName), target);
-				}
-				else if(subChannel.equals("SocialSpy"))
-				{
-					String playerName = input.readUTF();
-					int type = input.readByte();
-					CommandSender player = Bukkit.getPlayerExact(playerName);
-					
+					Player player = Bukkit.getPlayerExact(playerName);
 					if(player != null)
-					{
-						if(type == 2)
-							mSocialSpyHandler.clearStatus(player);
-						else if(type == 0)
-							mSocialSpyHandler.setStatus(player, false);
-						else
-							mSocialSpyHandler.setStatus(player, true);
-					}
+						getPlayerSettings(player).read(input);
 				}
 			}
 		}
@@ -423,20 +407,22 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	public static void setLastMsgTarget(CommandSender sender, CommandSender target)
 	{
-		mInstance.mLastMsgTarget.put(sender, target.getName());
+		getPlayerSettings(sender).lastMsgTarget = target.getName();
 		
-		if(!(sender instanceof Player) && !(sender instanceof RemotePlayer))
-			return;
-		
-		new MessageOutput("BungeeChat", "MsgTarget")
-			.writeUTF(sender.getName())
-			.writeUTF(target.getName())
-			.send(mInstance);
+		if(sender instanceof Player)
+			updatePlayerSettings(sender);
+		else if(sender instanceof RemotePlayer)
+		{
+			new MessageOutput("BungeeChat", "MsgTarget")
+				.writeUTF(sender.getName())
+				.writeUTF(target.getName())
+				.send(mInstance);
+		}
 	}
 	
 	public static CommandSender getLastMsgTarget(CommandSender sender)
 	{
-		String target = mInstance.mLastMsgTarget.get(sender);
+		String target = getPlayerSettings(sender).lastMsgTarget;
 		if(target == null)
 			return null;
 		
@@ -446,5 +432,32 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	public static boolean isSocialSpyEnabled( CommandSender player )
 	{
 		return mInstance.mSocialSpyHandler.isEnabled(player);
+	}
+	
+	public static PlayerSettings getPlayerSettings(CommandSender player)
+	{
+		PlayerSettings settings = mInstance.mPlayerSettings.get(player);
+		if(settings == null)
+		{
+			settings = new PlayerSettings();
+			mInstance.mPlayerSettings.put(player, settings);
+		}
+		
+		return settings;
+	}
+	
+	public static void updatePlayerSettings(CommandSender player)
+	{
+		if(!(player instanceof Player))
+			return;
+		
+		PlayerSettings settings = getPlayerSettings(player);
+		
+		new MessageOutput("BungeeChat", "SyncPlayer")
+			.writeUTF(player.getName())
+			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget)
+			.writeByte(settings.socialSpyState)
+			.writeBoolean(settings.msgEnabled)
+			.send((Player)player, mInstance);
 	}
 }

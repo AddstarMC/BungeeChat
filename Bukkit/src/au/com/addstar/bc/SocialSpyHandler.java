@@ -1,6 +1,5 @@
 package au.com.addstar.bc;
 
-import java.util.HashMap;
 import java.util.HashSet;
 
 import org.bukkit.Bukkit;
@@ -19,13 +18,10 @@ import au.com.addstar.bc.utils.Utilities;
 
 public class SocialSpyHandler implements Listener, CommandExecutor
 {
-	private HashMap<CommandSender, Boolean> mSocialSpyOn = new HashMap<CommandSender, Boolean>();
 	private HashSet<String> mKeywords = new HashSet<String>();
-	private Plugin mPlugin;
 	
 	public SocialSpyHandler(Plugin plugin)
 	{
-		mPlugin = plugin;
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 	
@@ -63,20 +59,24 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 
 	public void setStatus(CommandSender player, boolean on)
 	{
-		mSocialSpyOn.put(player, on);
+		BungeeChat.getPlayerSettings(player).socialSpyState = (on ? 1 : 0);
+		BungeeChat.updatePlayerSettings(player);
 	}
 	
 	public void clearStatus(CommandSender player)
 	{
-		mSocialSpyOn.remove(player);
+		BungeeChat.getPlayerSettings(player).socialSpyState = 2;
+		BungeeChat.updatePlayerSettings(player);
 	}
 	
 	public boolean isEnabled(CommandSender player)
 	{
-		if(mSocialSpyOn.containsKey(player))
-			return mSocialSpyOn.get(player);
+		int state = BungeeChat.getPlayerSettings(player).socialSpyState;
 		
-		return player.hasPermission("bungeechat.socialspy");
+		if(state == 2)
+			return player.hasPermission("bungeechat.socialspy");
+		
+		return (state == 1);
 	}
 	
 	@Override
@@ -85,22 +85,15 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		if(!(sender instanceof Player))
 			return false;
 		
-		Boolean on = mSocialSpyOn.get(sender);
-		if(on == null)
-			on = false;
-		else
-			on = !on;
+		boolean on = isEnabled(sender);
+		on = !on;
 		
 		if(on)
 			sender.sendMessage(ChatColor.GREEN + "SocialSpy now on");
 		else
 			sender.sendMessage(ChatColor.GREEN + "SocialSpy now off");
 		
-		mSocialSpyOn.put(sender, on);
-		new MessageOutput("BungeeChat", "SocialSpy")
-			.writeUTF(sender.getName())
-			.writeBoolean(on)
-			.send(mPlugin);
+		setStatus(sender, on);
 		
 		return true;
 	}

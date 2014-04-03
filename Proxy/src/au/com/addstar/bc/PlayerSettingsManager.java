@@ -59,4 +59,16 @@ public class PlayerSettingsManager
 		{
 		}
 	}
+	
+	public void updateSettings(ProxiedPlayer player)
+	{
+		PlayerSettings settings = getSettings(player);
+		
+		new MessageOutput("BungeeChat", "SyncPlayer")
+			.writeUTF(player.getName())
+			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget)
+			.writeByte(settings.socialSpyState)
+			.writeBoolean(settings.msgEnabled)
+			.send(player.getServer().getInfo());
+	}
 }
