@@ -5,9 +5,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -21,8 +18,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,11 +34,12 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	private boolean mHasUpdated = false;
 	
 	
-	private ArrayList<String> mAllPlayers = new ArrayList<String>();
-	private HashMap<CommandSender, PlayerSettings> mPlayerSettings = new HashMap<CommandSender, PlayerSettings>();
-	
 	private ChatChannelManager mChatChannels;
 	private SocialSpyHandler mSocialSpyHandler;
+	
+	private ArrayList<IDataReceiver> mReceivers = new ArrayList<IDataReceiver>();
+	
+	private PlayerManager mPlayerManager;
 	
 	@Override
 	public void onEnable()
@@ -64,6 +60,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		
 		mChatChannels = new ChatChannelManager(this);
 		mSocialSpyHandler = new SocialSpyHandler(this);
+		mPlayerManager = new PlayerManager(this);
+		addListener(mPlayerManager);
 		
 		requestUpdate();
 		
@@ -76,6 +74,10 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		getCommand("reply").setTabCompleter(cmd);
 		getCommand("msgtoggle").setExecutor(cmd);
 		getCommand("socialspy").setExecutor(mSocialSpyHandler);
+		
+		NicknameCommand nickname = new NicknameCommand();
+		getCommand("nickname").setExecutor(nickname);
+		getCommand("nickname").setTabCompleter(nickname);
 	}
 	
 	@Override
@@ -113,19 +115,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			}, 2);
 		}
 	}
-	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerDC(PlayerQuitEvent event)
-	{
-		mPlayerSettings.remove(event.getPlayer());
-	}
-	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerDC(PlayerKickEvent event)
-	{
-		mPlayerSettings.remove(event.getPlayer());
-	}
-	
+
 	public static void sendMessage(RemotePlayer player, String message)
 	{
 		new MessageOutput("BungeeChat", "Send")
@@ -249,13 +239,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 				{
 					update(input);
 				}
-				else if(subChannel.equals("UpdatePlayers"))
-				{
-					int count = input.readShort();
-					mAllPlayers.clear();
-					for(int i = 0; i < count; ++i)
-						mAllPlayers.add(input.readUTF());
-				}
 				else if(subChannel.equals("Message"))
 				{
 					Player ply = Bukkit.getPlayerExact(input.readUTF());
@@ -263,18 +246,19 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					if(ply != null)
 						ply.sendMessage(message);
 				}
-				else if(subChannel.equals("SyncPlayer"))
-				{
-					String playerName = input.readUTF();
-					Player player = Bukkit.getPlayerExact(playerName);
-					if(player != null)
-						getPlayerSettings(player).read(input);
-				}
+				
+				for(IDataReceiver receiver : mReceivers)
+					receiver.onMessage(subChannel, input);
 			}
 		}
 		catch(IOException e) 
 		{
 		}
+	}
+	
+	public void addListener(IDataReceiver receiver)
+	{
+		mReceivers.add(receiver);
 	}
 	
 	public static String colorize(String message, CommandSender sender)
@@ -322,97 +306,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		return buffer.toString();
 	}
 	
-	public static List<String> matchPlayers(String player)
-	{
-		player = player.toLowerCase();
-		
-		HashSet<String> used = new HashSet<String>();
-		for(Player p : Bukkit.matchPlayer(player))
-			used.add(p.getName());
-
-		for(String name : mInstance.mAllPlayers)
-		{
-			if(name.toLowerCase().startsWith(player))
-				used.add(name);
-		}
-		
-		return new ArrayList<String>(used);
-	}
-	
-	public static CommandSender getPlayer(String name)
-	{
-		if(name.equalsIgnoreCase("console"))
-			return Bukkit.getConsoleSender();
-		
-        String found = null;
-        String lowerName = name.toLowerCase();
-        int delta = Integer.MAX_VALUE;
-        for (String player : mInstance.mAllPlayers) 
-        {
-            if (player.toLowerCase().startsWith(lowerName)) 
-            {
-                int curDelta = player.length() - lowerName.length();
-                if (curDelta < delta) 
-                {
-                    found = player;
-                    delta = curDelta;
-                }
-                if (curDelta == 0) 
-                	break;
-            }
-        }
-        
-        for (Player player : Bukkit.getOnlinePlayers()) 
-        {
-            if (player.getName().toLowerCase().startsWith(lowerName)) 
-            {
-                int curDelta = player.getName().length() - lowerName.length();
-                if (curDelta < delta) 
-                {
-                    found = player.getName();
-                    delta = curDelta;
-                }
-                if (curDelta == 0) 
-                	break;
-            }
-        }
-        
-        if(found == null)
-        	return null;
-        
-        Player player = Bukkit.getPlayerExact(found);
-        
-        if(player != null)
-        	return player;
-        
-        return new RemotePlayer(found);
-	}
-	
-	public static CommandSender getPlayerExact(String name)
-	{
-		if(name.equalsIgnoreCase("console"))
-			return Bukkit.getConsoleSender();
-		
-		CommandSender player = Bukkit.getPlayerExact(name);
-		if(player != null)
-			return player;
-		
-		for (String ply : mInstance.mAllPlayers) 
-        {
-            if (ply.equalsIgnoreCase(name)) 
-            	return new RemotePlayer(ply);
-        }
-		
-		return null;
-	}
-	
-	
 	public static void setLastMsgTarget(CommandSender sender, CommandSender target)
 	{
-		getPlayerSettings(sender).lastMsgTarget = target.getName();
-		
 		if(sender instanceof Player)
-			updatePlayerSettings(sender);
+		{
+			getPlayerManager().getPlayerSettings(sender).lastMsgTarget = target.getName();
+			getPlayerManager().updatePlayerSettings(sender);
+		}
 		else if(sender instanceof RemotePlayer)
 		{
 			new MessageOutput("BungeeChat", "MsgTarget")
@@ -422,45 +322,14 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 	}
 	
-	public static CommandSender getLastMsgTarget(CommandSender sender)
+	public static PlayerManager getPlayerManager()
 	{
-		String target = getPlayerSettings(sender).lastMsgTarget;
-		if(target == null)
-			return null;
-		
-		return getPlayerExact(target);
+		return mInstance.mPlayerManager;
 	}
-
+	
 	public static boolean isSocialSpyEnabled( CommandSender player )
 	{
 		return mInstance.mSocialSpyHandler.isEnabled(player);
-	}
-	
-	public static PlayerSettings getPlayerSettings(CommandSender player)
-	{
-		PlayerSettings settings = mInstance.mPlayerSettings.get(player);
-		if(settings == null)
-		{
-			settings = new PlayerSettings();
-			mInstance.mPlayerSettings.put(player, settings);
-		}
-		
-		return settings;
-	}
-	
-	public static void updatePlayerSettings(CommandSender player)
-	{
-		if(!(player instanceof Player))
-			return;
-		
-		PlayerSettings settings = getPlayerSettings(player);
-		
-		new MessageOutput("BungeeChat", "SyncPlayer")
-			.writeUTF(player.getName())
-			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget)
-			.writeByte(settings.socialSpyState)
-			.writeBoolean(settings.msgEnabled)
-			.send((Player)player, mInstance);
 	}
 	
 	static BungeeChat getInstance()

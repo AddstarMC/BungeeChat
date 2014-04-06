@@ -72,6 +72,7 @@ public class PlayerSettingsManager
 		new MessageOutput("BungeeChat", "SyncPlayer")
 			.writeUTF(player.getName())
 			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget)
+			.writeUTF(settings.nickname)
 			.writeByte(settings.socialSpyState)
 			.writeBoolean(settings.msgEnabled)
 			.send(player.getServer().getInfo());

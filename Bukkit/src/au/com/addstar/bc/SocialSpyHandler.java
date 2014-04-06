@@ -59,19 +59,19 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 
 	public void setStatus(CommandSender player, boolean on)
 	{
-		BungeeChat.getPlayerSettings(player).socialSpyState = (on ? 1 : 0);
-		BungeeChat.updatePlayerSettings(player);
+		BungeeChat.getPlayerManager().getPlayerSettings(player).socialSpyState = (on ? 1 : 0);
+		BungeeChat.getPlayerManager().updatePlayerSettings(player);
 	}
 	
 	public void clearStatus(CommandSender player)
 	{
-		BungeeChat.getPlayerSettings(player).socialSpyState = 2;
-		BungeeChat.updatePlayerSettings(player);
+		BungeeChat.getPlayerManager().getPlayerSettings(player).socialSpyState = 2;
+		BungeeChat.getPlayerManager().updatePlayerSettings(player);
 	}
 	
 	public boolean isEnabled(CommandSender player)
 	{
-		int state = BungeeChat.getPlayerSettings(player).socialSpyState;
+		int state = BungeeChat.getPlayerManager().getPlayerSettings(player).socialSpyState;
 		
 		if(state == 2)
 			return player.hasPermission("bungeechat.socialspy");

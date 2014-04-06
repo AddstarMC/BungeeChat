@@ -17,6 +17,8 @@ public class PlayerSettings extends Config
 	public int socialSpyState = 2;
 	public boolean msgEnabled = true;
 	
+	public String nickname = "";
+	
 	@NoSave
 	public String lastMsgTarget = null;
 	
@@ -31,6 +33,7 @@ public class PlayerSettings extends Config
 		try
 		{
 			lastMsgTarget = input.readUTF();
+			nickname = input.readUTF();
 			socialSpyState = input.readByte();
 			msgEnabled = input.readBoolean();
 		}

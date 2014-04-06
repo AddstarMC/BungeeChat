@@ -22,10 +22,10 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 	@Override
 	public List<String> onTabComplete( CommandSender sender, Command command, String label, String[] args )
 	{
-		if(command.getName().equals("msg"))
+		if(command.getName().equals("tell"))
 		{
 			if(args.length == 1)
-				return BungeeChat.matchPlayers(args[0]);
+				return BungeeChat.getPlayerManager().matchNames(args[0]);
 		}
 		
 		return null;
@@ -91,7 +91,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 			if(args.length < 2)
 				return false;
 			
-			CommandSender player = BungeeChat.getPlayer(args[0]);
+			CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
 			if(player == null)
 			{
 				sender.sendMessage(ChatColor.RED + "Cannot find player " + args[0]);
@@ -113,7 +113,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 				}
 				else if(player instanceof Player)
 				{
-					if(!BungeeChat.getPlayerSettings(player).msgEnabled)
+					if(!BungeeChat.getPlayerManager().getPlayerSettings(player).msgEnabled)
 					{
 						sender.sendMessage(ChatColor.RED + "That player has messaging disabled.");
 						return true;
@@ -130,7 +130,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 			if(args.length == 0)
 				return false;
 			
-			CommandSender player = BungeeChat.getLastMsgTarget(sender);
+			CommandSender player = BungeeChat.getPlayerManager().getPlayerSettings(sender).getLastMsgTarget();
 			if(player == null)
 			{
 				sender.sendMessage(ChatColor.RED + "You have nobody to reply to");
@@ -155,7 +155,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 			if(!(sender instanceof Player))
 				return false;
 			
-			PlayerSettings settings = BungeeChat.getPlayerSettings(sender);
+			PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(sender);
 			settings.msgEnabled = !settings.msgEnabled;
 			
 			if(settings.msgEnabled)
@@ -163,7 +163,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 			else
 				sender.sendMessage(ChatColor.GOLD + "Incoming Messaging Disabled");
 			
-			BungeeChat.updatePlayerSettings(sender);
+			BungeeChat.getPlayerManager().updatePlayerSettings(sender);
 			return true;
 		}
 		return false;

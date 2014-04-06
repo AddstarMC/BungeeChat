@@ -349,8 +349,15 @@ public class BungeeChat extends Plugin implements Listener
 				else if(subChannel.equals("SyncPlayer"))
 				{
 					String player = input.readUTF();
-					mSettings.getSettings(player).read(input);
+					PlayerSettings settings = mSettings.getSettings(player);
+					settings.read(input);
 					mSettings.savePlayer(player);
+					
+					ProxiedPlayer p = getProxy().getPlayer(player);
+					if(settings.nickname.isEmpty())
+						p.setDisplayName(p.getName());
+					else
+						p.setDisplayName(settings.nickname);
 				}
 				else if(subChannel.equals("MsgCheck"))
 				{
@@ -362,6 +369,26 @@ public class BungeeChat extends Plugin implements Listener
 						.writeUTF(from)
 						.writeBoolean(ok)
 						.send(((Server)event.getSender()).getInfo());
+				}
+				else if(subChannel.equals("UpdateName"))
+				{
+					String player = input.readUTF();
+					String name = input.readUTF();
+					PlayerSettings settings = mSettings.getSettings(player);
+					settings.nickname = name;
+					mSettings.savePlayer(player);
+					mSettings.updateSettings(player);
+					
+					ProxiedPlayer p = getProxy().getPlayer(player);
+					if(name.isEmpty())
+						p.setDisplayName(p.getName());
+					else
+						p.setDisplayName(name);
+					
+					new MessageOutput("BungeeChat", "UpdateName")
+						.writeUTF(player)
+						.writeUTF(name)
+						.send();
 				}
 			}
 			catch(IOException e)
@@ -377,13 +404,17 @@ public class BungeeChat extends Plugin implements Listener
 		
 		try
 		{
-			output.writeUTF("UpdatePlayers");
+			output.writeUTF("Player*");
 			
 			Collection<ProxiedPlayer> players = getProxy().getPlayers();
 			output.writeShort(players.size());
 			
 			for(ProxiedPlayer player : players)
+			{
+				PlayerSettings settings = mSettings.getSettings(player);
 				output.writeUTF(player.getName());
+				output.writeUTF(settings.nickname);
+			}
 			
 			byte[] data = stream.toByteArray();
 			
@@ -410,22 +441,33 @@ public class BungeeChat extends Plugin implements Listener
 			public void run()
 			{
 				// Load this players settings
-				mSettings.getSettings(event.getPlayer());
-				sendPlayerUpdates(null);
+				PlayerSettings settings = mSettings.getSettings(event.getPlayer());
+				
+				if(settings.nickname.isEmpty())
+					event.getPlayer().setDisplayName(event.getPlayer().getName());
+				else
+					event.getPlayer().setDisplayName(settings.nickname);
+				
+				new MessageOutput("BungeeChat", "Player+")
+					.writeUTF(event.getPlayer().getName())
+					.writeUTF(settings.nickname)
+					.send();
 			}
 			
 		}, 10, TimeUnit.MILLISECONDS);
 	}
 	
 	@EventHandler
-	public void onPlayerDC(PlayerDisconnectEvent event)
+	public void onPlayerDC(final PlayerDisconnectEvent event)
 	{
 		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				sendPlayerUpdates(null);
+				new MessageOutput("BungeeChat", "Player-")
+				.writeUTF(event.getPlayer().getName())
+				.send();
 			}
 			
 		}, 10, TimeUnit.MILLISECONDS);
@@ -439,6 +481,8 @@ public class BungeeChat extends Plugin implements Listener
 			@Override
 			public void run()
 			{
+				if(event.getPlayer().getServer().getInfo().getPlayers().size() <= 1)
+					sendPlayerUpdates(event.getPlayer().getServer().getInfo());
 				mSettings.updateSettings(event.getPlayer());
 			}
 		}, 10, TimeUnit.MILLISECONDS);

@@ -65,3 +65,7 @@ commands:
     usage: /<command>
     description: Toggles the ability for players to message you
     permission: bungeechat.message.toggle
+  
+  nickname:
+    usage: /<command> [player] <name|off>
+    description: Changes your nickname, or another players nickname. Setting the name "Off" will remove the nickname. Leaving the name blank will show their current name
