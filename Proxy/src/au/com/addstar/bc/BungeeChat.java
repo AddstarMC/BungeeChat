@@ -26,6 +26,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
+import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
@@ -390,6 +391,17 @@ public class BungeeChat extends Plugin implements Listener
 						.writeUTF(name)
 						.send();
 				}
+				else if(subChannel.equals("UpdateMute"))
+				{
+					String player = input.readUTF();
+					long time = input.readLong();
+					
+					PlayerSettings settings = mSettings.getSettings(player);
+					settings.muteTime = time;
+					
+					mSettings.savePlayer(player);
+					mSettings.updateSettings(player);
+				}
 			}
 			catch(IOException e)
 			{
@@ -486,6 +498,26 @@ public class BungeeChat extends Plugin implements Listener
 				mSettings.updateSettings(event.getPlayer());
 			}
 		}, 10, TimeUnit.MILLISECONDS);
+	}
+	
+	@EventHandler
+	public void onPlayerChat(ChatEvent event)
+	{
+		if(event.getSender() instanceof ProxiedPlayer && !event.isCommand())
+		{
+			PlayerSettings settings = mSettings.getSettings((ProxiedPlayer)event.getSender());
+			if(settings.muteTime > System.currentTimeMillis())
+			{
+				event.setCancelled(true);
+				((ProxiedPlayer)event.getSender()).sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are muted. You may not talk."));
+			}
+			else if(settings.muteTime != 0)
+			{
+				settings.muteTime = 0;
+				mSettings.savePlayer((ProxiedPlayer)event.getSender());
+				mSettings.updateSettings((ProxiedPlayer)event.getSender());
+			}
+		}
 	}
 			
 }

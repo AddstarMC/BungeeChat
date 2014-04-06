@@ -22,6 +22,8 @@ public class PlayerSettings extends Config
 	@NoSave
 	public String lastMsgTarget = null;
 	
+	public long muteTime = 0;
+	
 	@Override
 	protected boolean doSkip( Field field )
 	{
@@ -36,6 +38,7 @@ public class PlayerSettings extends Config
 			nickname = input.readUTF();
 			socialSpyState = input.readByte();
 			msgEnabled = input.readBoolean();
+			muteTime = input.readLong();
 		}
 		catch(IOException e)
 		{

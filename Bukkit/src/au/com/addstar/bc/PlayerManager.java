@@ -146,6 +146,31 @@ public class PlayerManager implements Listener, IDataReceiver
 		return settings;
 	}
 	
+	public void setPlayerMuteTime(CommandSender player, long endTime)
+	{
+		if(player instanceof Player)
+		{
+			PlayerSettings settings = getPlayerSettings(player);
+			settings.muteTime = endTime;
+			updatePlayerSettings(player);
+		}
+		else
+		{
+			new MessageOutput("BungeeChat", "UpdateMute")
+				.writeUTF(player.getName())
+				.writeLong(endTime)
+				.send(BungeeChat.getInstance());
+		}
+	}
+	
+	public boolean isPlayerMuted(CommandSender player)
+	{
+		if(player instanceof Player)
+			return System.currentTimeMillis() < getPlayerSettings(player).muteTime;
+		
+		return false;
+	}
+	
 	private void onPlayerJoin(String player, String nickname)
 	{
 		RemotePlayer current = new RemotePlayer(player);
@@ -267,6 +292,7 @@ public class PlayerManager implements Listener, IDataReceiver
 			.writeUTF(settings.nickname)
 			.writeByte(settings.socialSpyState)
 			.writeBoolean(settings.msgEnabled)
+			.writeLong(settings.muteTime)
 			.send((Player)player, BungeeChat.getInstance());
 	}
 	

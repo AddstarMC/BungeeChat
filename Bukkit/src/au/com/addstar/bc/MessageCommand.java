@@ -90,6 +90,12 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 		{
 			if(args.length < 2)
 				return false;
+
+			if(BungeeChat.getPlayerManager().isPlayerMuted(sender))
+			{
+				sender.sendMessage(ChatColor.AQUA + "You are muted. You may not talk");
+				return true;
+			}
 			
 			CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
 			if(player == null)
@@ -129,6 +135,12 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 		{
 			if(args.length == 0)
 				return false;
+			
+			if(BungeeChat.getPlayerManager().isPlayerMuted(sender))
+			{
+				sender.sendMessage(ChatColor.AQUA + "You are muted. You may not talk");
+				return true;
+			}
 			
 			CommandSender player = BungeeChat.getPlayerManager().getPlayerSettings(sender).getLastMsgTarget();
 			if(player == null)

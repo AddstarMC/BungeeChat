@@ -78,6 +78,12 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		NicknameCommand nickname = new NicknameCommand();
 		getCommand("nickname").setExecutor(nickname);
 		getCommand("nickname").setTabCompleter(nickname);
+		
+		MuteHandler mute = new MuteHandler(this);
+		getCommand("mute").setExecutor(mute);
+		getCommand("mute").setTabCompleter(mute);
+		getCommand("unmute").setExecutor(mute);
+		getCommand("unmute").setTabCompleter(mute);
 	}
 	
 	@Override

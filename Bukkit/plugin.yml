@@ -40,7 +40,11 @@ permissions:
 
   bungeechat.socialspy:
     default: op
-    
+  bungeechat.nickname:
+    default: op
+  bungeechat.mute:
+    default: op
+  
 commands:
   /nullcmd:
   
@@ -69,3 +73,14 @@ commands:
   nickname:
     usage: /<command> [player] <name|off>
     description: Changes your nickname, or another players nickname. Setting the name "Off" will remove the nickname. Leaving the name blank will show their current name
+    permission: bungeechat.nickname
+    
+  mute:
+    usage: /<command> <player> <time>
+    description: Mutes a player for time. Time IS required
+    permission: bungeechat.mute
+    
+  unmute:
+    usage: /<command> <player>
+    description: Unmutes a player
+    permission: bungeechat.mute

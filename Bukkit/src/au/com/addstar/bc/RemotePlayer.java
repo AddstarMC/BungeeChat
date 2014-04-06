@@ -109,11 +109,14 @@ public class RemotePlayer implements CommandSender
 	@Override
 	public void sendMessage( String message )
 	{
+		BungeeChat.sendMessage(this, message);
 	}
 
 	@Override
 	public void sendMessage( String[] message )
 	{
+		for(String m : message)
+			BungeeChat.sendMessage(this, m);
 	}
 
 }

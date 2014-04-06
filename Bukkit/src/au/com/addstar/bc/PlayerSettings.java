@@ -13,6 +13,8 @@ public class PlayerSettings
 	
 	public String nickname = "";
 	
+	public long muteTime = 0;
+	
 	public CommandSender getLastMsgTarget()
 	{
 		return BungeeChat.getPlayerManager().getPlayerExact(lastMsgTarget);
@@ -26,6 +28,7 @@ public class PlayerSettings
 			nickname = input.readUTF();
 			socialSpyState = input.readByte();
 			msgEnabled = input.readBoolean();
+			muteTime = input.readLong();
 		}
 		catch(IOException e)
 		{

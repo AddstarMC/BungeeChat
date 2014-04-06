@@ -75,6 +75,7 @@ public class PlayerSettingsManager
 			.writeUTF(settings.nickname)
 			.writeByte(settings.socialSpyState)
 			.writeBoolean(settings.msgEnabled)
+			.writeLong(settings.muteTime)
 			.send(player.getServer().getInfo());
 	}
 }
