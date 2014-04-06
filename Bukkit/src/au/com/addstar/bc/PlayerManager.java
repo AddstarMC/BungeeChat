@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -196,7 +197,7 @@ public class PlayerManager implements Listener, IDataReceiver
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerJoinServer(PlayerLoginEvent event)
 	{
-		Player current = event.getPlayer();
+		final Player current = event.getPlayer();
 		CommandSender original = mAllProxied.put(event.getPlayer().getName().toLowerCase(), current);
 		
 		// Update nickname registration
@@ -207,6 +208,15 @@ public class PlayerManager implements Listener, IDataReceiver
 			mReverseNickMapping.put(current, nickname);
 			current.setDisplayName(nickname);
 		}
+		
+		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				updateTabColor(current);
+			}
+		}, 2L);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -238,6 +248,31 @@ public class PlayerManager implements Listener, IDataReceiver
 		{
 			mAllProxied.put(nickname.toLowerCase(), current);
 			mReverseNickMapping.put(current, nickname);
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	private void onPlayerChat(AsyncPlayerChatEvent event)
+	{
+		updateTabColor(event.getPlayer());
+	}
+	
+	private void updateTabColor(Player player)
+	{
+		PermissionSetting level = Formatter.getPermissionLevel(player);
+		String colour = "";
+		if(level != null)
+			colour = level.color;
+		
+		PlayerSettings settings = getPlayerSettings(player);
+		
+		if(!settings.tabFormat.equals(colour))
+		{
+			settings.tabFormat = colour;
+			new MessageOutput("BungeeChat", "TabColor")
+				.writeUTF(player.getName())
+				.writeUTF(settings.tabFormat)
+				.send(BungeeChat.getInstance());
 		}
 	}
 	

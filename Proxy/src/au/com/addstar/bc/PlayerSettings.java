@@ -24,6 +24,9 @@ public class PlayerSettings extends Config
 	
 	public long muteTime = 0;
 	
+	@NoSave
+	public String tabColor = "";
+	
 	@Override
 	protected boolean doSkip( Field field )
 	{

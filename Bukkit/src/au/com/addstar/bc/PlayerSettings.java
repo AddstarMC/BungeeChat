@@ -15,6 +15,8 @@ public class PlayerSettings
 	
 	public long muteTime = 0;
 	
+	public String tabFormat = "";
+	
 	public CommandSender getLastMsgTarget()
 	{
 		return BungeeChat.getPlayerManager().getPlayerExact(lastMsgTarget);

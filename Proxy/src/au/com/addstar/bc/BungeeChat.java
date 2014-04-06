@@ -34,6 +34,7 @@ import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.protocol.packet.PlayerListItem;
 
 public class BungeeChat extends Plugin implements Listener
 {
@@ -42,9 +43,15 @@ public class BungeeChat extends Plugin implements Listener
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
 	private PlayerSettingsManager mSettings;
 	
+	public static BungeeChat instance;
+	
+	//private CustomTabList 
+	
 	@Override
 	public void onEnable()
 	{
+		instance = this;
+		
 		File configFile = new File(getDataFolder(), "config.yml");
 		if(!getDataFolder().exists())
 			getDataFolder().mkdirs();
@@ -402,6 +409,16 @@ public class BungeeChat extends Plugin implements Listener
 					mSettings.savePlayer(player);
 					mSettings.updateSettings(player);
 				}
+				else if(subChannel.equals("TabColor"))
+				{
+					String player = input.readUTF();
+					String color = input.readUTF();
+					
+					updateTabLists(color, getProxy().getPlayer(player));
+					
+					PlayerSettings settings = mSettings.getSettings(player);
+					settings.tabColor = color;
+				}
 			}
 			catch(IOException e)
 			{
@@ -447,6 +464,7 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onPlayerJoin(final PostLoginEvent event)
 	{
+		event.getPlayer().setTabList(new ColourTabList());
 		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
@@ -519,5 +537,17 @@ public class BungeeChat extends Plugin implements Listener
 			}
 		}
 	}
-			
+	
+	public PlayerSettingsManager getManager()
+	{
+		return mSettings;
+	}
+	
+	private void updateTabLists(String newColor, ProxiedPlayer player)
+	{
+		PlayerSettings settings = mSettings.getSettings(player);
+		
+		BungeeCord.getInstance().broadcast(new PlayerListItem(settings.tabColor + player.getDisplayName(), false, (short)9999));
+		BungeeCord.getInstance().broadcast(new PlayerListItem(newColor + player.getDisplayName(), true, (short)9999));
+	}
 }
