@@ -22,7 +22,9 @@ public enum ChannelType
 	
 	public static ChannelType from(String name)
 	{
-		if(name.startsWith("~"))
+		if(name.isEmpty())
+			return Default;
+		else if(name.startsWith("~"))
 		{
 			for(ChannelType type : values())
 			{

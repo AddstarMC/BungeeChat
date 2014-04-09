@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -140,8 +139,8 @@ public class Formatter
 	public static void broadcastChat(String message)
 	{
 		if(!keywordsEnabled)
-			Bukkit.broadcastMessage(message);
+			Utilities.broadcast(message, null, null);
 		else
-			Utilities.broadcast(message, Server.BROADCAST_CHANNEL_USERS, new NoPermissionChecker(keywordPerm));
+			Utilities.broadcast(message, null, new NoPermissionChecker(keywordPerm));
 	}
 }

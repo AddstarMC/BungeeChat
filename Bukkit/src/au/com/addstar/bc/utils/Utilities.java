@@ -1,5 +1,7 @@
 package au.com.addstar.bc.utils;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,21 +16,33 @@ public class Utilities
 	
 	public static void broadcast(String message, String permission, ValidChecker<CommandSender> checker)
 	{
-		for(Permissible perm : Bukkit.getPluginManager().getPermissionSubscriptions(permission))
+		Collection<? extends Permissible> targets;
+		if(permission != null)
+			targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
+		else
+			targets = Arrays.asList(Bukkit.getOnlinePlayers());
+
+		for(Permissible perm : targets)
 		{
-			if(perm instanceof CommandSender && perm.hasPermission(permission) && checker.isValid((CommandSender)perm))
+			if(perm instanceof CommandSender && (permission == null || perm.hasPermission(permission)) && (checker == null || checker.isValid((CommandSender)perm)))
 				((CommandSender)perm).sendMessage(message);
 		}
 	}
 	
 	public static void broadcast(String message, String permission, CommandSender except, ValidChecker<CommandSender> checker)
 	{
-		for(Permissible perm : Bukkit.getPluginManager().getPermissionSubscriptions(permission))
+		Collection<? extends Permissible> targets;
+		if(permission != null)
+			targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
+		else
+			targets = Arrays.asList(Bukkit.getOnlinePlayers());
+		
+		for(Permissible perm : targets)
 		{
 			if(perm == except)
 				continue;
 			
-			if(perm instanceof CommandSender && perm.hasPermission(permission) && checker.isValid((CommandSender)perm))
+			if(perm instanceof CommandSender && (permission == null || perm.hasPermission(permission)) && (checker == null || checker.isValid((CommandSender)perm)))
 				((CommandSender)perm).sendMessage(message);
 		}
 	}
