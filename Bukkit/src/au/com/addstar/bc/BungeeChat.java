@@ -259,6 +259,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		}
 		catch(IOException e) 
 		{
+			e.printStackTrace();
 		}
 	}
 	

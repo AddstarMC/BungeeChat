@@ -19,6 +19,14 @@ public class RemotePlayer implements CommandSender
 		mName = player;
 	}
 	
+	public String getDisplayName()
+	{
+		String name = BungeeChat.getPlayerManager().getPlayerNickname(this);
+		if(name == null || name.isEmpty())
+			return mName;
+		return name;
+	}
+	
 	@Override
 	public PermissionAttachment addAttachment( Plugin arg0 )
 	{

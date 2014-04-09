@@ -2,9 +2,7 @@ package au.com.addstar.bc;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -123,69 +121,61 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private void sendInfo(ServerInfo server)
 	{
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream output = new DataOutputStream(stream);
+		MessageOutput output = new MessageOutput("BungeeChat", "Update");
 		
-		try
+		output.writeUTF(server.getName());
+		output.writeUTF(mConfig.consoleName);
+		output.writeUTF(mConfig.pmFormatIn);
+		output.writeUTF(mConfig.pmFormatOut);
+		
+		Map<String, PermissionSetting> permissions = mConfig.permSettings;
+		output.writeShort(permissions.size());
+		for(Entry<String, PermissionSetting> entry : permissions.entrySet())
 		{
-			output.writeUTF("Update");
-			output.writeUTF(server.getName());
-			output.writeUTF(mConfig.consoleName);
-			output.writeUTF(mConfig.pmFormatIn);
-			output.writeUTF(mConfig.pmFormatOut);
-			
-			Map<String, PermissionSetting> permissions = mConfig.permSettings;
-			output.writeShort(permissions.size());
-			for(Entry<String, PermissionSetting> entry : permissions.entrySet())
-			{
-				PermissionSetting setting = entry.getValue();
+			PermissionSetting setting = entry.getValue();
 
-				output.writeUTF((setting.permission == null ? "" : setting.permission));
-				output.writeShort(setting.priority);
-				output.writeUTF(setting.format);
-				output.writeUTF(setting.color);
-			}
-			
-			Map<String, ChatChannel> channels = mConfig.channels;
-			output.writeShort(channels.size());
-			for(Entry<String, ChatChannel> entry : channels.entrySet())
-			{
-				ChatChannel channel = entry.getValue();
-				
-				output.writeUTF(entry.getKey());
-				
-				output.writeUTF(channel.command);
-				output.writeUTF(channel.format);
-				output.writeUTF(channel.permission);
-				output.writeUTF(channel.listenPermission);
-			}
-			
-			output.writeBoolean(mConfig.keywordHighlighter.enabled);
-			if(mConfig.keywordHighlighter.enabled)
-			{
-				KeywordHighlighterSettings settings = mConfig.keywordHighlighter;
-				output.writeUTF(settings.permission);
-				output.writeShort(settings.allowInChannels.size());
-				for(String channel : settings.allowInChannels)
-					output.writeUTF(channel);
-				
-				output.writeShort(mKeywordSettings.size());
-				for(Entry<String, String> entry : mKeywordSettings.entrySet())
-				{
-					output.writeUTF(entry.getKey());
-					output.writeUTF(entry.getValue());
-				}
-			}
-			
-			output.writeShort(mConfig.socialSpyKeywords.size());
-			for(String keyword : mConfig.socialSpyKeywords)
-				output.writeUTF(keyword);
-			
-			server.sendData("BungeeChat", stream.toByteArray());
+			output.writeUTF((setting.permission == null ? "" : setting.permission));
+			output.writeShort(setting.priority);
+			output.writeUTF(setting.format);
+			output.writeUTF(setting.color);
 		}
-		catch(IOException e)
+		
+		Map<String, ChatChannel> channels = mConfig.channels;
+		output.writeShort(channels.size());
+		for(Entry<String, ChatChannel> entry : channels.entrySet())
 		{
+			ChatChannel channel = entry.getValue();
+			
+			output.writeUTF(entry.getKey());
+			
+			output.writeUTF(channel.command);
+			output.writeUTF(channel.format);
+			output.writeUTF(channel.permission);
+			output.writeUTF(channel.listenPermission);
 		}
+		
+		output.writeBoolean(mConfig.keywordHighlighter.enabled);
+		if(mConfig.keywordHighlighter.enabled)
+		{
+			KeywordHighlighterSettings settings = mConfig.keywordHighlighter;
+			output.writeUTF(settings.permission);
+			output.writeShort(settings.allowInChannels.size());
+			for(String channel : settings.allowInChannels)
+				output.writeUTF(channel);
+			
+			output.writeShort(mKeywordSettings.size());
+			for(Entry<String, String> entry : mKeywordSettings.entrySet())
+			{
+				output.writeUTF(entry.getKey());
+				output.writeUTF(entry.getValue());
+			}
+		}
+		
+		output.writeShort(mConfig.socialSpyKeywords.size());
+		for(String keyword : mConfig.socialSpyKeywords)
+			output.writeUTF(keyword);
+		
+		output.send(server);
 	}
 	
 	private void loadKeywordFile(String file) throws IOException
@@ -292,20 +282,10 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private void sendMessage(ProxiedPlayer player, String message)
 	{
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream output = new DataOutputStream(stream);
-		
-		try
-		{
-			output.writeUTF("Message");
-			output.writeUTF(player.getName());
-			output.writeUTF(message);
-		}
-		catch(IOException e)
-		{
-		}
-		
-		player.getServer().sendData("BungeeChat", stream.toByteArray());
+		new MessageOutput("BungeeChat", "Message")
+			.writeUTF(player.getName())
+			.writeUTF(message)
+			.send(player.getServer().getInfo());
 	}
 	
 	@EventHandler
@@ -428,37 +408,22 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private void sendPlayerUpdates(ServerInfo server)
 	{
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream output = new DataOutputStream(stream);
+		MessageOutput output = new MessageOutput("BungeeChat", "Player*");
 		
-		try
+		Collection<ProxiedPlayer> players = getProxy().getPlayers();
+		output.writeShort(players.size());
+		
+		for(ProxiedPlayer player : players)
 		{
-			output.writeUTF("Player*");
-			
-			Collection<ProxiedPlayer> players = getProxy().getPlayers();
-			output.writeShort(players.size());
-			
-			for(ProxiedPlayer player : players)
-			{
-				PlayerSettings settings = mSettings.getSettings(player);
-				output.writeUTF(player.getName());
-				output.writeUTF(settings.nickname);
-			}
-			
-			byte[] data = stream.toByteArray();
-			
-			if(server == null)
-			{
-				for(ServerInfo s : getProxy().getServers().values())
-					s.sendData("BungeeChat", data);
-			}
-			else
-				server.sendData("BungeeChat", data);
-				
+			PlayerSettings settings = mSettings.getSettings(player);
+			output.writeUTF(player.getName());
+			output.writeUTF(settings.nickname);
 		}
-		catch(IOException e)
-		{
-		}
+		
+		if(server == null)
+			output.send();
+		else
+			output.send(server);
 	}
 	
 	@EventHandler
@@ -481,10 +446,10 @@ public class BungeeChat extends Plugin implements Listener
 				new MessageOutput("BungeeChat", "Player+")
 					.writeUTF(event.getPlayer().getName())
 					.writeUTF(settings.nickname)
-					.send();
+					.send(true);
 			}
 			
-		}, 10, TimeUnit.MILLISECONDS);
+		}, 50, TimeUnit.MILLISECONDS);
 	}
 	
 	@EventHandler

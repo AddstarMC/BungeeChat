@@ -216,11 +216,16 @@ public class MessageOutput
 	
 	public void send()
 	{
+		send(false);
+	}
+	
+	public void send(boolean queue)
+	{
 		byte[] data = mStream.toByteArray();
 		
 		for(ServerInfo server : BungeeCord.getInstance().getServers().values())
 		{
-			if(!server.getPlayers().isEmpty())
+			if(queue || !server.getPlayers().isEmpty())
 				server.sendData(mChannel, data);
 		}
 	}

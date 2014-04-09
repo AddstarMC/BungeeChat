@@ -58,7 +58,9 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 		String displayName = to.getName();
 		if(to instanceof Player)
 			displayName = ((Player)to).getDisplayName();
-		
+		else if(to instanceof RemotePlayer)
+			displayName = ((RemotePlayer)to).getDisplayName();
+			
 		String displayNameIn = from.getName();
 		if(from instanceof Player)
 			displayNameIn = ((Player)from).getDisplayName();

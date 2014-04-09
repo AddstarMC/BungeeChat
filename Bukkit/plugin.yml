@@ -4,6 +4,7 @@ version: ${pom.version}
 main: au.com.addstar.bc.BungeeChat
 
 softdepend: [Vault]
+loadbefore: [Essentials]
 
 permissions:
   bungeechat.color:
@@ -74,6 +75,7 @@ commands:
     usage: /<command> [player] <name|off>
     description: Changes your nickname, or another players nickname. Setting the name "Off" will remove the nickname. Leaving the name blank will show their current name
     permission: bungeechat.nickname
+    aliases: [nick]
     
   mute:
     usage: /<command> <player> <time>

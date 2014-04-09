@@ -34,7 +34,7 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		}
 	}
 	
-	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerCommand(PlayerCommandPreprocessEvent event)
 	{
 		String command = event.getMessage().split(" ")[0].substring(1);
