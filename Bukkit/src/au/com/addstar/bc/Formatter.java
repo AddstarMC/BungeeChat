@@ -57,7 +57,7 @@ public class Formatter
 		return replaceKeywords(getChatFormat(level), player, level);
 	}
 	
-	private static String getDisplayName(CommandSender sender, PermissionSetting level)
+	private static String getFmtDisplayName(CommandSender sender, PermissionSetting level)
 	{
 		String displayName = "%1$s"; 
 		
@@ -70,10 +70,55 @@ public class Formatter
 			return level.color + displayName;
 	}
 	
+	public static String getDisplayName(CommandSender sender, PermissionSetting level)
+	{
+		String displayName = sender.getName();
+		
+		if(sender instanceof Player)
+			displayName = ((Player)sender).getDisplayName();
+		else if(sender instanceof RemotePlayer)
+			displayName = ((RemotePlayer)sender).getDisplayName();
+		
+		if(consoleOverride != null && sender == Bukkit.getConsoleSender())
+			displayName = consoleOverride;
+		
+		if(level == null)
+			return displayName;
+		else
+			return level.color + displayName;
+	}
+	
 	public static String replaceKeywords(String string, CommandSender sender, PermissionSetting level)
 	{
-		string = string.replace("{DISPLAYNAME}", getDisplayName(sender, level));
+		string = string.replace("{DISPLAYNAME}", getFmtDisplayName(sender, level));
+		string = string.replace("{RAWDISPLAYNAME}", ChatColor.stripColor(getDisplayName(sender, level)));
+		string = string.replace("{NAME}", sender.getName());
 		string = string.replace("{MESSAGE}", "%2$s");
+
+		string = string.replace("{SERVER}", BungeeChat.serverName);
+		
+		if(sender instanceof Player)
+		{
+			Player player = (Player)sender;
+			String group = BungeeChat.getPrimaryGroup(player);
+			string = string.replace("{GROUP}", (group != null ? group : "Default"));
+			string = string.replace("{WORLD}", player.getWorld().getName());
+		}
+		else
+		{
+			string = string.replace("{GROUP}", "Server");
+			string = string.replace("{WORLD}", "");
+		}
+		
+		return string;
+	}
+	
+	public static String replaceKeywordsPartial(String string, CommandSender sender, PermissionSetting level)
+	{
+		string = string.replace("{DISPLAYNAME}", getDisplayName(sender, level));
+		string = string.replace("{RAWDISPLAYNAME}", ChatColor.stripColor(getDisplayName(sender, level)));
+		string = string.replace("{NAME}", sender.getName());
+		string = string.replace("{MESSAGE}", "%1$s");
 
 		string = string.replace("{SERVER}", BungeeChat.serverName);
 		
@@ -98,9 +143,9 @@ public class Formatter
 		PermissionSetting level = getPermissionLevel(to);
 		
 		if(inbound)
-			return replaceKeywords(mPMFormatInbound, to, level); 
+			return replaceKeywordsPartial(mPMFormatInbound, to, level); 
 		else
-			return replaceKeywords(mPMFormatOutbound, to, level);
+			return replaceKeywordsPartial(mPMFormatOutbound, to, level);
 	}
 	
 	public static String highlightKeywords(String message, String defaultColour)

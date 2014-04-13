@@ -3,7 +3,6 @@ package au.com.addstar.bc;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
@@ -58,15 +57,8 @@ public class ChatChannel
 		PermissionSetting level = Formatter.getPermissionLevel(sender);
 		
 		message = BungeeChat.colorize(message, sender);
-		String newFormat = Formatter.replaceKeywords(format, sender, level);
-		String senderName;
-		
-		if(sender instanceof Player)
-			senderName = ((Player)sender).getDisplayName();
-		else
-			senderName = sender.getName();
-		
-		String finalMessage = String.format(newFormat, senderName, message);
+		String newFormat = Formatter.replaceKeywordsPartial(format, sender, level);
+		String finalMessage = String.format(newFormat, message);
 		
 		if(listenPermission != null)
 			Bukkit.broadcast(finalMessage, listenPermission);

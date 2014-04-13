@@ -55,18 +55,8 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 	
 	private void doSendMessage(CommandSender to, CommandSender from, String message)
 	{
-		String displayName = to.getName();
-		if(to instanceof Player)
-			displayName = ((Player)to).getDisplayName();
-		else if(to instanceof RemotePlayer)
-			displayName = ((RemotePlayer)to).getDisplayName();
-			
-		String displayNameIn = from.getName();
-		if(from instanceof Player)
-			displayNameIn = ((Player)from).getDisplayName();
-		
-		String fullMessageOut = String.format(Formatter.getPMFormat(to, false), displayName, message);
-		String fullMessageIn = String.format(Formatter.getPMFormat(from, true), displayNameIn, message);
+		String fullMessageOut = String.format(Formatter.getPMFormat(to, false), message);
+		String fullMessageIn = String.format(Formatter.getPMFormat(from, true), message);
 		
 		if(to instanceof RemotePlayer)
 		{
