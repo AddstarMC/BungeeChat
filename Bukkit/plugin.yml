@@ -43,6 +43,8 @@ permissions:
     default: op
   bungeechat.nickname:
     default: op
+  bungeechat.realname:
+    default: op
   bungeechat.mute:
     default: op
   
@@ -76,6 +78,11 @@ commands:
     description: Changes your nickname, or another players nickname. Setting the name "Off" will remove the nickname. Leaving the name blank will show their current name
     permission: bungeechat.nickname
     aliases: [nick]
+  
+  realname:
+    usage: /<command> <player>
+    description: Shows the realname of a player
+    permission: bungeechat.realname
     
   mute:
     usage: /<command> <player> <time>
