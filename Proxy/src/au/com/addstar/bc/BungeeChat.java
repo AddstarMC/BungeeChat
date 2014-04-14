@@ -175,6 +175,11 @@ public class BungeeChat extends Plugin implements Listener
 		for(String keyword : mConfig.socialSpyKeywords)
 			output.writeUTF(keyword);
 		
+		output.writeShort(mConfig.afkDelay);
+		output.writeBoolean(mConfig.afkKickEnabled);
+		output.writeShort(mConfig.afkKickDelay);
+		output.writeUTF(mConfig.afkKickMessage);
+		
 		output.send(server);
 	}
 	
@@ -394,11 +399,67 @@ public class BungeeChat extends Plugin implements Listener
 					String player = input.readUTF();
 					String color = input.readUTF();
 					
-					updateTabLists(color, getProxy().getPlayer(player));
+					ProxiedPlayer pplayer = getProxy().getPlayer(player);
 					
-					PlayerSettings settings = mSettings.getSettings(player);
-					settings.tabColor = color;
+					if(pplayer != null)
+					{
+						updateTabLists(color, pplayer);
+						
+						PlayerSettings settings = mSettings.getSettings(pplayer);
+						settings.tabColor = color;
+					}
 				}
+				else if(subChannel.equals("AFK"))
+				{
+					String player = input.readUTF();
+					boolean afk = input.readBoolean();
+					
+					ProxiedPlayer pplayer = getProxy().getPlayer(player);
+					
+					if(pplayer != null)
+					{
+						PlayerSettings settings = mSettings.getSettings(pplayer);
+						settings.isAFK = afk;
+					}
+				}
+				else if(subChannel.equals("IsAFK"))
+				{
+					String player = input.readUTF();
+					
+					ProxiedPlayer pplayer = getProxy().getPlayer(player);
+					
+					if(pplayer != null)
+					{
+						PlayerSettings settings = mSettings.getSettings(pplayer);
+						new MessageOutput("BungeeChat", "IsAFK")
+							.writeUTF(player)
+							.writeBoolean(settings.isAFK)
+							.send(((Server)event.getSender()).getInfo());
+					}
+					else
+					{
+						new MessageOutput("BungeeChat", "IsAFK")
+						.writeUTF(player)
+						.writeBoolean(false)
+						.send(((Server)event.getSender()).getInfo());
+					}
+				}
+				else if(subChannel.equals("ToggleAFK"))
+				{
+					String player = input.readUTF();
+					ProxiedPlayer pplayer = getProxy().getPlayer(player);
+					
+					if(pplayer != null)
+					{
+						PlayerSettings settings = mSettings.getSettings(pplayer);
+						settings.isAFK = !settings.isAFK;
+						new MessageOutput("BungeeChat", "AFK")
+							.writeUTF(player)
+							.writeBoolean(settings.isAFK)
+							.send(pplayer.getServer().getInfo());
+					}
+				}
+							
 			}
 			catch(IOException e)
 			{
@@ -510,6 +571,9 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private void updateTabLists(String newColor, ProxiedPlayer player)
 	{
+		if(player == null)
+			return;
+		
 		PlayerSettings settings = mSettings.getSettings(player);
 		
 		BungeeCord.getInstance().broadcast(new PlayerListItem(settings.tabColor + player.getDisplayName(), false, (short)9999));

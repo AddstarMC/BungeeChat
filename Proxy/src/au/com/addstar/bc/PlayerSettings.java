@@ -26,6 +26,8 @@ public class PlayerSettings extends Config
 	
 	@NoSave
 	public String tabColor = "";
+	@NoSave
+	public boolean isAFK = false;
 	
 	@Override
 	protected boolean doSkip( Field field )

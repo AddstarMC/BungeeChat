@@ -41,6 +41,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	private PlayerManager mPlayerManager;
 	
+	private AFKHandler mAfkHandler;
+	
 	@Override
 	public void onEnable()
 	{
@@ -88,6 +90,10 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		RealnameCommand realname = new RealnameCommand();
 		getCommand("realname").setExecutor(realname);
 		getCommand("realname").setTabCompleter(realname);
+		
+		mAfkHandler = new AFKHandler(this);
+		getCommand("afk").setExecutor(mAfkHandler);
+		getCommand("afk").setTabCompleter(mAfkHandler);
 	}
 	
 	@Override
@@ -224,6 +230,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		count = input.readShort();
 		for(int i = 0; i < count; ++i)
 			mSocialSpyHandler.addKeyword(input.readUTF());
+		
+		mAfkHandler.delay = input.readShort();
+		mAfkHandler.kickEnabled = input.readBoolean();
+		mAfkHandler.kickTime = input.readShort();
+		mAfkHandler.kickMessage = input.readUTF();
 	}
 
 	@Override
@@ -341,6 +352,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	public static boolean isSocialSpyEnabled( CommandSender player )
 	{
 		return mInstance.mSocialSpyHandler.isEnabled(player);
+	}
+	
+	public static AFKHandler getAFKHandler()
+	{
+		return mInstance.mAfkHandler;
 	}
 	
 	static BungeeChat getInstance()

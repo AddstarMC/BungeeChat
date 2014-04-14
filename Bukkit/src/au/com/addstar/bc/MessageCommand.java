@@ -73,6 +73,8 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 		
 		BungeeChat.setLastMsgTarget(from, to);
 		BungeeChat.setLastMsgTarget(to, from);
+		
+		BungeeChat.getAFKHandler().checkAFK(from, to, ChatColor.GRAY + "This player is AFK. They may not see this message.");
 	}
 	
 	@Override

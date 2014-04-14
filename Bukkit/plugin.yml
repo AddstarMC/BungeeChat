@@ -47,6 +47,16 @@ permissions:
     default: op
   bungeechat.mute:
     default: op
+    
+  bungeechat.afk:
+    default: true
+  bungeechat.afk.others:
+    default: op
+    
+  bungeechat.afk.exempt:
+    default: op
+  bungeechat.afk.kick.exempt:
+    default: op
   
 commands:
   /nullcmd:
@@ -93,3 +103,8 @@ commands:
     usage: /<command> <player>
     description: Unmutes a player
     permission: bungeechat.mute
+    
+  afk:
+    usage: /<command> [player]
+    description: Toggles AFK state
+    permission: bungeechat.afk

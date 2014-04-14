@@ -45,4 +45,18 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	public KeywordHighlighterSettings keywordHighlighter;
 	
 	public List<String> socialSpyKeywords;
+	
+	@Comment("The time in seconds of no activity that someone is considered afk.")
+	@Path("afk-delay")
+	public int afkDelay = 30;
+	
+	@Path("afk-kick-enabled")
+	public boolean afkKickEnabled = false;
+	
+	@Comment("The time in minutes of being afk that someone is kicked")
+	@Path("afk-kick-delay")
+	public int afkKickDelay = 30;
+	
+	@Path("afk-kick-message")
+	public String afkKickMessage = "You have been kicked for idling for %d minutes";
 }

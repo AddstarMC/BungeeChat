@@ -76,6 +76,7 @@ public class PlayerSettingsManager
 			.writeByte(settings.socialSpyState)
 			.writeBoolean(settings.msgEnabled)
 			.writeLong(settings.muteTime)
+			.writeBoolean(settings.isAFK)
 			.send(player.getServer().getInfo());
 	}
 }

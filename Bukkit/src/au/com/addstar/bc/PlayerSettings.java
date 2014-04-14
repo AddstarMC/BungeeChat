@@ -17,6 +17,11 @@ public class PlayerSettings
 	
 	public String tabFormat = "";
 	
+	public long lastActiveTime = Long.MAX_VALUE;
+	public long afkStartTime = Long.MAX_VALUE;
+	
+	public boolean isAFK = false;
+	
 	public CommandSender getLastMsgTarget()
 	{
 		return BungeeChat.getPlayerManager().getPlayerExact(lastMsgTarget);
@@ -31,6 +36,7 @@ public class PlayerSettings
 			socialSpyState = input.readByte();
 			msgEnabled = input.readBoolean();
 			muteTime = input.readLong();
+			isAFK = input.readBoolean();
 		}
 		catch(IOException e)
 		{
