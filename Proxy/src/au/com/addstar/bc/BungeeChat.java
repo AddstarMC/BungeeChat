@@ -343,6 +343,8 @@ public class BungeeChat extends Plugin implements Listener
 				{
 					String player = input.readUTF();
 					PlayerSettings settings = mSettings.getSettings(player);
+					
+					String oldName = settings.nickname;
 					settings.read(input);
 					mSettings.savePlayer(player);
 					
@@ -351,6 +353,14 @@ public class BungeeChat extends Plugin implements Listener
 						p.setDisplayName(p.getName());
 					else
 						p.setDisplayName(settings.nickname);
+					
+					if(!oldName.equals(settings.nickname))
+					{
+						new MessageOutput("BungeeChat", "UpdateName")
+						.writeUTF(player)
+						.writeUTF(settings.nickname)
+						.send();
+					}
 				}
 				else if(subChannel.equals("MsgCheck"))
 				{
