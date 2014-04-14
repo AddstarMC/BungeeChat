@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerChatTabCompleteEvent;
 import org.bukkit.permissions.Permissible;
 
 import au.com.addstar.bc.utils.Utilities;
@@ -65,6 +66,13 @@ public class ChatHandler implements Listener
 			Utilities.broadcast(newMessage, Formatter.keywordPerm, Utilities.NO_CONSOLE);
 			BungeeChat.mirrorChat(newMessage, ChannelType.KeywordHighlight.getName());
 		}
+	}
+	
+	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	private void onTabComplete(PlayerChatTabCompleteEvent event)
+	{
+		event.getTabCompletions().clear();
+		event.getTabCompletions().addAll(BungeeChat.getPlayerManager().matchNames(event.getLastToken().toLowerCase()));
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)

@@ -367,7 +367,10 @@ public class PlayerManager implements Listener, IDataReceiver
 				if(settings.nickname.isEmpty())
 					player.setDisplayName(player.getName());
 				else
+				{
 					player.setDisplayName(settings.nickname);
+					onPlayerNameChange(playerName, settings.nickname);
+				}
 			}
 		}
 	}
