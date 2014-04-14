@@ -42,6 +42,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	private PlayerManager mPlayerManager;
 	
 	private AFKHandler mAfkHandler;
+	private SystemMessagesHandler mMsgHandler;
 	
 	@Override
 	public void onEnable()
@@ -63,6 +64,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		mChatChannels = new ChatChannelManager(this);
 		mSocialSpyHandler = new SocialSpyHandler(this);
 		mPlayerManager = new PlayerManager(this);
+		mMsgHandler = new SystemMessagesHandler(this);
 		addListener(mPlayerManager);
 		
 		requestUpdate();
@@ -357,6 +359,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	public static AFKHandler getAFKHandler()
 	{
 		return mInstance.mAfkHandler;
+	}
+	
+	public static SystemMessagesHandler getSysMsgHandler()
+	{
+		return mInstance.mMsgHandler;
 	}
 	
 	static BungeeChat getInstance()
