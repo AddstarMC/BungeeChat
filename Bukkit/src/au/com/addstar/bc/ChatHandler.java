@@ -87,6 +87,9 @@ public class ChatHandler implements Listener
 			if(Formatter.keywordsEnabled)
 				Bukkit.broadcast(event.getMessage(), Formatter.keywordPerm);
 			break;
+		case Broadcast:
+			Utilities.broadcast(event.getMessage(), null, null);
+			break;
 		default:
 			break;
 		}

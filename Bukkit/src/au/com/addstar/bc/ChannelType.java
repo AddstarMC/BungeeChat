@@ -5,6 +5,7 @@ public enum ChannelType
 	Default(""),
 	KeywordHighlight("~"),
 	SocialSpy("~SS"),
+	Broadcast("~BC"),
 	Reserved(null),
 	Custom(null);
 	

@@ -176,8 +176,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 		else
 			message = ChatColor.GRAY + "* " + ChatColor.stripColor(player.getDisplayName()) + " is no longer AFK.";
 		
-		BungeeChat.mirrorChat(message, ChannelType.Default.getName());
-		BungeeChat.mirrorChat(message, ChannelType.KeywordHighlight.getName());
+		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 		
 		Utilities.broadcast(message, null, null);
 	}
