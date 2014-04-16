@@ -26,6 +26,7 @@ public class SyncManager implements PluginMessageListener
 	{
 		mPlugin = plugin;
 		Bukkit.getMessenger().registerIncomingPluginChannel(plugin, "BungeeSync", this);
+		Bukkit.getMessenger().registerOutgoingPluginChannel(plugin, "BungeeSync");
 		mWaitingCallbacks = new HashMap<Integer, IMethodCallback<Object>>();
 	}
 	

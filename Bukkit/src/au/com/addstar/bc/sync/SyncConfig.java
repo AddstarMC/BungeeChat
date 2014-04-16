@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SyncConfig
 {
@@ -75,14 +76,9 @@ public class SyncConfig
         	section.set(key, value);
 	}
 	
-	public boolean isMap(String key)
+	public Set<String> getKeys()
 	{
-		return (mData.get(key) instanceof Map<?, ?>);
-	}
-	
-	public boolean contains(String key)
-	{
-		return mData.containsKey(key);
+        return mData.keySet();
 	}
 	
 	public String getString(String key, String def)
@@ -235,11 +231,13 @@ public class SyncConfig
 		mData = SyncUtil.readMap(input);
 	}
 	
-	
-	
-	
 	public void write(DataOutput output) throws IOException
 	{
 		SyncUtil.writeMap(output, mData);
+	}
+	
+	Map<String, Object> getInternalMap()
+	{
+		return mData;
 	}
 }

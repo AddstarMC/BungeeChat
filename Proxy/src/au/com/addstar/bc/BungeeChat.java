@@ -11,11 +11,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import au.com.addstar.bc.config.ChatChannel;
+import au.com.addstar.bc.config.Config;
+import au.com.addstar.bc.config.KeywordHighlighterSettings;
+import au.com.addstar.bc.config.PermissionSetting;
+import au.com.addstar.bc.sync.SyncConfig;
+import au.com.addstar.bc.sync.SyncManager;
+import au.com.addstar.bc.sync.SyncUtil;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.BungeeCord;
@@ -37,13 +44,14 @@ import net.md_5.bungee.protocol.packet.PlayerListItem;
 public class BungeeChat extends Plugin implements Listener
 {
 	private Config mConfig;
+	private SyncConfig mConfigSync;
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
 	private PlayerSettingsManager mSettings;
 	
 	public static BungeeChat instance;
 	
-	//private CustomTabList 
+	private SyncManager mSyncManager; 
 	
 	@Override
 	public void onEnable()
@@ -55,18 +63,21 @@ public class BungeeChat extends Plugin implements Listener
 			getDataFolder().mkdirs();
 		
 		mSettings = new PlayerSettingsManager(new File(getDataFolder(), "players"));
+		mSyncManager = new SyncManager(this);
+		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
+		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
+		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
 		
 		saveResource("/keywords.txt", false);
 		
 		mConfig = new Config(configFile);
 		
-		loadConfig();
-		
 		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
-		
-		resync();
+
+		loadConfig();
+		mSyncManager.sendConfig("bungeechat");
 	}
 	
 	public boolean loadConfig()
@@ -83,10 +94,17 @@ public class BungeeChat extends Plugin implements Listener
 					channel.listenPermission = "";
 			}
 			
+			SyncConfig syncConfig = mConfig.toSyncConfig();
 			if(mConfig.keywordHighlighter.enabled)
 			{
 				loadKeywordFile(mConfig.keywordHighlighter.keywordFile);
+				SyncConfig keywords = syncConfig.createSection("keywords");
+				for(Entry<String, String> entry : mKeywordSettings.entrySet())
+					keywords.set(entry.getKey(), entry.getValue());
 			}
+			
+			mConfigSync = syncConfig;
+			mSyncManager.setConfig("bungeechat", mConfigSync);
 			return true;
 		}
 		catch ( InvalidConfigurationException e )
@@ -103,12 +121,6 @@ public class BungeeChat extends Plugin implements Listener
 		}
 	}
 	
-	public void resync()
-	{
-		for(ServerInfo server : getProxy().getServers().values())
-			sendInfo(server);
-	}
-	
 	private void mirrorChat(byte[] data, Server except)
 	{
 		ServerInfo exceptInfo = except.getInfo();
@@ -117,70 +129,6 @@ public class BungeeChat extends Plugin implements Listener
 			if(!server.equals(exceptInfo) && !server.getPlayers().isEmpty())
 				server.sendData("BungeeChat", data);
 		}
-	}
-	
-	private void sendInfo(ServerInfo server)
-	{
-		MessageOutput output = new MessageOutput("BungeeChat", "Update");
-		
-		output.writeUTF(server.getName());
-		output.writeUTF(mConfig.consoleName);
-		output.writeUTF(mConfig.pmFormatIn);
-		output.writeUTF(mConfig.pmFormatOut);
-		
-		Map<String, PermissionSetting> permissions = mConfig.permSettings;
-		output.writeShort(permissions.size());
-		for(Entry<String, PermissionSetting> entry : permissions.entrySet())
-		{
-			PermissionSetting setting = entry.getValue();
-
-			output.writeUTF((setting.permission == null ? "" : setting.permission));
-			output.writeShort(setting.priority);
-			output.writeUTF(setting.format);
-			output.writeUTF(setting.color);
-		}
-		
-		Map<String, ChatChannel> channels = mConfig.channels;
-		output.writeShort(channels.size());
-		for(Entry<String, ChatChannel> entry : channels.entrySet())
-		{
-			ChatChannel channel = entry.getValue();
-			
-			output.writeUTF(entry.getKey());
-			
-			output.writeUTF(channel.command);
-			output.writeUTF(channel.format);
-			output.writeUTF(channel.permission);
-			output.writeUTF(channel.listenPermission);
-		}
-		
-		output.writeBoolean(mConfig.keywordHighlighter.enabled);
-		if(mConfig.keywordHighlighter.enabled)
-		{
-			KeywordHighlighterSettings settings = mConfig.keywordHighlighter;
-			output.writeUTF(settings.permission);
-			output.writeShort(settings.allowInChannels.size());
-			for(String channel : settings.allowInChannels)
-				output.writeUTF(channel);
-			
-			output.writeShort(mKeywordSettings.size());
-			for(Entry<String, String> entry : mKeywordSettings.entrySet())
-			{
-				output.writeUTF(entry.getKey());
-				output.writeUTF(entry.getValue());
-			}
-		}
-		
-		output.writeShort(mConfig.socialSpyKeywords.size());
-		for(String keyword : mConfig.socialSpyKeywords)
-			output.writeUTF(keyword);
-		
-		output.writeShort(mConfig.afkDelay);
-		output.writeBoolean(mConfig.afkKickEnabled);
-		output.writeShort(mConfig.afkKickDelay);
-		output.writeUTF(mConfig.afkKickMessage);
-		
-		output.send(server);
 	}
 	
 	private void loadKeywordFile(String file) throws IOException
@@ -319,7 +267,6 @@ public class BungeeChat extends Plugin implements Listener
 				}
 				else if(subChannel.equals("Update"))
 				{
-					sendInfo(((Server)event.getSender()).getInfo());
 					sendPlayerUpdates(((Server)event.getSender()).getInfo());
 				}
 				else if(subChannel.equals("Send"))
@@ -577,6 +524,11 @@ public class BungeeChat extends Plugin implements Listener
 	public PlayerSettingsManager getManager()
 	{
 		return mSettings;
+	}
+	
+	public SyncManager getSyncManager()
+	{
+		return mSyncManager;
 	}
 	
 	private void updateTabLists(String newColor, ProxiedPlayer player)

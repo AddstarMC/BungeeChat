@@ -1,16 +1,23 @@
 package au.com.addstar.bc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionDefault;
+
+import au.com.addstar.bc.config.KeywordHighlighterConfig;
+import au.com.addstar.bc.config.PermissionSettingConfig;
+import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.NoPermissionChecker;
 import au.com.addstar.bc.utils.Utilities;
 
@@ -28,6 +35,60 @@ public class Formatter
 	
 	static String mPMFormatInbound = "[{DISPLAYNAME} -> Me]: {MESSAGE}";
 	static String mPMFormatOutbound = "[Me -> {DISPLAYNAME}]: {MESSAGE}";
+	
+	public static void load(SyncConfig config)
+	{
+		if(!config.getString("consolename", "").isEmpty())
+			consoleOverride = ChatColor.translateAlternateColorCodes('&', config.getString("consolename", ""));
+		else
+			consoleOverride = null;
+		
+		mPMFormatInbound = ChatColor.translateAlternateColorCodes('&', config.getString("pm-format-in", "[{DISPLAYNAME} -> Me]: {MESSAGE}"));
+		mPMFormatOutbound = ChatColor.translateAlternateColorCodes('&', config.getString("pm-format-out", "[Me -> {DISPLAYNAME}]: {MESSAGE}"));
+		
+		permissionLevels.clear();
+		
+		SyncConfig permLevels = config.getSection("perms");
+		for(String key : permLevels.getKeys())
+		{
+			PermissionSettingConfig setting = (PermissionSettingConfig) permLevels.get(key, null);
+			permissionLevels.add(setting.convert());
+		}
+		
+		Collections.sort(Formatter.permissionLevels);
+		
+		KeywordHighlighterConfig kh = (KeywordHighlighterConfig)config.get("highlight", null);
+		
+		keywordsEnabled = kh.enabled;
+		if(kh.enabled)
+		{
+			keywordPerm = kh.permission;
+			keywordEnabledChannels.clear();
+			keywordPatterns.clear();
+			
+			SyncConfig keywords = config.getSection("keywords");
+			for(String key : keywords.getKeys())
+			{
+				try
+				{
+					Pattern pattern = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
+					Formatter.keywordPatterns.put(pattern, keywords.getString(key, null));
+				}
+				catch (PatternSyntaxException e)
+				{
+					// Cant happen
+				}
+			}
+			
+			try
+			{
+				Bukkit.getPluginManager().addPermission(new org.bukkit.permissions.Permission(keywordPerm, PermissionDefault.OP));
+			}
+			catch(IllegalArgumentException e)
+			{
+			}
+		}
+	}
 	
 	public static PermissionSetting getPermissionLevel(CommandSender sender)
 	{

@@ -1,6 +1,7 @@
 package au.com.addstar.bc;
 
 import java.util.HashSet;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
 
+import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.Utilities;
 
 public class SocialSpyHandler implements Listener, CommandExecutor
@@ -96,5 +98,12 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		setStatus(sender, on);
 		
 		return true;
+	}
+	
+	@SuppressWarnings( "unchecked" )
+	public void load(SyncConfig config)
+	{
+		clearKeywords();
+		mKeywords.addAll((List<String>)config.get("socialspykeywords", null));
 	}
 }

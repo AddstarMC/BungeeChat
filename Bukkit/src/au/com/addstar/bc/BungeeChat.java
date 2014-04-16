@@ -4,10 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
@@ -18,10 +14,17 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+
+import au.com.addstar.bc.config.ChatChannelConfig;
+import au.com.addstar.bc.config.KeywordHighlighterConfig;
+import au.com.addstar.bc.config.PermissionSettingConfig;
+import au.com.addstar.bc.sync.ConfigReceiveEvent;
+import au.com.addstar.bc.sync.SyncConfig;
+import au.com.addstar.bc.sync.SyncManager;
+import au.com.addstar.bc.sync.SyncUtil;
 
 public class BungeeChat extends JavaPlugin implements PluginMessageListener, Listener
 {
@@ -44,6 +47,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	private AFKHandler mAfkHandler;
 	private SystemMessagesHandler mMsgHandler;
 	
+	private SyncManager mSyncManager;
+	
 	@Override
 	public void onEnable()
 	{
@@ -65,6 +70,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		mSocialSpyHandler = new SocialSpyHandler(this);
 		mPlayerManager = new PlayerManager(this);
 		mMsgHandler = new SystemMessagesHandler(this);
+		mSyncManager = new SyncManager(this);
+		SyncUtil.addSerializer(ChatChannelConfig.class, "ChatChannel");
+		SyncUtil.addSerializer(KeywordHighlighterConfig.class, "KHSettings");
+		SyncUtil.addSerializer(PermissionSettingConfig.class, "PermSetting");
+		
 		addListener(mPlayerManager);
 		
 		requestUpdate();
@@ -106,15 +116,10 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	private void requestUpdate()
 	{
-		Player player = null;
-		
-		if(Bukkit.getOnlinePlayers().length > 0)
-			player = Bukkit.getOnlinePlayers()[0];
-		else
+		if(Bukkit.getOnlinePlayers().length == 0)
 			return;
 		
-		new MessageOutput("BungeeChat", "Update").send(player, mInstance);
-		
+		mSyncManager.requestConfigUpdate("bungeechat");
 		mHasRequestedUpdate = true;
 	}
 	
@@ -131,6 +136,21 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					requestUpdate();
 				}
 			}, 2);
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.MONITOR)
+	private void onConfigUpdate(ConfigReceiveEvent event)
+	{
+		if(event.getName().equals("bungeechat"))
+		{
+			mHasRequestedUpdate = true;
+			mHasUpdated = true;
+			SyncConfig config = event.getConfig();
+			Formatter.load(config);
+			mChatChannels.load(config);
+			mSocialSpyHandler.load(config);
+			mAfkHandler.load(config);
 		}
 	}
 
@@ -164,80 +184,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			return null;
 		}
 	}
-	
-	private void update(DataInputStream input) throws IOException
-	{
-		mHasRequestedUpdate = true;
-		mHasUpdated = true;
-		
-		serverName = input.readUTF();
-		String consoleName = input.readUTF();
-		if(consoleName.isEmpty())
-			Formatter.consoleOverride = null;
-		else
-			Formatter.consoleOverride = ChatColor.translateAlternateColorCodes('&', consoleName);
-		
-		Formatter.mPMFormatInbound = ChatColor.translateAlternateColorCodes('&', input.readUTF());
-		Formatter.mPMFormatOutbound = ChatColor.translateAlternateColorCodes('&', input.readUTF());
-		
-		Formatter.permissionLevels.clear();
-		
-		int count = input.readShort();
-		for(int i = 0; i < count; ++i)
-			Formatter.permissionLevels.add(new PermissionSetting(input.readUTF(), input.readShort(), input.readUTF(), input.readUTF()));
-		
-		Collections.sort(Formatter.permissionLevels);
-		
-		mChatChannels.unregisterAll();
-		
-		count = input.readShort();
-		for(int i = 0; i < count; ++i)
-			mChatChannels.register(input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF(), input.readUTF());
-		
-		Formatter.keywordsEnabled = input.readBoolean();
-		if(Formatter.keywordsEnabled)
-		{
-			Formatter.keywordPerm = input.readUTF();
-			Formatter.keywordEnabledChannels.clear();
-			Formatter.keywordPatterns.clear();
-			
-			count = input.readShort();
-			for(int i = 0; i < count; ++i)
-				Formatter.keywordEnabledChannels.add(input.readUTF());
-			
-			count = input.readShort();
-			for(int i = 0; i < count; ++i)
-			{
-				try
-				{
-					Pattern pattern = Pattern.compile(input.readUTF(), Pattern.CASE_INSENSITIVE);
-					Formatter.keywordPatterns.put(pattern, input.readUTF());
-				}
-				catch (PatternSyntaxException e)
-				{
-					// Cant happen
-				}
-			}
-			
-			try
-			{
-				Bukkit.getPluginManager().addPermission(new org.bukkit.permissions.Permission(Formatter.keywordPerm, PermissionDefault.OP));
-			}
-			catch(IllegalArgumentException e)
-			{
-			}
-		}
-		
-		mSocialSpyHandler.clearKeywords();
-		count = input.readShort();
-		for(int i = 0; i < count; ++i)
-			mSocialSpyHandler.addKeyword(input.readUTF());
-		
-		mAfkHandler.delay = input.readShort();
-		mAfkHandler.kickEnabled = input.readBoolean();
-		mAfkHandler.kickTime = input.readShort();
-		mAfkHandler.kickMessage = input.readUTF();
-	}
 
 	@Override
 	public void onPluginMessageReceived( String channel, Player sender, byte[] data )
@@ -257,10 +203,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 					ChannelType type = ChannelType.from(chatChannel);
 					
 					Bukkit.getPluginManager().callEvent(new ChatChannelEvent(chatChannel, type, message));
-				}
-				else if(subChannel.equals("Update"))
-				{
-					update(input);
 				}
 				else if(subChannel.equals("Message"))
 				{

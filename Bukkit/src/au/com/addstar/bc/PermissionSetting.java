@@ -9,7 +9,7 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 {
 	public PermissionSetting(String permission, int priority, String format, String color)
 	{
-		if(!permission.isEmpty())
+		if(permission != null && !permission.isEmpty())
 		{
 			this.permission = permission;
 			try

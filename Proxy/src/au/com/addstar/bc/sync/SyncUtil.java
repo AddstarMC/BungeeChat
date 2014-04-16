@@ -11,8 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.google.common.collect.HashBiMap;
+
 public class SyncUtil
 {
+	private static HashBiMap<Class<?>, String> mClassMappings = HashBiMap.create();
+	
+	public static void addSerializer(Class<? extends SyncSerializable> clazz, String typename)
+	{
+		mClassMappings.put(clazz, typename);
+	}
+	
 	@SuppressWarnings( "unchecked" )
 	public static void writeObject(DataOutput output, Object value) throws IOException
 	{
@@ -78,6 +87,11 @@ public class SyncUtil
 			output.writeByte(9);
 			writeMap(output, (Map<String, Object>)value);
 		}
+		else if(value instanceof SyncConfig)
+		{
+			output.writeByte(9);
+			writeMap(output, ((SyncConfig)value).getInternalMap());
+		}
 		else if(value instanceof SyncSerializable)
 		{
 			output.writeByte(10);
@@ -99,7 +113,11 @@ public class SyncUtil
 	
 	public static void writeSerializable(DataOutput output, SyncSerializable serializable) throws IOException
 	{
-		output.writeUTF(serializable.getClass().getName());
+		String typeName = mClassMappings.get(serializable.getClass());
+		if(typeName == null)
+			typeName = serializable.getClass().getName();
+		
+		output.writeUTF(typeName);
 		writeMap(output, serializable.toMap());
 	}
 	
@@ -160,9 +178,12 @@ public class SyncUtil
 		String className = input.readUTF();
 		HashMap<String, Object> map = readMap(input);
 		
+		Class<?> clazz = mClassMappings.inverse().get(className);
+		
 		try
 		{
-			Class<?> clazz = Class.forName(className);
+			if(clazz == null)
+				clazz = Class.forName(className);
 			
 			Method method = clazz.getMethod("fromMap", Map.class);
 			return (SyncSerializable)method.invoke(null, map);

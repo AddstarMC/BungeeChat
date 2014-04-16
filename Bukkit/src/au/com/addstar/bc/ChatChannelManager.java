@@ -11,6 +11,10 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.Plugin;
 
+import au.com.addstar.bc.config.ChatChannelConfig;
+import au.com.addstar.bc.sync.SyncConfig;
+
+
 public class ChatChannelManager implements Listener
 {
 	private HashMap<String, ChatChannel> mChannels = new HashMap<String, ChatChannel>();
@@ -109,5 +113,17 @@ public class ChatChannelManager implements Listener
 			channel.unregisterChannel();
 	}
 	
+	public void load(SyncConfig config)
+	{
+		unregisterAll();
+		
+		SyncConfig channels = config.getSection("channels");
+		
+		for(String key : channels.getKeys())
+		{
+			ChatChannelConfig setting = (ChatChannelConfig) channels.get(key, null);
+			register(key, setting.command, setting.format, setting.permission, setting.listenPermission);
+		}
+	}
 	
 }

@@ -1,4 +1,4 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.config;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import au.com.addstar.bc.sync.SyncConfig;
 
 import net.cubespace.Yamler.Config.Comment;
 import net.cubespace.Yamler.Config.Path;
@@ -59,4 +62,33 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	
 	@Path("afk-kick-message")
 	public String afkKickMessage = "You have been kicked for idling for %d minutes";
+	
+	public SyncConfig toSyncConfig()
+	{
+		SyncConfig config = new SyncConfig();
+		
+		config.set("consolename", consoleName);
+		
+		config.set("pm-format-in", pmFormatIn);
+		config.set("pm-format-out", pmFormatOut);
+		
+		config.set("afk-delay", afkDelay);
+		config.set("afk-kick-enabled", afkKickEnabled);
+		config.set("afk-kick-message", afkKickMessage);
+		config.set("afk-kick-delay", afkKickDelay);
+		
+		config.set("socialspykeywords", socialSpyKeywords);
+
+		config.set("highlight", keywordHighlighter);
+		
+		SyncConfig subChannels = config.createSection("channels");
+		for(Entry<String, ChatChannel> channel : channels.entrySet())
+			subChannels.set(channel.getKey(), channel.getValue());
+
+		SyncConfig permLevels = config.createSection("perms");
+		for(Entry<String, PermissionSetting> setting : permSettings.entrySet())
+			permLevels.set(setting.getKey(), setting.getValue());
+		
+		return config;
+	}
 }

@@ -22,6 +22,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.Plugin;
 
+import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.Utilities;
 
 import com.google.common.collect.HashMultimap;
@@ -156,6 +157,14 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 		}
 		else
 			scheduleAfkCheck(sender, player.getName(), message);
+	}
+	
+	public void load(SyncConfig config)
+	{
+		delay = config.getInt("afk-delay", 30);
+		kickEnabled = config.getBoolean("afk-kick-enabled", false);
+		kickTime = config.getInt("afk-kick-delay", 30);
+		kickMessage = config.getString("afk-kick-message", "You have been kicked for idling for %d minutes");
 	}
 	
 	private void scheduleAfkCheck(CommandSender sender, String player, String message)
