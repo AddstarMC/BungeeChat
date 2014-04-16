@@ -80,6 +80,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener
 			
 			BungeeChat.getPlayerManager().setPlayerMuteTime(player, 0);
 			sender.sendMessage(ChatColor.AQUA + name + " has been unmuted");
+			player.sendMessage(ChatColor.AQUA + "You can talk again.");
 			return true;
 		}
 		

@@ -58,16 +58,16 @@ public class SystemMessagesHandler implements Listener
 	public void onPlayerGlobalJoin(String player, String nickname)
 	{
 		if(nickname.isEmpty())
-			Utilities.broadcast(ChatColor.YELLOW + player + " joined the game", null, null);
+			Utilities.broadcast(ChatColor.YELLOW + player + " joined the game.", null, null);
 		else
-			Utilities.broadcast(ChatColor.YELLOW + nickname + " joined the game", null, null);
+			Utilities.broadcast(ChatColor.YELLOW + nickname + " joined the game.", null, null);
 	}
 	
 	public void onPlayerGlobalLeave(String player, String nickname)
 	{
 		if(nickname.isEmpty())
-			Utilities.broadcast(ChatColor.YELLOW + player + " left the game", null, null);
+			Utilities.broadcast(ChatColor.YELLOW + player + " left the game.", null, null);
 		else
-			Utilities.broadcast(ChatColor.YELLOW + nickname + " left the game", null, null);
+			Utilities.broadcast(ChatColor.YELLOW + nickname + " left the game.", null, null);
 	}
 }
