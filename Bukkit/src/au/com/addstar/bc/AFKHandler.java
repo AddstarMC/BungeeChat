@@ -3,8 +3,6 @@ package au.com.addstar.bc;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -22,10 +20,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.Plugin;
 
+import au.com.addstar.bc.sync.IMethodCallback;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.Utilities;
-
-import com.google.common.collect.HashMultimap;
 
 public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDataReceiver
 {
@@ -34,14 +31,11 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 	public boolean kickEnabled = false;
 	public String kickMessage = "You have been kicked for idling %d minutes.";
 	
-	private HashMultimap<String, AFKCheck> mAFKChecks;
-	
 	public AFKHandler(Plugin plugin)
 	{
 		Bukkit.getScheduler().runTaskTimer(plugin, new AFKTimer(), 20, 20);
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 		BungeeChat.getInstance().addListener(this);
-		mAFKChecks = HashMultimap.create();
 	}
 	
 	@Override
@@ -113,19 +107,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 	@Override
 	public void onMessage( String channel, DataInput data ) throws IOException
 	{
-		if(channel.equals("IsAFK"))
-		{
-			String player = data.readUTF();
-			boolean afk = data.readBoolean();
-			
-			Set<AFKCheck> checks = mAFKChecks.removeAll(player);
-			if(checks != null && afk)
-			{
-				for(AFKCheck check : checks)
-					check.run();
-			}
-		}
-		else if(channel.equals("AFK"))
+		if(channel.equals("AFK"))
 		{
 			String player = data.readUTF();
 			boolean afk = data.readBoolean();
@@ -148,7 +130,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 		}
 	}
 	
-	public void checkAFK(CommandSender sender, CommandSender player, String message)
+	public void checkAFK(final CommandSender sender, CommandSender player, final String message)
 	{
 		if(player instanceof Player)
 		{
@@ -156,7 +138,24 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 				sender.sendMessage(message);
 		}
 		else
-			scheduleAfkCheck(sender, player.getName(), message);
+		{
+			BungeeChat.getSyncManager().callSyncMethod("bchat:isAFK", new IMethodCallback<Byte>()
+			{
+				@Override
+				public void onError( String type, String message )
+				{
+					throw new RuntimeException(type + ": " + message);
+				}
+				
+				@Override
+				public void onFinished( Byte data )
+				{
+					if(data != 0)
+						sender.sendMessage(message);
+				}
+				
+			}, player.getName());
+		}
 	}
 	
 	public void load(SyncConfig config)
@@ -165,16 +164,6 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 		kickEnabled = config.getBoolean("afk-kick-enabled", false);
 		kickTime = config.getInt("afk-kick-delay", 30);
 		kickMessage = config.getString("afk-kick-message", "You have been kicked for idling for %d minutes");
-	}
-	
-	private void scheduleAfkCheck(CommandSender sender, String player, String message)
-	{
-		AFKCheck check = new AFKCheck(sender, message);
-		mAFKChecks.put(player, check);
-		
-		new MessageOutput("BungeeChat", "IsAFK")
-			.writeUTF(player)
-			.send(BungeeChat.getInstance());
 	}
 	
 	private void onAFKChange(Player player, boolean isAFK)
@@ -317,22 +306,4 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 			}
 		}
 	}
-	
-	private class AFKCheck
-	{
-		private CommandSender mSender;
-		private String mMessage;
-		
-		public AFKCheck(CommandSender sender, String message)
-		{
-			mSender = sender;
-			mMessage = message;
-		}
-		
-		public void run()
-		{
-			mSender.sendMessage(mMessage);
-		}
-	}
-
 }

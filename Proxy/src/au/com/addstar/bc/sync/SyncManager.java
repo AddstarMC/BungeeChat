@@ -92,7 +92,7 @@ public class SyncManager implements Listener
 				for(int i = 0; i < count; ++i)
 					args[i] = SyncUtil.readObject(input);
 				
-				Object result = method.run(name, args);
+				Object result = method.run(name, caller, args);
 				
 				MessageOutput out = new MessageOutput("BungeeSync", "CallRes")
 					.writeInt(id)
@@ -117,7 +117,7 @@ public class SyncManager implements Listener
 				.writeInt(id)
 				.writeBoolean(false)
 				.writeUTF("NoSuchMethodException")
-				.writeUTF(method + " cannot be found")
+				.writeUTF(name + " cannot be found")
 				.send(caller);
 		}
 	}

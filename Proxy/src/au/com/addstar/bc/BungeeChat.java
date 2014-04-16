@@ -64,6 +64,9 @@ public class BungeeChat extends Plugin implements Listener
 		
 		mSettings = new PlayerSettingsManager(new File(getDataFolder(), "players"));
 		mSyncManager = new SyncManager(this);
+		StandardServMethods methods = new StandardServMethods();
+		mSyncManager.addMethod("bungee:getServerName", methods);
+		mSyncManager.addMethod("bchat:isAFK", methods);
 		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
@@ -377,28 +380,6 @@ public class BungeeChat extends Plugin implements Listener
 					{
 						PlayerSettings settings = mSettings.getSettings(pplayer);
 						settings.isAFK = afk;
-					}
-				}
-				else if(subChannel.equals("IsAFK"))
-				{
-					String player = input.readUTF();
-					
-					ProxiedPlayer pplayer = getProxy().getPlayer(player);
-					
-					if(pplayer != null)
-					{
-						PlayerSettings settings = mSettings.getSettings(pplayer);
-						new MessageOutput("BungeeChat", "IsAFK")
-							.writeUTF(player)
-							.writeBoolean(settings.isAFK)
-							.send(((Server)event.getSender()).getInfo());
-					}
-					else
-					{
-						new MessageOutput("BungeeChat", "IsAFK")
-						.writeUTF(player)
-						.writeBoolean(false)
-						.send(((Server)event.getSender()).getInfo());
 					}
 				}
 				else if(subChannel.equals("ToggleAFK"))

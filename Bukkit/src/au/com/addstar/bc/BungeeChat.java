@@ -22,6 +22,7 @@ import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.config.KeywordHighlighterConfig;
 import au.com.addstar.bc.config.PermissionSettingConfig;
 import au.com.addstar.bc.sync.ConfigReceiveEvent;
+import au.com.addstar.bc.sync.IMethodCallback;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
@@ -120,6 +121,21 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			return;
 		
 		mSyncManager.requestConfigUpdate("bungeechat");
+		mSyncManager.callSyncMethod("bungee:getServerName", new IMethodCallback<String>()
+		{
+			@Override
+			public void onFinished( String data )
+			{
+				serverName = data;
+			}
+			
+			@Override
+			public void onError( String type, String message )
+			{
+				throw new RuntimeException(type + ": " + message);
+			}
+		});
+		
 		mHasRequestedUpdate = true;
 	}
 	
@@ -306,6 +322,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	public static SystemMessagesHandler getSysMsgHandler()
 	{
 		return mInstance.mMsgHandler;
+	}
+	
+	public static SyncManager getSyncManager()
+	{
+		return mInstance.mSyncManager;
 	}
 	
 	static BungeeChat getInstance()

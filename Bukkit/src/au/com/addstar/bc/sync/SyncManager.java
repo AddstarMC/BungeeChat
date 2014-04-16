@@ -64,7 +64,8 @@ public class SyncManager implements PluginMessageListener
 		}
 	}
 	
-	public void callSyncMethod(String method, IMethodCallback<Object> callback, Object... args)
+	@SuppressWarnings( "unchecked" )
+	public void callSyncMethod(String method, IMethodCallback<?> callback, Object... args)
 	{
 		int id = mNextId++;
 		MessageOutput out = new MessageOutput("BungeeSync", "Call")
@@ -84,7 +85,7 @@ public class SyncManager implements PluginMessageListener
 		
 		out.send(mPlugin);
 		
-		mWaitingCallbacks.put(id, callback);
+		mWaitingCallbacks.put(id, (IMethodCallback<Object>) callback);
 	}
 	
 	private void onMethodResult(int id, DataInput input) throws IOException
