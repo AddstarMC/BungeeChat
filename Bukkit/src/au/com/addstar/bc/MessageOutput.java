@@ -1,6 +1,7 @@
 package au.com.addstar.bc;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -208,6 +209,11 @@ public class MessageOutput
 		}
 		
 		return this;
+	}
+	
+	public DataOutput asDataOutput()
+	{
+		return mOutput;
 	}
 
 	public byte[] toBytes()
