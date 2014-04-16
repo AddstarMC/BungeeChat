@@ -85,6 +85,7 @@ public class PlayerManager implements Listener, IDataReceiver
 	
 	public List<String> matchNames(String name, boolean includeAliases)
 	{
+		name = name.toLowerCase();
 		ArrayList<String> matches = new ArrayList<String>();
 		for(Entry<String, CommandSender> entry : mAllProxied.entrySet())
 		{
