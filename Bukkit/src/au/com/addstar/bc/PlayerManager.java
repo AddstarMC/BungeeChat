@@ -157,12 +157,7 @@ public class PlayerManager implements Listener, IDataReceiver
 			updatePlayerSettings(player);
 		}
 		else
-		{
-			new MessageOutput("BungeeChat", "UpdateMute")
-				.writeUTF(player.getName())
-				.writeLong(endTime)
-				.send(BungeeChat.getInstance());
-		}
+			BungeeChat.getSyncManager().callSyncMethod("bchat:setMute", null, player.getName(), endTime);
 	}
 	
 	public boolean isPlayerMuted(CommandSender player)
@@ -274,10 +269,7 @@ public class PlayerManager implements Listener, IDataReceiver
 		if(!settings.tabFormat.equals(colour))
 		{
 			settings.tabFormat = colour;
-			new MessageOutput("BungeeChat", "TabColor")
-				.writeUTF(player.getName())
-				.writeUTF(settings.tabFormat)
-				.send(BungeeChat.getInstance());
+			BungeeChat.getSyncManager().callSyncMethod("bchat:setTabColor", null, player.getName(), settings.tabFormat);
 		}
 	}
 	

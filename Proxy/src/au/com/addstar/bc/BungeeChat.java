@@ -333,61 +333,6 @@ public class BungeeChat extends Plugin implements Listener
 						.writeUTF(name)
 						.send();
 				}
-				else if(subChannel.equals("UpdateMute"))
-				{
-					String player = input.readUTF();
-					long time = input.readLong();
-					
-					PlayerSettings settings = mSettings.getSettings(player);
-					settings.muteTime = time;
-					
-					mSettings.savePlayer(player);
-					mSettings.updateSettings(player);
-				}
-				else if(subChannel.equals("TabColor"))
-				{
-					String player = input.readUTF();
-					String color = input.readUTF();
-					
-					ProxiedPlayer pplayer = getProxy().getPlayer(player);
-					
-					if(pplayer != null)
-					{
-						updateTabLists(color, pplayer);
-						
-						PlayerSettings settings = mSettings.getSettings(pplayer);
-						settings.tabColor = color;
-					}
-				}
-				else if(subChannel.equals("AFK"))
-				{
-					String player = input.readUTF();
-					boolean afk = input.readBoolean();
-					
-					ProxiedPlayer pplayer = getProxy().getPlayer(player);
-					
-					if(pplayer != null)
-					{
-						PlayerSettings settings = mSettings.getSettings(pplayer);
-						settings.isAFK = afk;
-					}
-				}
-				else if(subChannel.equals("ToggleAFK"))
-				{
-					String player = input.readUTF();
-					ProxiedPlayer pplayer = getProxy().getPlayer(player);
-					
-					if(pplayer != null)
-					{
-						PlayerSettings settings = mSettings.getSettings(pplayer);
-						settings.isAFK = !settings.isAFK;
-						new MessageOutput("BungeeChat", "AFK")
-							.writeUTF(player)
-							.writeBoolean(settings.isAFK)
-							.send(pplayer.getServer().getInfo());
-					}
-				}
-							
 			}
 			catch(IOException e)
 			{
@@ -502,7 +447,7 @@ public class BungeeChat extends Plugin implements Listener
 		return mSyncManager;
 	}
 	
-	private void updateTabLists(String newColor, ProxiedPlayer player)
+	public void updateTabLists(String newColor, ProxiedPlayer player)
 	{
 		if(player == null)
 			return;

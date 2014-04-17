@@ -85,7 +85,8 @@ public class SyncManager implements PluginMessageListener
 		
 		out.send(mPlugin);
 		
-		mWaitingCallbacks.put(id, (IMethodCallback<Object>) callback);
+		if(callback != null)
+			mWaitingCallbacks.put(id, (IMethodCallback<Object>) callback);
 	}
 	
 	private void onMethodResult(int id, DataInput input) throws IOException

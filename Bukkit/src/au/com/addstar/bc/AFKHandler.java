@@ -85,19 +85,11 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 			else
 				settings.afkStartTime = Long.MAX_VALUE;
 			
-			new MessageOutput("BungeeChat", "AFK")
-				.writeUTF(target.getName())
-				.writeBoolean(settings.isAFK)
-				.send(BungeeChat.getInstance());
-			
+			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, target.getName(), settings.isAFK);
 			onAFKChange((Player)target, settings.isAFK);
 		}
 		else
-		{
-			new MessageOutput("BungeeChat", "ToggleAFK")
-			.writeUTF(target.getName())
-			.send(BungeeChat.getInstance());
-		}
+			BungeeChat.getSyncManager().callSyncMethod("bchat:toggleAFK", null, target.getName());
 		
 		if(target != sender)
 			sender.sendMessage(ChatColor.GREEN + "Toggled " + target.getName() + "'s AFK state");
@@ -191,10 +183,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 		settings.afkStartTime = Long.MAX_VALUE;
 		settings.lastActiveTime = System.currentTimeMillis();
 		
-		new MessageOutput("BungeeChat", "AFK")
-			.writeUTF(player.getName())
-			.writeBoolean(false)
-			.send(BungeeChat.getInstance());
+		BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), false);
 		
 		onAFKChange(player, false);
 	}
@@ -294,11 +283,8 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 					{
 						settings.isAFK = true;
 						settings.afkStartTime = time;
-						new MessageOutput("BungeeChat", "AFK")
-							.writeUTF(player.getName())
-							.writeBoolean(true)
-							.send(BungeeChat.getInstance());
-						
+						BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), true);
+
 						onAFKChange(player, true);
 					}
 				}
