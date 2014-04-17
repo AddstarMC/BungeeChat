@@ -67,6 +67,7 @@ public class BungeeChat extends Plugin implements Listener
 		StandardServMethods methods = new StandardServMethods();
 		mSyncManager.addMethod("bungee:getServerName", methods);
 		mSyncManager.addMethod("bchat:isAFK", methods);
+		mSyncManager.addMethod("bchat:canMsg", methods);
 		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
@@ -312,17 +313,6 @@ public class BungeeChat extends Plugin implements Listener
 						.send();
 					}
 				}
-				else if(subChannel.equals("MsgCheck"))
-				{
-					String target = input.readUTF();
-					String from = input.readUTF();
-					
-					boolean ok = mSettings.getSettings(target).msgEnabled;
-					new MessageOutput("BungeeChat", "MsgCheck")
-						.writeUTF(from)
-						.writeBoolean(ok)
-						.send(((Server)event.getSender()).getInfo());
-				}
 				else if(subChannel.equals("UpdateName"))
 				{
 					String player = input.readUTF();
@@ -445,7 +435,7 @@ public class BungeeChat extends Plugin implements Listener
 				new MessageOutput("BungeeChat", "Player+")
 					.writeUTF(event.getPlayer().getName())
 					.writeUTF(settings.nickname)
-					.send(true);
+					.send(false);
 			}
 			
 		}, 50, TimeUnit.MILLISECONDS);
@@ -461,7 +451,7 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				new MessageOutput("BungeeChat", "Player-")
 				.writeUTF(event.getPlayer().getName())
-				.send();
+				.send(false);
 			}
 			
 		}, 10, TimeUnit.MILLISECONDS);

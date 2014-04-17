@@ -1,24 +1,16 @@
 package au.com.addstar.bc;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.List;
-import java.util.WeakHashMap;
-
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.messaging.PluginMessageListener;
+import au.com.addstar.bc.sync.IMethodCallback;
 
-public class MessageCommand implements CommandExecutor, TabCompleter, PluginMessageListener
+public class MessageCommand implements CommandExecutor, TabCompleter
 {
-	private WeakHashMap<CommandSender, StoredMessage> mWaitingForResponse = new WeakHashMap<CommandSender, StoredMessage>();
-	
 	@Override
 	public List<String> onTabComplete( CommandSender sender, Command command, String label, String[] args )
 	{
@@ -43,16 +35,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 		
 		return str;
 	}
-	
-	private void sendCanMessageRequest(CommandSender from, CommandSender target, String message)
-	{
-		new MessageOutput("BungeeChat", "MsgCheck")
-			.writeUTF(target.getName())
-			.writeUTF(from.getName())
-			.send(BungeeChat.getInstance());
-		mWaitingForResponse.put(from, new StoredMessage(message, target, from));
-	}
-	
+
 	private void doSendMessage(CommandSender to, CommandSender from, String message)
 	{
 		String fullMessageOut = String.format(Formatter.getPMFormat(to, false), message);
@@ -78,7 +61,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 	}
 	
 	@Override
-	public boolean onCommand( CommandSender sender, Command command, String label, String[] args )
+	public boolean onCommand( final CommandSender sender, Command command, String label, String[] args )
 	{
 		if(command.getName().equals("tell"))
 		{
@@ -91,15 +74,14 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 				return true;
 			}
 			
-			CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
+			final CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
 			if(player == null)
 			{
 				sender.sendMessage(ChatColor.RED + "Cannot find player " + args[0]);
 				return true;
 			}
 			
-			String message = concat(args, 1);
-			message = BungeeChat.colorize(message, sender);
+			final String message = BungeeChat.colorize(concat(args, 1), sender);
 			
 			if(ChatColor.stripColor(message).trim().isEmpty())
 				return false;
@@ -108,7 +90,24 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 			{
 				if(player instanceof RemotePlayer)
 				{
-					sendCanMessageRequest(sender, player, message);
+					BungeeChat.getSyncManager().callSyncMethod("bchat:canMsg", new IMethodCallback<Byte>()
+					{
+						@Override
+						public void onError( String type, String message )
+						{
+							throw new RuntimeException(type + ": " + message);
+						}
+						
+						@Override
+						public void onFinished( Byte data )
+						{
+							if(data == 0)
+								sender.sendMessage(ChatColor.RED + "That player has messaging disabled.");
+							else
+								doSendMessage(player, sender, message);
+						}
+						
+					}, player.getName());
 					return true;
 				}
 				else if(player instanceof Player)
@@ -174,52 +173,4 @@ public class MessageCommand implements CommandExecutor, TabCompleter, PluginMess
 		}
 		return false;
 	}
-	
-	@Override
-	public void onPluginMessageReceived( String channel, Player sender, byte[] data )
-	{
-		if(!channel.equals("BungeeChat"))
-			return;
-		
-		ByteArrayInputStream stream = new ByteArrayInputStream(data);
-		DataInputStream input = new DataInputStream(stream);
-		try
-		{
-			String subChannel = input.readUTF();
-			if(subChannel.equals("MsgCheck"))
-			{
-				String player = input.readUTF();
-				boolean ok = input.readBoolean();
-				
-				Player p = Bukkit.getPlayerExact(player);
-				StoredMessage stored = mWaitingForResponse.get(p);
-				
-				if(stored != null)
-				{
-					if(!ok)
-						p.sendMessage(ChatColor.RED + "That player has messaging disabled.");
-					else
-						doSendMessage(stored.to, stored.from, stored.message);
-				}
-			}
-		}
-		catch(IOException e)
-		{
-		}
-	}
-	
-	private static class StoredMessage
-	{
-		public String message;
-		public CommandSender to;
-		public CommandSender from;
-		
-		public StoredMessage(String message, CommandSender to, CommandSender from)
-		{
-			this.message = message;
-			this.to = to;
-			this.from = from;
-		}
-	}
-
 }

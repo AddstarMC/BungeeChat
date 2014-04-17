@@ -14,6 +14,8 @@ public class StandardServMethods implements SyncMethod
 			return getServer(server);
 		else if(name.equals("bchat:isAFK"))
 			return isAFK((String)arguments[0]);
+		else if(name.equals("bchat:canMsg"))
+			return canMsg((String)arguments[0]);
 			
 		return null;
 	}
@@ -31,5 +33,14 @@ public class StandardServMethods implements SyncMethod
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
 		return settings.isAFK;
+	}
+	
+	public boolean canMsg(String player)
+	{
+		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		if(pplayer == null)
+			throw new IllegalArgumentException("That player is not online");
+		
+		return BungeeChat.instance.getManager().getSettings(pplayer).msgEnabled;
 	}
 }
