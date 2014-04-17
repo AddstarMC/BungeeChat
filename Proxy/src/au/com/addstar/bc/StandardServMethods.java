@@ -24,6 +24,8 @@ public class StandardServMethods implements SyncMethod
 			return setTabColor((String)arguments[0], (String)arguments[1]);
 		else if(name.equals("bchat:setMute"))
 			return setMute((String)arguments[0], (Long)arguments[1]);
+		else if(name.equals("bchat:setMsgTarget"))
+			return setMsgTarget((String)arguments[0], (String)arguments[1]);
 		return null;
 	}
 	
@@ -98,6 +100,20 @@ public class StandardServMethods implements SyncMethod
 		
 		BungeeChat.instance.getManager().savePlayer(player);
 		BungeeChat.instance.getManager().updateSettings(player);
+		
+		return null;
+	}
+	
+	public Void setMsgTarget(String player, String target)
+	{
+		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		if(pplayer == null)
+			throw new IllegalArgumentException("That player is not online");
+		
+		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer); 
+		settings.lastMsgTarget = target;
+		
+		BungeeChat.instance.getManager().updateSettings(pplayer);
 		
 		return null;
 	}

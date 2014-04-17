@@ -68,6 +68,12 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bungee:getServerName", methods);
 		mSyncManager.addMethod("bchat:isAFK", methods);
 		mSyncManager.addMethod("bchat:canMsg", methods);
+		mSyncManager.addMethod("bchat:setAFK", methods);
+		mSyncManager.addMethod("bchat:toggleAFK", methods);
+		mSyncManager.addMethod("bchat:setTabColor", methods);
+		mSyncManager.addMethod("bchat:setMute", methods);
+		mSyncManager.addMethod("bchat:setMsgTarget", methods);
+		
 		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
@@ -281,14 +287,6 @@ public class BungeeChat extends Plugin implements Listener
 					ProxiedPlayer dest = getProxy().getPlayer(player);
 					if(dest != null)
 						sendMessage(dest, message);
-				}
-				else if(subChannel.equals("MsgTarget"))
-				{
-					String player = input.readUTF();
-					String target = input.readUTF();
-					
-					mSettings.getSettings(player).lastMsgTarget = target;
-					mSettings.updateSettings(player);
 				}
 				else if(subChannel.equals("SyncPlayer"))
 				{
