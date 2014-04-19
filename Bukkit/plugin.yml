@@ -1,5 +1,5 @@
 name: BungeeChatBukkit
-version: ${pom.version}
+version: ${version.build}
 
 main: au.com.addstar.bc.BungeeChat
 
