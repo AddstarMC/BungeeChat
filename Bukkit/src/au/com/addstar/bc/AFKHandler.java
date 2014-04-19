@@ -232,7 +232,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 		cancelAFK(event.getPlayer());
 	}
 	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=false)
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerChat(PlayerCommandPreprocessEvent event)
 	{
 		if(!isAFK(event.getPlayer()))
