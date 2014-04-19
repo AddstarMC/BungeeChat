@@ -60,12 +60,4 @@ public class SystemMessagesHandler implements Listener
 		Utilities.broadcast(message, null, null);
 		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 	}
-	
-	public void onPlayerGlobalLeave(String player, String nickname)
-	{
-		if(nickname.isEmpty())
-			Utilities.broadcast(ChatColor.YELLOW + player + " left the game.", null, null);
-		else
-			Utilities.broadcast(ChatColor.YELLOW + nickname + " left the game.", null, null);
-	}
 }

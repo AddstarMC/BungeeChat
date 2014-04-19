@@ -388,6 +388,20 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onPlayerDC(final PlayerDisconnectEvent event)
 	{
+		String message = null;
+		Byte showQuitMessage = (Byte)mSyncManager.getProperty(event.getPlayer(), "hasQuitMessage"); 
+		
+		if(showQuitMessage == null || showQuitMessage != 0)
+		{
+			System.out.println(showQuitMessage);
+			message = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game.";
+		
+			new MessageOutput("BungeeChat", "Mirror")
+				.writeUTF("~BC")
+				.writeUTF(message)
+				.send(false);
+		}
+		
 		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
 		{
 			@Override

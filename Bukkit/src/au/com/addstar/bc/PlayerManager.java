@@ -204,8 +204,6 @@ public class PlayerManager implements Listener, IDataReceiver
 		String nickname = mReverseNickMapping.remove(original);
 		if(nickname != null)
 			mAllProxied.remove(nickname.toLowerCase());
-		
-		BungeeChat.getSysMsgHandler().onPlayerGlobalLeave(player, nickname == null ? "" : nickname);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)

@@ -73,7 +73,7 @@ public class SyncManager implements Listener
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority=127)
 	public void onPlayerDisconnect(PlayerDisconnectEvent event)
 	{
 		mPlayerProperties.remove(event.getPlayer());
