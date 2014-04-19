@@ -13,6 +13,7 @@ import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -70,6 +71,12 @@ public class SyncManager implements Listener
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	@EventHandler
+	public void onPlayerDisconnect(PlayerDisconnectEvent event)
+	{
+		mPlayerProperties.remove(event.getPlayer());
 	}
 	
 	private void onDataReceived(String channel, DataInput input, ServerInfo caller) throws IOException
@@ -159,6 +166,27 @@ public class SyncManager implements Listener
 		sendConfig(name, null);
 	}
 	
+	public void setProperty(ProxiedPlayer player, String property, Object value)
+	{
+		HashMap<String, Object> values = mPlayerProperties.get(player);
+		if(values == null)
+		{
+			values = new HashMap<String, Object>();
+			mPlayerProperties.put(player, values);
+		}
+		
+		values.put(property, value);
+	}
+	
+	public Object getProperty(ProxiedPlayer player, String property)
+	{
+		HashMap<String, Object> values = mPlayerProperties.get(player);
+		if(values == null)
+			return null;
+		
+		return values.get(property);
+	}
+	
 	private class StorageMethods implements SyncMethod
 	{
 		@Override
@@ -173,16 +201,7 @@ public class SyncManager implements Listener
 				if(player == null)
 					throw new IllegalArgumentException("Unknown player");
 				
-				String property = (String)arguments[1];
-				
-				HashMap<String, Object> values = mPlayerProperties.get(player);
-				if(values == null)
-				{
-					values = new HashMap<String, Object>();
-					mPlayerProperties.put(player, values);
-				}
-				
-				values.put(property, arguments[2]);
+				setProperty(player, (String)arguments[1], arguments[2]);
 				
 				return null;
 			}
@@ -195,13 +214,7 @@ public class SyncManager implements Listener
 				if(player == null)
 					throw new IllegalArgumentException("Unknown player");
 				
-				String property = (String)arguments[1];
-				
-				HashMap<String, Object> values = mPlayerProperties.get(player);
-				if(values == null)
-					return null;
-				
-				return values.get(property);
+				return getProperty(player, (String)arguments[1]);
 			}
 			
 			return null;

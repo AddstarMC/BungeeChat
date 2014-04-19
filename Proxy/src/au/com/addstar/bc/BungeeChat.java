@@ -35,6 +35,7 @@ import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
+import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -413,6 +414,20 @@ public class BungeeChat extends Plugin implements Listener
 				mSettings.updateSettings(event.getPlayer());
 			}
 		}, 10, TimeUnit.MILLISECONDS);
+	}
+	
+	@EventHandler
+	public void onServerFirstJoin(ServerConnectedEvent event)
+	{
+		if(event.getPlayer().getServer() == null)
+		{
+			PlayerSettings settings = mSettings.getSettings(event.getPlayer());
+			
+			new MessageOutput("BungeeChat", "ProxyJoin")
+			.writeUTF(event.getPlayer().getName())
+			.writeUTF(settings.nickname)
+			.send(event.getServer().getInfo());
+		}
 	}
 	
 	@EventHandler

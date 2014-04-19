@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import net.minecraft.util.org.apache.commons.lang3.Validate;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -178,8 +179,21 @@ public class PlayerManager implements Listener, IDataReceiver
 			mAllProxied.put(nickname.toLowerCase(), current);
 			mReverseNickMapping.put(current, nickname);
 		}
+	}
+	
+	private void onPlayerJoinFirst(String player, String nickname)
+	{
+		String message;
+		if(nickname.isEmpty())
+			message = ChatColor.YELLOW + player + " joined the game.";
+		else
+			message = ChatColor.YELLOW + nickname + " joined the game.";
 		
-		BungeeChat.getSysMsgHandler().onPlayerGlobalJoin(player, nickname);
+		ProxyJoinEvent event = new ProxyJoinEvent(Bukkit.getPlayerExact(player), message);
+		Bukkit.getPluginManager().callEvent(event);
+		
+		if(event.getJoinMessage() != null)
+			BungeeChat.getSysMsgHandler().onPlayerGlobalJoin(event.getJoinMessage());
 	}
 	
 	private void onPlayerLeave(String player)
@@ -370,5 +384,7 @@ public class PlayerManager implements Listener, IDataReceiver
 				}
 			}
 		}
+		else if(channel.equals("ProxyJoin"))
+			onPlayerJoinFirst(input.readUTF(), input.readUTF());
 	}
 }

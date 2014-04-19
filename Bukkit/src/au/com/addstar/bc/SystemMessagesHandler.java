@@ -55,12 +55,10 @@ public class SystemMessagesHandler implements Listener
 		event.setDeathMessage(message);
 	}
 	
-	public void onPlayerGlobalJoin(String player, String nickname)
+	public void onPlayerGlobalJoin(String message)
 	{
-		if(nickname.isEmpty())
-			Utilities.broadcast(ChatColor.YELLOW + player + " joined the game.", null, null);
-		else
-			Utilities.broadcast(ChatColor.YELLOW + nickname + " joined the game.", null, null);
+		Utilities.broadcast(message, null, null);
+		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 	}
 	
 	public void onPlayerGlobalLeave(String player, String nickname)
