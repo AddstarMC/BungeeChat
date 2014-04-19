@@ -5,11 +5,13 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.WeakHashMap;
 
 import au.com.addstar.bc.MessageOutput;
 
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -21,12 +23,19 @@ public class SyncManager implements Listener
 	private HashMap<String, SyncMethod> mMethods;
 	private HashMap<String, SyncConfig> mConfigs;
 	
+	private WeakHashMap<ProxiedPlayer, HashMap<String, Object>> mPlayerProperties;
+	
 	public SyncManager(Plugin plugin)
 	{
 		BungeeCord.getInstance().getPluginManager().registerListener(plugin, this);
 		BungeeCord.getInstance().registerChannel("BungeeSync");
 		mMethods = new HashMap<String, SyncMethod>();
 		mConfigs = new HashMap<String, SyncConfig>();
+		mPlayerProperties = new WeakHashMap<ProxiedPlayer, HashMap<String,Object>>();
+		
+		StorageMethods storage = new StorageMethods();
+		addMethod("bungee:setProperty", storage);
+		addMethod("bungee:getProperty", storage);
 	}
 	
 	public void addMethod(String name, SyncMethod method)
@@ -148,5 +157,54 @@ public class SyncManager implements Listener
 	public void sendConfig(String name)
 	{
 		sendConfig(name, null);
+	}
+	
+	private class StorageMethods implements SyncMethod
+	{
+		@Override
+		public Object run( String name, ServerInfo server, Object... arguments )
+		{
+			if(name.equals("bungee:setProperty"))
+			{
+				if(arguments.length != 3)
+					throw new IllegalArgumentException("Arguments: <player> <property> <value>");
+				
+				ProxiedPlayer player = BungeeCord.getInstance().getPlayer((String)arguments[0]);
+				if(player == null)
+					throw new IllegalArgumentException("Unknown player");
+				
+				String property = (String)arguments[1];
+				
+				HashMap<String, Object> values = mPlayerProperties.get(player);
+				if(values == null)
+				{
+					values = new HashMap<String, Object>();
+					mPlayerProperties.put(player, values);
+				}
+				
+				values.put(property, arguments[2]);
+				
+				return null;
+			}
+			else if(name.equals("bungee:getProperty"))
+			{
+				if(arguments.length != 2)
+					throw new IllegalArgumentException("Arguments: <player> <property>");
+				
+				ProxiedPlayer player = BungeeCord.getInstance().getPlayer((String)arguments[0]);
+				if(player == null)
+					throw new IllegalArgumentException("Unknown player");
+				
+				String property = (String)arguments[1];
+				
+				HashMap<String, Object> values = mPlayerProperties.get(player);
+				if(values == null)
+					return null;
+				
+				return values.get(property);
+			}
+			
+			return null;
+		}
 	}
 }

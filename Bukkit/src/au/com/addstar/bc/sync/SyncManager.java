@@ -110,4 +110,17 @@ public class SyncManager implements PluginMessageListener
 			.writeUTF(name)
 			.send(mPlugin);
 	}
+	
+	/**
+	 * Stores a property against a player for as long as they are on the proxy 
+	 */
+	public void setPlayerProperty(String player, String property, Object value)
+	{
+		callSyncMethod("bungee:setProperty", null, player, property, value);
+	}
+	
+	public void getPlayerPropertyAsync(String player, String property, IMethodCallback<Object> callback)
+	{
+		callSyncMethod("bungee:getProperty", callback, player, property);
+	}
 }
