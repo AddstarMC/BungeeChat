@@ -16,8 +16,8 @@ public class ColourTabList extends TabListAdapter
 	{
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(player);
 		String name = settings.tabColor + ChatColor.stripColor(player.getDisplayName());
-		if(name.length() > 15)
-			return name.substring(0, 15);
+		if(name.length() > 16)
+			return name.substring(0, 16);
 		return name;
 	}
 	

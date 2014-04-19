@@ -452,7 +452,14 @@ public class BungeeChat extends Plugin implements Listener
 		
 		PlayerSettings settings = mSettings.getSettings(player);
 		
-		BungeeCord.getInstance().broadcast(new PlayerListItem(settings.tabColor + player.getDisplayName(), false, (short)9999));
-		BungeeCord.getInstance().broadcast(new PlayerListItem(newColor + player.getDisplayName(), true, (short)9999));
+		String oldName = settings.tabColor + player.getDisplayName();
+		if(oldName.length() > 16)
+			oldName = oldName.substring(0, 16);
+		String newName = newColor + player.getDisplayName();
+		if(newName.length() > 16)
+			newName = newName.substring(0,16);
+		
+		BungeeCord.getInstance().broadcast(new PlayerListItem(oldName, false, (short)9999));
+		BungeeCord.getInstance().broadcast(new PlayerListItem(newName, true, (short)9999));
 	}
 }
