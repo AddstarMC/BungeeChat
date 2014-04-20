@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
 
+import au.com.addstar.bc.sync.IMethodCallback;
 import au.com.addstar.bc.utils.Utilities;
 
 public class MuteHandler implements CommandExecutor, TabCompleter, Listener
@@ -34,54 +35,103 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, Command command, String label, String[] args )
+	public boolean onCommand( final CommandSender sender, Command command, String label, String[] args )
 	{
-		if(args.length < 1)
-			return false;
-		
-		CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
-		
-		if(!(player instanceof Player) && !(player instanceof RemotePlayer))
+		if(command.getName().equals("mutelist"))
 		{
-			sender.sendMessage(ChatColor.RED + "Unknown player");
-			return true;
-		}
-		
-		String name = player.getName();
-		if(player instanceof Player)
-			name = ((Player)player).getDisplayName();
-		
-		if(command.getName().equals("mute"))
-		{
-			if(args.length != 2)
+			if(args.length != 0)
 				return false;
 			
-			long time = Utilities.parseDateDiff(args[1]);
-			if(time <= 0)
+			BungeeChat.getSyncManager().callSyncMethod("bchat:getMuteList", new IMethodCallback<List<String>>()
 			{
-				sender.sendMessage(ChatColor.RED + "Bad time format. Expected 5m, 2h or 30m2h");
+				@Override
+				public void onFinished( List<String> data )
+				{
+					if(data.isEmpty())
+					{
+						sender.sendMessage(ChatColor.GOLD + "There are no muted players.");
+					}
+					else
+					{
+						sender.sendMessage(ChatColor.GOLD + "Muted players:");
+						StringBuilder builder = new StringBuilder();
+						for(String entry : data)
+						{
+							if(builder.length() > 0)
+								builder.append(", ");
+							
+							String[] parts = entry.split(":");
+							long time = Long.valueOf(parts[1]);
+							time = time - System.currentTimeMillis();
+							
+							builder.append(parts[0]);
+							builder.append('(');
+							builder.append(Utilities.timeDiffToStringShort(time));
+							builder.append(')');
+						}
+						
+						sender.sendMessage(ChatColor.GRAY + builder.toString());
+					}
+				}
+
+				@Override
+				public void onError( String type, String message )
+				{
+					throw new RuntimeException(type + ":" + message);
+				}
+			});
+			
+			return true;
+		}
+		else
+		{
+			if(args.length < 1)
+				return false;
+			
+			CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
+			
+			if(!(player instanceof Player) && !(player instanceof RemotePlayer))
+			{
+				sender.sendMessage(ChatColor.RED + "Unknown player");
 				return true;
 			}
 			
-			String timeString = Utilities.timeDiffToString(time);
+			String name = player.getName();
+			if(player instanceof Player)
+				name = ((Player)player).getDisplayName();
 			
-			time = System.currentTimeMillis() + time;
-			BungeeChat.getPlayerManager().setPlayerMuteTime(player, time);
-			sender.sendMessage(ChatColor.AQUA + name + " has been muted for " + timeString);
-			
-			player.sendMessage(ChatColor.AQUA + "You have been muted for " + timeString);
-			
-			return true;
-		}
-		else if(command.getName().equals("unmute"))
-		{
-			if(args.length != 1)
-				return false;
-			
-			BungeeChat.getPlayerManager().setPlayerMuteTime(player, 0);
-			sender.sendMessage(ChatColor.AQUA + name + " has been unmuted");
-			player.sendMessage(ChatColor.AQUA + "You can talk again.");
-			return true;
+			if(command.getName().equals("mute"))
+			{
+				if(args.length != 2)
+					return false;
+				
+				long time = Utilities.parseDateDiff(args[1]);
+				if(time <= 0)
+				{
+					sender.sendMessage(ChatColor.RED + "Bad time format. Expected 5m, 2h or 30m2h");
+					return true;
+				}
+				
+				String timeString = Utilities.timeDiffToString(time);
+				
+				time = System.currentTimeMillis() + time;
+				BungeeChat.getPlayerManager().setPlayerMuteTime(player, time);
+				sender.sendMessage(ChatColor.AQUA + name + " has been muted for " + timeString);
+				
+				player.sendMessage(ChatColor.AQUA + "You have been muted for " + timeString);
+				
+				return true;
+			}
+			else if(command.getName().equals("unmute"))
+			{
+				if(args.length != 1)
+					return false;
+				
+				BungeeChat.getPlayerManager().setPlayerMuteTime(player, 0);
+				sender.sendMessage(ChatColor.AQUA + name + " has been unmuted");
+				player.sendMessage(ChatColor.AQUA + "You can talk again.");
+				return true;
+			}
 		}
 		
 		return false;

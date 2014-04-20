@@ -74,6 +74,7 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:setTabColor", methods);
 		mSyncManager.addMethod("bchat:setMute", methods);
 		mSyncManager.addMethod("bchat:setMsgTarget", methods);
+		mSyncManager.addMethod("bchat:getMuteList", methods);
 		
 		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");

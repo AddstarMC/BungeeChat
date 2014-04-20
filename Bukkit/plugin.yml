@@ -103,7 +103,12 @@ commands:
     usage: /<command> <player>
     description: Unmutes a player
     permission: bungeechat.mute
-    
+  
+  mutelist:
+    usage: /<command>
+    description: Shows all muted players
+    permission: bungeechat.mute
+  
   afk:
     usage: /<command> [player]
     description: Toggles AFK state

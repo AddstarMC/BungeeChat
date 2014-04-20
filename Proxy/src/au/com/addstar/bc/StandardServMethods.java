@@ -1,5 +1,8 @@
 package au.com.addstar.bc;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -26,6 +29,8 @@ public class StandardServMethods implements SyncMethod
 			return setMute((String)arguments[0], (Long)arguments[1]);
 		else if(name.equals("bchat:setMsgTarget"))
 			return setMsgTarget((String)arguments[0], (String)arguments[1]);
+		else if(name.equals("bchat:getMuteList"))
+			return getMuteList();
 		return null;
 	}
 	
@@ -116,5 +121,18 @@ public class StandardServMethods implements SyncMethod
 		BungeeChat.instance.getManager().updateSettings(pplayer);
 		
 		return null;
+	}
+	
+	public List<String> getMuteList()
+	{
+		ArrayList<String> muted = new ArrayList<String>();
+		for(ProxiedPlayer player : BungeeCord.getInstance().getPlayers())
+		{
+			PlayerSettings settings = BungeeChat.instance.getManager().getSettings(player);
+			if(System.currentTimeMillis() < settings.muteTime)
+				muted.add(player.getDisplayName() + ":" + settings.muteTime);
+		}
+		
+		return muted;
 	}
 }
