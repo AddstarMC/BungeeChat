@@ -178,14 +178,19 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 	
 	private void cancelAFK(Player player)
 	{
-		PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(player);
-		settings.isAFK = false;
-		settings.afkStartTime = Long.MAX_VALUE;
-		settings.lastActiveTime = System.currentTimeMillis();
-		
-		BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), false);
-		
-		onAFKChange(player, false);
+		AFKChangeEvent event = new AFKChangeEvent(player, true);
+		Bukkit.getPluginManager().callEvent(event);
+		if(!event.isCancelled())
+		{
+			PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(player);
+			settings.isAFK = false;
+			settings.afkStartTime = Long.MAX_VALUE;
+			settings.lastActiveTime = System.currentTimeMillis();
+			
+			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), false);
+			
+			onAFKChange(player, false);
+		}
 	}
 	
 	private void updateActiveTime(Player player)
@@ -281,11 +286,18 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 				{
 					if(time - settings.lastActiveTime >= delay * 1000)
 					{
-						settings.isAFK = true;
-						settings.afkStartTime = time;
-						BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), true);
-
-						onAFKChange(player, true);
+						AFKChangeEvent event = new AFKChangeEvent(player, true);
+						Bukkit.getPluginManager().callEvent(event);
+						if(!event.isCancelled())
+						{
+							settings.isAFK = true;
+							settings.afkStartTime = time;
+							BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), true);
+	
+							onAFKChange(player, true);
+						}
+						else
+							settings.lastActiveTime = time;
 					}
 				}
 				
