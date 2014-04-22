@@ -40,7 +40,6 @@ import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
-import net.md_5.bungee.protocol.packet.PlayerListItem;
 
 public class BungeeChat extends Plugin implements Listener
 {
@@ -90,6 +89,8 @@ public class BungeeChat extends Plugin implements Listener
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 
 		getProxy().getScheduler().schedule(this, new UnmuteTimer(), 5, 5, TimeUnit.SECONDS);
+		
+		ColourTabList.initialize(this);
 		
 		loadConfig();
 		mSyncManager.sendConfig("bungeechat");
@@ -446,14 +447,25 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onServerFirstJoin(ServerConnectedEvent event)
 	{
-		if(event.getPlayer().getServer() == null)
+		final ProxiedPlayer player = event.getPlayer();
+		if(player.getServer() == null)
 		{
-			PlayerSettings settings = mSettings.getSettings(event.getPlayer());
+			PlayerSettings settings = mSettings.getSettings(player);
 			
 			new MessageOutput("BungeeChat", "ProxyJoin")
-			.writeUTF(event.getPlayer().getName())
+			.writeUTF(player.getName())
 			.writeUTF(settings.nickname)
 			.send(event.getServer().getInfo());
+			
+			getProxy().getScheduler().schedule(this, new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					if(player.getTabList() instanceof ColourTabList)
+						((ColourTabList)player.getTabList()).updateList();
+				}
+			}, 1, TimeUnit.SECONDS);
 		}
 	}
 	
@@ -487,22 +499,16 @@ public class BungeeChat extends Plugin implements Listener
 		return mSyncManager;
 	}
 	
-	public void updateTabLists(String newColor, ProxiedPlayer player)
+	public void updateTabLists(String oldColor, ProxiedPlayer player)
 	{
 		if(player == null)
 			return;
 		
-		PlayerSettings settings = mSettings.getSettings(player);
-		
-		String oldName = settings.tabColor + player.getDisplayName();
+		String oldName = oldColor + player.getDisplayName();
 		if(oldName.length() > 16)
 			oldName = oldName.substring(0, 16);
-		String newName = newColor + player.getDisplayName();
-		if(newName.length() > 16)
-			newName = newName.substring(0,16);
 		
-		BungeeCord.getInstance().broadcast(new PlayerListItem(oldName, false, (short)9999));
-		BungeeCord.getInstance().broadcast(new PlayerListItem(newName, true, (short)9999));
+		ColourTabList.nameChange(player, oldName);
 	}
 	
 	private class UnmuteTimer implements Runnable

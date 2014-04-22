@@ -88,8 +88,9 @@ public class StandardServMethods implements SyncMethod
 			throw new IllegalArgumentException("That player is not online");
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
-		BungeeChat.instance.updateTabLists(color, pplayer);
+		String oldColor = settings.tabColor;
 		settings.tabColor = color;
+		BungeeChat.instance.updateTabLists(oldColor, pplayer);
 		
 		return null;
 	}

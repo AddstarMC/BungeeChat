@@ -4,7 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.WeakHashMap;
 
 import au.com.addstar.bc.MessageOutput;
@@ -175,7 +178,13 @@ public class SyncManager implements Listener
 			mPlayerProperties.put(player, values);
 		}
 		
-		values.put(property, value);
+		Object oldValue;
+		if(value == null)
+			oldValue = values.remove(property);
+		else
+			oldValue = values.put(property, value);
+		
+		BungeeCord.getInstance().getPluginManager().callEvent(new PropertyChangeEvent(player, property, oldValue, value));
 	}
 	
 	public Object getProperty(ProxiedPlayer player, String property)
@@ -185,6 +194,36 @@ public class SyncManager implements Listener
 			return null;
 		
 		return values.get(property);
+	}
+	
+	public boolean getPropertyBoolean(ProxiedPlayer player, String property, boolean def)
+	{
+		Object value = getProperty(player, property);
+		if(value == null)
+			return def;
+
+		if(value instanceof Number)
+			return ((Number)value).byteValue() != 0;
+		if(value instanceof Boolean)
+			return (Boolean)value;
+		
+		return def;
+	}
+	
+	public Collection<String> getPropertyNames(ProxiedPlayer player, String prefix)
+	{
+		HashMap<String, Object> values = mPlayerProperties.get(player);
+		if(values == null)
+			return Collections.emptySet();
+		
+		HashSet<String> properties = new HashSet<String>();
+		for(String key : values.keySet())
+		{
+			if(key.startsWith(prefix))
+				properties.add(key);
+		}
+		
+		return properties;
 	}
 	
 	private class StorageMethods implements SyncMethod
