@@ -1,5 +1,8 @@
 package au.com.addstar.bc;
 
+import java.io.DataInput;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -13,16 +16,23 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.sync.IMethodCallback;
+import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.Utilities;
 
-public class MuteHandler implements CommandExecutor, TabCompleter, Listener
+public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IDataReceiver
 {
+	private long mGMuteTime = 0;
+	
+	private List<String> mMutedCommands = Collections.emptyList();
+	
 	public MuteHandler(Plugin plugin)
 	{
 		Bukkit.getPluginManager().registerEvents(this, plugin);
+		BungeeChat.getInstance().addListener(this);
 	}
 	
 	@Override
@@ -83,6 +93,54 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener
 			
 			return true;
 		}
+		else if(command.getName().equals("globalmute"))
+		{
+			if(args.length != 0 && args.length != 1)
+				return false;
+			
+			long time = -1;
+			String timeString = null;
+			
+			if(args.length == 1)
+			{
+				time = Utilities.parseDateDiff(args[0]);
+				if(time <= 0)
+				{
+					sender.sendMessage(ChatColor.RED + "Bad time format. Expected 5m, 2h or 30m2h");
+					return true;
+				}
+				
+				timeString = Utilities.timeDiffToString(time);
+				time = System.currentTimeMillis() + time;
+			}
+			else if(mGMuteTime != 0)
+			{
+				mGMuteTime = 0;
+				new MessageOutput("BungeeChat", "GMute")
+				.writeLong(0)
+				.send(BungeeChat.getInstance());
+				
+				String message = ChatColor.AQUA + "The global mute has ended";
+				BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
+				Utilities.broadcast(message, null, null);
+				return true;
+			}
+
+			mGMuteTime = time;
+			new MessageOutput("BungeeChat", "GMute")
+				.writeLong(time)
+				.send(BungeeChat.getInstance());
+			
+			String message = ChatColor.AQUA + "A " + ChatColor.RED + "global" + ChatColor.AQUA + " mute has been started";
+			
+			if(time != -1)
+				message += " for " + timeString;
+			
+			BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
+			Utilities.broadcast(message, null, null);
+			
+			return true;
+		}
 		else
 		{
 			if(args.length < 1)
@@ -129,7 +187,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener
 				
 				BungeeChat.getPlayerManager().setPlayerMuteTime(player, 0);
 				sender.sendMessage(ChatColor.AQUA + name + " has been unmuted");
-				player.sendMessage(ChatColor.AQUA + "You can talk again.");
+				player.sendMessage(ChatColor.AQUA + "You are no longer muted. You may talk again.");
 				return true;
 			}
 		}
@@ -147,5 +205,52 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener
 			event.getPlayer().sendMessage(ChatColor.AQUA + "You are muted. You may not talk.");
 			event.setCancelled(true);
 		}
+		else if((mGMuteTime == -1 || System.currentTimeMillis() < mGMuteTime) && !event.getPlayer().hasPermission("bungeechat.globalmute.exempt"))
+		{
+			event.getPlayer().sendMessage(ChatColor.AQUA + "Everyone is muted. You may not talk.");
+			event.setCancelled(true);
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	private void onPlayerCommand(PlayerCommandPreprocessEvent event)
+	{
+		PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(event.getPlayer());
+		
+		String command = event.getMessage().split(" ")[0].substring(1);
+		
+		if(!mMutedCommands.contains(command.toLowerCase()))
+			return;
+		
+		if(settings.muteTime == -1 || System.currentTimeMillis() < settings.muteTime)
+		{
+			event.getPlayer().sendMessage(ChatColor.AQUA + "You are muted. You may not use this command.");
+			event.setCancelled(true);
+		}
+		else if((mGMuteTime == -1 || System.currentTimeMillis() < mGMuteTime) && !event.getPlayer().hasPermission("bungeechat.globalmute.exempt"))
+		{
+			event.getPlayer().sendMessage(ChatColor.AQUA + "Everyone is muted. You may not use this command.");
+			event.setCancelled(true);
+		}
+	}
+	
+	@Override
+	public void onMessage( String channel, DataInput data ) throws IOException
+	{
+		if(channel.equals("GMute"))
+		{
+			mGMuteTime = data.readLong();
+		}
+	}
+	
+	@SuppressWarnings( "unchecked" )
+	public void load(SyncConfig config)
+	{
+		mMutedCommands = (List<String>)config.getList("mutedcommands", Collections.emptyList());
+	}
+	
+	public void setGlobalMute(long endTime)
+	{
+		mGMuteTime = endTime;
 	}
 }

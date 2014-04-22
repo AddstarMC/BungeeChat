@@ -57,6 +57,11 @@ permissions:
     default: op
   bungeechat.afk.kick.exempt:
     default: op
+    
+  bungeechat.globalmute:
+    default: op
+  bungeechat.globalmute.exempt:
+    default: op
   
 commands:
   /nullcmd:
@@ -113,3 +118,10 @@ commands:
     usage: /<command> [player]
     description: Toggles AFK state
     permission: bungeechat.afk
+  
+  globalmute:
+    aliases: [gmute]
+    usage: /<command> [time]
+    description: Toggles global mute, or enables for [time]. All players except those with bungeechat.globalmute.exempt perm will be muted
+    permission: bungeechat.globalmute
+  

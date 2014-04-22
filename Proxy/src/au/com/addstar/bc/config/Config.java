@@ -28,6 +28,7 @@ public class Config extends net.cubespace.Yamler.Config.Config
 		keywordHighlighter = new KeywordHighlighterSettings();
 		
 		socialSpyKeywords = new ArrayList<String>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply"));
+		mutedCommands = new ArrayList<String>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply", "me", "afk"));
 	}
 	
 	@Comment("You can override the name of the console here. Leave blank for no change")
@@ -48,6 +49,9 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	public KeywordHighlighterSettings keywordHighlighter;
 	
 	public List<String> socialSpyKeywords;
+	
+	@Comment("List of commands to be included in mute")
+	public List<String> mutedCommands;
 	
 	@Comment("The time in seconds of no activity that someone is considered afk.")
 	@Path("afk-delay")
@@ -78,6 +82,7 @@ public class Config extends net.cubespace.Yamler.Config.Config
 		config.set("afk-kick-delay", afkKickDelay);
 		
 		config.set("socialspykeywords", socialSpyKeywords);
+		config.set("mutedcommands", mutedCommands);
 
 		config.set("highlight", keywordHighlighter);
 		

@@ -52,7 +52,8 @@ public class BungeeChat extends Plugin implements Listener
 	
 	public static BungeeChat instance;
 	
-	private SyncManager mSyncManager; 
+	private SyncManager mSyncManager;
+	private long mGMuteTime;
 	
 	@Override
 	public void onEnable()
@@ -88,6 +89,8 @@ public class BungeeChat extends Plugin implements Listener
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 
+		getProxy().getScheduler().schedule(this, new UnmuteTimer(), 5, 5, TimeUnit.SECONDS);
+		
 		loadConfig();
 		mSyncManager.sendConfig("bungeechat");
 	}
@@ -333,6 +336,15 @@ public class BungeeChat extends Plugin implements Listener
 						.writeUTF(name)
 						.send();
 				}
+				else if(subChannel.equals("GMute"))
+				{
+					long time = input.readLong();
+					mGMuteTime = time;
+					
+					new MessageOutput("BungeeChat", "GMute")
+						.writeLong(time)
+						.send(true);
+				}
 			}
 			catch(IOException e)
 			{
@@ -491,5 +503,34 @@ public class BungeeChat extends Plugin implements Listener
 		
 		BungeeCord.getInstance().broadcast(new PlayerListItem(oldName, false, (short)9999));
 		BungeeCord.getInstance().broadcast(new PlayerListItem(newName, true, (short)9999));
+	}
+	
+	private class UnmuteTimer implements Runnable
+	{
+		@Override
+		public void run()
+		{
+			if(mGMuteTime > 0 && System.currentTimeMillis() >= mGMuteTime)
+			{
+				BungeeCord.getInstance().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
+				mGMuteTime = 0;
+				new MessageOutput("BungeeChat", "GMute")
+					.writeLong(mGMuteTime)
+					.send(true);
+			}
+			
+			for(ProxiedPlayer player : getProxy().getPlayers())
+			{
+				PlayerSettings settings = mSettings.getSettings(player);
+				if(settings.muteTime > 0 && System.currentTimeMillis() >= settings.muteTime)
+				{
+					settings.muteTime = 0;
+					mSettings.updateSettings(player);
+					mSettings.savePlayer(player);
+					
+					player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are no longer muted. You may talk again."));
+				}
+			}
+		}
 	}
 }

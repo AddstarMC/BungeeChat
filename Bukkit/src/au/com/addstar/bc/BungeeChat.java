@@ -47,6 +47,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	private AFKHandler mAfkHandler;
 	private SystemMessagesHandler mMsgHandler;
+	private MuteHandler mMuteHandler;
 	
 	private SyncManager mSyncManager;
 	
@@ -93,12 +94,13 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		getCommand("nickname").setExecutor(nickname);
 		getCommand("nickname").setTabCompleter(nickname);
 		
-		MuteHandler mute = new MuteHandler(this);
-		getCommand("mute").setExecutor(mute);
-		getCommand("mute").setTabCompleter(mute);
-		getCommand("unmute").setExecutor(mute);
-		getCommand("unmute").setTabCompleter(mute);
-		getCommand("mutelist").setExecutor(mute);
+		mMuteHandler = new MuteHandler(this);
+		getCommand("mute").setExecutor(mMuteHandler);
+		getCommand("mute").setTabCompleter(mMuteHandler);
+		getCommand("unmute").setExecutor(mMuteHandler);
+		getCommand("unmute").setTabCompleter(mMuteHandler);
+		getCommand("mutelist").setExecutor(mMuteHandler);
+		getCommand("globalmute").setExecutor(mMuteHandler);
 		
 		RealnameCommand realname = new RealnameCommand();
 		getCommand("realname").setExecutor(realname);
@@ -167,6 +169,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			mChatChannels.load(config);
 			mSocialSpyHandler.load(config);
 			mAfkHandler.load(config);
+			mMuteHandler.load(config);
 		}
 	}
 
