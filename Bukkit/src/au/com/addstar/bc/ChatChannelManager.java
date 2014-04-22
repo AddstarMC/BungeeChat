@@ -3,6 +3,8 @@ package au.com.addstar.bc;
 import java.util.HashMap;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,7 +17,7 @@ import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.sync.SyncConfig;
 
 
-public class ChatChannelManager implements Listener
+public class ChatChannelManager implements Listener, CommandExecutor
 {
 	private HashMap<String, ChatChannel> mChannels = new HashMap<String, ChatChannel>();
 	
@@ -89,6 +91,40 @@ public class ChatChannelManager implements Listener
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public boolean onCommand( CommandSender sender, Command command, String label, String[] args )
+	{
+		if(args.length < 2)
+			return false;
+		
+		String channelCmd = args[0];
+		
+		String message = "";
+		for(int i = 1; i < args.length; ++i)
+		{
+			if(!message.isEmpty())
+				message += " ";
+			
+			message += args[i];
+		}
+		
+		for(ChatChannel channel : mChannels.values())
+		{
+			if(!channel.command.isEmpty() && channel.command.equalsIgnoreCase(channelCmd))
+			{
+				if(channel.permission != null && !sender.hasPermission(channel.permission))
+					break;
+				
+				if(message != null)
+					channel.say(sender, message);
+				
+				return true;
+			}
+		}
+		
+		return true;
 	}
 	
 	public void unregisterAll()

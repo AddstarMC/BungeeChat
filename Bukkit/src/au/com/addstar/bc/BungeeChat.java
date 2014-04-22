@@ -109,6 +109,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		mAfkHandler = new AFKHandler(this);
 		getCommand("afk").setExecutor(mAfkHandler);
 		getCommand("afk").setTabCompleter(mAfkHandler);
+		
+		getCommand("runchat").setExecutor(mChatChannels);
 	}
 	
 	@Override
