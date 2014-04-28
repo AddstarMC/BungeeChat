@@ -54,7 +54,7 @@ public class ColourTabList extends TabListAdapter
 		if ( ping - PING_THRESHOLD > lastPing && ping + PING_THRESHOLD < lastPing )
 		{
 			lastPing = ping;
-			PlayerListItem packet = new PlayerListItem(getName(getPlayer()), true, (short) ping);
+			PlayerListItem packet = new PlayerListItem(getName(getPlayer()), true, ping);
 			
 			for(ProxiedPlayer player : BungeeCord.getInstance().getPlayers())
 			{
@@ -67,7 +67,7 @@ public class ColourTabList extends TabListAdapter
 	@Override
 	public void onDisconnect()
 	{
-		PlayerListItem packet = new PlayerListItem(getName(getPlayer()), false, (short) 9999);
+		PlayerListItem packet = new PlayerListItem(getName(getPlayer()), false, 9999);
 		
 		for(ProxiedPlayer player : BungeeCord.getInstance().getPlayers())
 		{
