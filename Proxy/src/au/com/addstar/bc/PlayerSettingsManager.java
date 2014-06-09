@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.WeakHashMap;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
-import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class PlayerSettingsManager
@@ -20,7 +20,7 @@ public class PlayerSettingsManager
 	
 	public PlayerSettings getSettings(String player)
 	{
-		return getSettings(BungeeCord.getInstance().getPlayer(player));
+		return getSettings(ProxyServer.getInstance().getPlayer(player));
 	}
 	
 	public PlayerSettings getSettings(ProxiedPlayer player)
@@ -46,7 +46,7 @@ public class PlayerSettingsManager
 	
 	public void savePlayer(String player)
 	{
-		savePlayer(BungeeCord.getInstance().getPlayer(player));
+		savePlayer(ProxyServer.getInstance().getPlayer(player));
 	}
 	
 	public void savePlayer(ProxiedPlayer player)
@@ -62,7 +62,7 @@ public class PlayerSettingsManager
 	
 	public void updateSettings(String player)
 	{
-		updateSettings(BungeeCord.getInstance().getPlayer(player));
+		updateSettings(ProxyServer.getInstance().getPlayer(player));
 	}
 	
 	public void updateSettings(ProxiedPlayer player)

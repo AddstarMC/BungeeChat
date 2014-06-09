@@ -19,21 +19,15 @@
       	<enabled>false</enabled>
       </snapshots>
     </repository>
-    <repository>
-      <id>addstar-snapshot-repo</id>
-      <url>http://maven.addstar.com.au/artifactory/ext-snapshot-local</url>
-      <snapshots>
-      	<enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-    
+	    
     <!-- Other repositories -->
     <repository>
       <id>maven-central</id>
       <url>http://repo1.maven.org/maven2/</url>
+    </repository>
+    <repository>
+      <id>md_5</id>
+      <url>https://oss.sonatype.org/content/groups/public/</url>
     </repository>
     <repository>
       <id>Yamler</id>
@@ -44,9 +38,8 @@
   <dependencies>
     <dependency>
         <groupId>net.md-5</groupId>
-        <artifactId>bungeecord-bootstrap</artifactId>
+        <artifactId>bungeecord-api</artifactId>
         <version>1.7-SNAPSHOT</version>
-    	<type>jar</type>
   	</dependency>
   	
   	<dependency>

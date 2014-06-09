@@ -12,7 +12,7 @@ import java.util.WeakHashMap;
 
 import au.com.addstar.bc.MessageOutput;
 
-import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
@@ -31,8 +31,8 @@ public class SyncManager implements Listener
 	
 	public SyncManager(Plugin plugin)
 	{
-		BungeeCord.getInstance().getPluginManager().registerListener(plugin, this);
-		BungeeCord.getInstance().registerChannel("BungeeSync");
+		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
+		ProxyServer.getInstance().registerChannel("BungeeSync");
 		mMethods = new HashMap<String, SyncMethod>();
 		mConfigs = new HashMap<String, SyncConfig>();
 		mPlayerProperties = new WeakHashMap<ProxiedPlayer, HashMap<String,Object>>();
@@ -184,7 +184,7 @@ public class SyncManager implements Listener
 		else
 			oldValue = values.put(property, value);
 		
-		BungeeCord.getInstance().getPluginManager().callEvent(new PropertyChangeEvent(player, property, oldValue, value));
+		ProxyServer.getInstance().getPluginManager().callEvent(new PropertyChangeEvent(player, property, oldValue, value));
 	}
 	
 	public Object getProperty(ProxiedPlayer player, String property)
@@ -236,7 +236,7 @@ public class SyncManager implements Listener
 				if(arguments.length != 3)
 					throw new IllegalArgumentException("Arguments: <player> <property> <value>");
 				
-				ProxiedPlayer player = BungeeCord.getInstance().getPlayer((String)arguments[0]);
+				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((String)arguments[0]);
 				if(player == null)
 					throw new IllegalArgumentException("Unknown player");
 				
@@ -249,7 +249,7 @@ public class SyncManager implements Listener
 				if(arguments.length != 2)
 					throw new IllegalArgumentException("Arguments: <player> <property>");
 				
-				ProxiedPlayer player = BungeeCord.getInstance().getPlayer((String)arguments[0]);
+				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((String)arguments[0]);
 				if(player == null)
 					throw new IllegalArgumentException("Unknown player");
 				

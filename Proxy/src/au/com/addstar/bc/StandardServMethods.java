@@ -3,7 +3,7 @@ package au.com.addstar.bc;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.md_5.bungee.BungeeCord;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import au.com.addstar.bc.sync.SyncMethod;
@@ -41,7 +41,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public boolean isAFK(String player)
 	{
-		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online");
 		
@@ -51,7 +51,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public boolean canMsg(String player)
 	{
-		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online");
 		
@@ -60,7 +60,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public Void setAFK(String player, byte status)
 	{
-		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online");
 		
@@ -71,7 +71,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public Void toggleAFK(String player)
 	{
-		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online");
 		
@@ -83,7 +83,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public Void setTabColor(String player, String color)
 	{
-		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online");
 		
@@ -97,7 +97,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public Void setMute(String player, long muteEnd)
 	{
-		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online");
 		
@@ -112,7 +112,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public Void setMsgTarget(String player, String target)
 	{
-		ProxiedPlayer pplayer = BungeeCord.getInstance().getPlayer(player);
+		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online");
 		
@@ -127,7 +127,7 @@ public class StandardServMethods implements SyncMethod
 	public List<String> getMuteList()
 	{
 		ArrayList<String> muted = new ArrayList<String>();
-		for(ProxiedPlayer player : BungeeCord.getInstance().getPlayers())
+		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 		{
 			PlayerSettings settings = BungeeChat.instance.getManager().getSettings(player);
 			if(System.currentTimeMillis() < settings.muteTime)

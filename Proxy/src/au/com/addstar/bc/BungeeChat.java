@@ -25,7 +25,6 @@ import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
-import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -377,7 +376,7 @@ public class BungeeChat extends Plugin implements Listener
 	public void onPlayerJoin(final PostLoginEvent event)
 	{
 		event.getPlayer().setTabList(new ColourTabList());
-		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
+		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
 			public void run()
@@ -416,7 +415,7 @@ public class BungeeChat extends Plugin implements Listener
 				.send(false);
 		}
 		
-		BungeeCord.getInstance().getScheduler().schedule(this, new Runnable()
+		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
 			public void run()
@@ -518,7 +517,7 @@ public class BungeeChat extends Plugin implements Listener
 		{
 			if(mGMuteTime > 0 && System.currentTimeMillis() >= mGMuteTime)
 			{
-				BungeeCord.getInstance().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
+				getProxy().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
 				mGMuteTime = 0;
 				new MessageOutput("BungeeChat", "GMute")
 					.writeLong(mGMuteTime)

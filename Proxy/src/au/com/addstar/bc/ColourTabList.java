@@ -5,7 +5,6 @@ import java.util.WeakHashMap;
 
 import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
-import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -23,7 +22,7 @@ public class ColourTabList extends TabListAdapter
 	
 	public static void initialize(Plugin plugin)
 	{
-		BungeeCord.getInstance().getPluginManager().registerListener(plugin, mUpdater);
+		ProxyServer.getInstance().getPluginManager().registerListener(plugin, mUpdater);
 	}
 	
 	private int lastPing;
@@ -47,7 +46,7 @@ public class ColourTabList extends TabListAdapter
 	public void onConnect()
 	{
 	}
-
+	
 	@Override
 	public void onPingChange( int ping )
 	{
@@ -56,7 +55,7 @@ public class ColourTabList extends TabListAdapter
 			lastPing = ping;
 			PlayerListItem packet = new PlayerListItem(getName(getPlayer()), true, ping);
 			
-			for(ProxiedPlayer player : BungeeCord.getInstance().getPlayers())
+			for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 			{
 				if(isVisible(player, getPlayer()))
 					player.unsafe().sendPacket(packet);
@@ -69,7 +68,7 @@ public class ColourTabList extends TabListAdapter
 	{
 		PlayerListItem packet = new PlayerListItem(getName(getPlayer()), false, 9999);
 		
-		for(ProxiedPlayer player : BungeeCord.getInstance().getPlayers())
+		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 		{
 			if(isVisible(player, getPlayer()))
 				player.unsafe().sendPacket(packet);
@@ -149,7 +148,7 @@ public class ColourTabList extends TabListAdapter
 		PlayerListItem packet1 = new PlayerListItem(oldName, false, (short)9999);
 		PlayerListItem packet2 = new PlayerListItem(name, true, (short)player.getPing());
 		
-		for(ProxiedPlayer p : BungeeCord.getInstance().getPlayers())
+		for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
 			if(isVisible(p, player))
 			{
