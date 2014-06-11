@@ -212,7 +212,6 @@ public class PlayerManager implements Listener, IDataReceiver
 		if(message.isEmpty())
 			message = null;
 		
-		System.out.println("Firing ProxyLeaveEvent. message: " + message);
 		ProxyLeaveEvent event = new ProxyLeaveEvent(Bukkit.getOfflinePlayer(id), displayName, message);
 		Bukkit.getPluginManager().callEvent(event);
 		
