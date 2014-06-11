@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import net.minecraft.util.org.apache.commons.lang3.Validate;
 
@@ -206,6 +207,25 @@ public class PlayerManager implements Listener, IDataReceiver
 			mAllProxied.remove(nickname.toLowerCase());
 	}
 	
+	private void onPlayerLeaveProxy(UUID id, String displayName, String message)
+	{
+		if(message.isEmpty())
+			message = null;
+		
+		System.out.println("Firing ProxyLeaveEvent. message: " + message);
+		ProxyLeaveEvent event = new ProxyLeaveEvent(Bukkit.getOfflinePlayer(id), displayName, message);
+		Bukkit.getPluginManager().callEvent(event);
+		
+		message = event.getQuitMessage();
+		if(message == null)
+			message = "";
+		
+		new MessageOutput("BungeeChat", "QuitMessage")
+			.writeUTF(id.toString())
+			.writeUTF(message)
+			.send(BungeeChat.getInstance());
+	}
+	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerJoinServer(PlayerLoginEvent event)
 	{
@@ -384,5 +404,7 @@ public class PlayerManager implements Listener, IDataReceiver
 		}
 		else if(channel.equals("ProxyJoin"))
 			onPlayerJoinFirst(input.readUTF(), input.readUTF());
+		else if(channel.equals("ProxyLeave"))
+			onPlayerLeaveProxy(UUID.fromString(input.readUTF()), input.readUTF(), input.readUTF());
 	}
 }

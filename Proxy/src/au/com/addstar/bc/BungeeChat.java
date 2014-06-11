@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -26,6 +27,7 @@ import au.com.addstar.bc.sync.SyncUtil;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -38,6 +40,7 @@ import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.event.EventHandler;
 
 public class BungeeChat extends Plugin implements Listener
@@ -47,6 +50,7 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
 	private PlayerSettingsManager mSettings;
+	private HashMap<UUID, ScheduledTask> mWaitingQuitMessages = new HashMap<UUID, ScheduledTask>();
 	
 	public static BungeeChat instance;
 	
@@ -345,6 +349,24 @@ public class BungeeChat extends Plugin implements Listener
 						.writeLong(time)
 						.send(true);
 				}
+				else if(subChannel.equals("QuitMessage"))
+				{
+					UUID id = UUID.fromString(input.readUTF());
+					String message = input.readUTF();
+					ScheduledTask task = mWaitingQuitMessages.remove(id);
+					if(task != null)
+					{
+						task.cancel();
+						
+						if(!message.isEmpty())
+						{
+							new MessageOutput("BungeeChat", "Mirror")
+							.writeUTF("~BC")
+							.writeUTF(message)
+							.send(false);
+						}
+					}
+				}
 			}
 			catch(IOException e)
 			{
@@ -401,19 +423,32 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onPlayerDC(final PlayerDisconnectEvent event)
 	{
-		String message = null;
 		Byte showQuitMessage = (Byte)mSyncManager.getProperty(event.getPlayer(), "hasQuitMessage"); 
-		
+		String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
 		if(showQuitMessage == null || showQuitMessage != 0)
-		{
-			System.out.println(showQuitMessage);
-			message = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game.";
+			quitMessage = "";
 		
-			new MessageOutput("BungeeChat", "Mirror")
-				.writeUTF("~BC")
-				.writeUTF(message)
-				.send(false);
-		}
+		new MessageOutput("BungeeChat", "ProxyLeave")
+			.writeUTF(event.getPlayer().getUniqueId().toString())
+			.writeUTF(event.getPlayer().getDisplayName())
+			.writeUTF(quitMessage)
+			.send(event.getPlayer().getServer().getInfo());
+		
+		final String fQuitMessage = quitMessage;
+		mWaitingQuitMessages.put(event.getPlayer().getUniqueId(), ProxyServer.getInstance().getScheduler().schedule(this, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if(!fQuitMessage.isEmpty())
+				{
+					new MessageOutput("BungeeChat", "Mirror")
+						.writeUTF("~BC")
+						.writeUTF(fQuitMessage)
+						.send(false);
+				}
+			}
+		}, 100, TimeUnit.MILLISECONDS));
 		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
