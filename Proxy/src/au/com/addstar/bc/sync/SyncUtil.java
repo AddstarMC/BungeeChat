@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import com.google.common.collect.HashBiMap;
@@ -97,6 +98,11 @@ public class SyncUtil
 			output.writeByte(10);
 			writeSerializable(output, (SyncSerializable)value);
 		}
+		else if(value instanceof UUID)
+		{
+			output.writeByte(11);
+			output.writeUTF(value.toString());
+		}
 		else
 			throw new IllegalArgumentException("Unable to use type " + value.getClass().getName() + ". Make it a SyncSerializable if you want to use it directly.");
 	}
@@ -157,6 +163,8 @@ public class SyncUtil
 			return readMap(input);
 		case 10:
 			return readSerializable(input);
+		case 11:
+			return UUID.fromString(input.readUTF());
 		default:
 			throw new AssertionError("Encountered unknown type " + type + " when reading object");
 		}

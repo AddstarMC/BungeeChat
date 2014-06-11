@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
 import au.com.addstar.bc.MessageOutput;
@@ -40,6 +42,7 @@ public class SyncManager implements Listener
 		StorageMethods storage = new StorageMethods();
 		addMethod("bungee:setProperty", storage);
 		addMethod("bungee:getProperty", storage);
+		addMethod("bungee:getProperties", storage);
 	}
 	
 	public void addMethod(String name, SyncMethod method)
@@ -122,6 +125,7 @@ public class SyncManager implements Listener
 			}
 			catch(Exception e)
 			{
+				e.printStackTrace();
 				new MessageOutput("BungeeSync", "CallRes")
 				.writeInt(id)
 				.writeBoolean(false)
@@ -196,6 +200,19 @@ public class SyncManager implements Listener
 		return values.get(property);
 	}
 	
+	public Map<String, Object> getProperties(String property)
+	{
+		HashMap<String, Object> values = new HashMap<String, Object>();
+		for(Entry<ProxiedPlayer, HashMap<String, Object>> map : mPlayerProperties.entrySet())
+		{
+			HashMap<String, Object> properties = map.getValue();
+			if(properties.containsKey(property))
+				values.put(map.getKey().getUniqueId().toString(), properties.get(property));
+		}
+		
+		return values;
+	}
+	
 	public boolean getPropertyBoolean(ProxiedPlayer player, String property, boolean def)
 	{
 		Object value = getProperty(player, property);
@@ -254,6 +271,13 @@ public class SyncManager implements Listener
 					throw new IllegalArgumentException("Unknown player");
 				
 				return getProperty(player, (String)arguments[1]);
+			}
+			else if(name.equals("bungee:getProperties"))
+			{
+				if(arguments.length != 1)
+					throw new IllegalArgumentException("Arguments: <property>");
+				
+				return getProperties((String)arguments[0]);
 			}
 			
 			return null;

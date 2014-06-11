@@ -5,6 +5,8 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -122,5 +124,16 @@ public class SyncManager implements PluginMessageListener
 	public void getPlayerPropertyAsync(String player, String property, IMethodCallback<Object> callback)
 	{
 		callSyncMethod("bungee:getProperty", callback, player, property);
+	}
+	
+	/**
+	 * Gets all values for the property and who has that value
+	 * @param property The property to check
+	 * @param callback A callback to get the data
+	 * @return through callback, Map< String, Object >: uuid of player as string, value of property 
+	 */
+	public void getPropertiesAsync(String property, IMethodCallback<Map<String, Object>> callback)
+	{
+		callSyncMethod("bungee:getProperties", callback, property);
 	}
 }
