@@ -425,7 +425,7 @@ public class BungeeChat extends Plugin implements Listener
 	{
 		Byte showQuitMessage = (Byte)mSyncManager.getProperty(event.getPlayer(), "hasQuitMessage"); 
 		String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
-		if(showQuitMessage == null || showQuitMessage == 0)
+		if(showQuitMessage != null && showQuitMessage == 0)
 			quitMessage = "";
 		
 		new MessageOutput("BungeeChat", "ProxyLeave")
