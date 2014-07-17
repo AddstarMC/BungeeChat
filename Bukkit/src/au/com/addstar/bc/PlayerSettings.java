@@ -2,6 +2,7 @@ package au.com.addstar.bc;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
 
@@ -9,7 +10,7 @@ public class PlayerSettings
 {
 	public int socialSpyState = 2;
 	public boolean msgEnabled = true;
-	public String lastMsgTarget = null;
+	public UUID lastMsgTarget = null;
 	
 	public String nickname = "";
 	
@@ -24,14 +25,14 @@ public class PlayerSettings
 	
 	public CommandSender getLastMsgTarget()
 	{
-		return BungeeChat.getPlayerManager().getPlayerExact(lastMsgTarget);
+		return BungeeChat.getPlayerManager().getPlayer(lastMsgTarget);
 	}
 	
 	public void read(DataInput input)
 	{
 		try
 		{
-			lastMsgTarget = input.readUTF();
+			lastMsgTarget = UUID.fromString(input.readUTF());
 			nickname = input.readUTF();
 			socialSpyState = input.readByte();
 			msgEnabled = input.readBoolean();

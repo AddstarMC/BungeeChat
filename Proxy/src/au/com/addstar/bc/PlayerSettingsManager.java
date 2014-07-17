@@ -1,6 +1,7 @@
 package au.com.addstar.bc;
 
 import java.io.File;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
@@ -18,7 +19,7 @@ public class PlayerSettingsManager
 		mFolder.mkdirs();
 	}
 	
-	public PlayerSettings getSettings(String player)
+	public PlayerSettings getSettings(UUID player)
 	{
 		return getSettings(ProxyServer.getInstance().getPlayer(player));
 	}
@@ -28,7 +29,7 @@ public class PlayerSettingsManager
 		if(mLoadedSettings.containsKey(player))
 			return mLoadedSettings.get(player);
 		
-		PlayerSettings settings = new PlayerSettings(new File(mFolder, player.getName().toLowerCase() + ".yml"));
+		PlayerSettings settings = new PlayerSettings(new File(mFolder, player.getUniqueId().toString() + ".yml"));
 		
 		try
 		{
@@ -44,7 +45,7 @@ public class PlayerSettingsManager
 		return settings;
 	}
 	
-	public void savePlayer(String player)
+	public void savePlayer(UUID player)
 	{
 		savePlayer(ProxyServer.getInstance().getPlayer(player));
 	}
@@ -60,7 +61,7 @@ public class PlayerSettingsManager
 		}
 	}
 	
-	public void updateSettings(String player)
+	public void updateSettings(UUID player)
 	{
 		updateSettings(ProxyServer.getInstance().getPlayer(player));
 	}
@@ -70,8 +71,8 @@ public class PlayerSettingsManager
 		PlayerSettings settings = getSettings(player);
 		
 		new MessageOutput("BungeeChat", "SyncPlayer")
-			.writeUTF(player.getName())
-			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget)
+			.writeUTF(player.getUniqueId().toString())
+			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget.toString())
 			.writeUTF(settings.nickname)
 			.writeByte(settings.socialSpyState)
 			.writeBoolean(settings.msgEnabled)

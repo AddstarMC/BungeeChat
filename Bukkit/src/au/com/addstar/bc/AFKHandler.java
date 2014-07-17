@@ -3,6 +3,8 @@ package au.com.addstar.bc;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -101,10 +103,10 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 	{
 		if(channel.equals("AFK"))
 		{
-			String player = data.readUTF();
+			UUID id = UUID.fromString(data.readUTF());
 			boolean afk = data.readBoolean();
 			
-			Player pplayer = Bukkit.getPlayerExact(player);
+			Player pplayer = Bukkit.getPlayer(id);
 			if(pplayer != null)
 			{
 				PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(pplayer);

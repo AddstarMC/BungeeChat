@@ -2,6 +2,7 @@ package au.com.addstar.bc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -16,19 +17,19 @@ public class StandardServMethods implements SyncMethod
 		if(name.equals("bungee:getServerName"))
 			return getServer(server);
 		else if(name.equals("bchat:isAFK"))
-			return isAFK((String)arguments[0]);
+			return isAFK((UUID)arguments[0]);
 		else if(name.equals("bchat:canMsg"))
-			return canMsg((String)arguments[0]);
+			return canMsg((UUID)arguments[0]);
 		else if(name.equals("bchat:setAFK"))
-			return setAFK((String)arguments[0], (Byte)arguments[1]);
+			return setAFK((UUID)arguments[0], (Byte)arguments[1]);
 		else if(name.equals("bchat:toggleAFK"))
-			return toggleAFK((String)arguments[0]);
+			return toggleAFK((UUID)arguments[0]);
 		else if(name.equals("bchat:setTabColor"))
-			return setTabColor((String)arguments[0], (String)arguments[1]);
+			return setTabColor((UUID)arguments[0], (String)arguments[1]);
 		else if(name.equals("bchat:setMute"))
-			return setMute((String)arguments[0], (Long)arguments[1]);
+			return setMute((UUID)arguments[0], (Long)arguments[1]);
 		else if(name.equals("bchat:setMsgTarget"))
-			return setMsgTarget((String)arguments[0], (String)arguments[1]);
+			return setMsgTarget((UUID)arguments[0], (UUID)arguments[1]);
 		else if(name.equals("bchat:getMuteList"))
 			return getMuteList();
 		return null;
@@ -39,7 +40,7 @@ public class StandardServMethods implements SyncMethod
 		return server.getName();
 	}
 	
-	public boolean isAFK(String player)
+	public boolean isAFK(UUID player)
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
@@ -49,7 +50,7 @@ public class StandardServMethods implements SyncMethod
 		return settings.isAFK;
 	}
 	
-	public boolean canMsg(String player)
+	public boolean canMsg(UUID player)
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
@@ -58,7 +59,7 @@ public class StandardServMethods implements SyncMethod
 		return BungeeChat.instance.getManager().getSettings(pplayer).msgEnabled;
 	}
 	
-	public Void setAFK(String player, byte status)
+	public Void setAFK(UUID player, byte status)
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
@@ -69,7 +70,7 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void toggleAFK(String player)
+	public Void toggleAFK(UUID player)
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
@@ -81,7 +82,7 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void setTabColor(String player, String color)
+	public Void setTabColor(UUID player, String color)
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
@@ -95,7 +96,7 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void setMute(String player, long muteEnd)
+	public Void setMute(UUID player, long muteEnd)
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
@@ -110,7 +111,7 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void setMsgTarget(String player, String target)
+	public Void setMsgTarget(UUID player, UUID target)
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)

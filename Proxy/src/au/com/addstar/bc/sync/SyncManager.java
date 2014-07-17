@@ -10,10 +10,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import au.com.addstar.bc.MessageOutput;
-
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -253,7 +253,7 @@ public class SyncManager implements Listener
 				if(arguments.length != 3)
 					throw new IllegalArgumentException("Arguments: <player> <property> <value>");
 				
-				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((String)arguments[0]);
+				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((UUID)arguments[0]);
 				if(player == null)
 					throw new IllegalArgumentException("Unknown player");
 				
@@ -266,7 +266,7 @@ public class SyncManager implements Listener
 				if(arguments.length != 2)
 					throw new IllegalArgumentException("Arguments: <player> <property>");
 				
-				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((String)arguments[0]);
+				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((UUID)arguments[0]);
 				if(player == null)
 					throw new IllegalArgumentException("Unknown player");
 				

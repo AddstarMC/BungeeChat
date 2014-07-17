@@ -255,7 +255,7 @@ public class BungeeChat extends Plugin implements Listener
 	private void sendMessage(ProxiedPlayer player, String message)
 	{
 		new MessageOutput("BungeeChat", "Message")
-			.writeUTF(player.getName())
+			.writeUTF(player.getUniqueId().toString())
 			.writeUTF(message)
 			.send(player.getServer().getInfo());
 	}
@@ -290,7 +290,7 @@ public class BungeeChat extends Plugin implements Listener
 				}
 				else if(subChannel.equals("Send"))
 				{
-					String player = input.readUTF();
+					UUID player = UUID.fromString(input.readUTF());
 					String message = input.readUTF();
 					
 					ProxiedPlayer dest = getProxy().getPlayer(player);
@@ -299,7 +299,7 @@ public class BungeeChat extends Plugin implements Listener
 				}
 				else if(subChannel.equals("SyncPlayer"))
 				{
-					String player = input.readUTF();
+					UUID player = UUID.fromString(input.readUTF());
 					PlayerSettings settings = mSettings.getSettings(player);
 					
 					String oldName = settings.nickname;
@@ -315,14 +315,14 @@ public class BungeeChat extends Plugin implements Listener
 					if(!oldName.equals(settings.nickname))
 					{
 						new MessageOutput("BungeeChat", "UpdateName")
-						.writeUTF(player)
+						.writeUTF(player.toString())
 						.writeUTF(settings.nickname)
 						.send();
 					}
 				}
 				else if(subChannel.equals("UpdateName"))
 				{
-					String player = input.readUTF();
+					UUID player = UUID.fromString(input.readUTF());
 					String name = input.readUTF();
 					PlayerSettings settings = mSettings.getSettings(player);
 					settings.nickname = name;
@@ -336,7 +336,7 @@ public class BungeeChat extends Plugin implements Listener
 						p.setDisplayName(name);
 					
 					new MessageOutput("BungeeChat", "UpdateName")
-						.writeUTF(player)
+						.writeUTF(player.toString())
 						.writeUTF(name)
 						.send();
 				}
@@ -384,6 +384,7 @@ public class BungeeChat extends Plugin implements Listener
 		for(ProxiedPlayer player : players)
 		{
 			PlayerSettings settings = mSettings.getSettings(player);
+			output.writeUTF(player.getUniqueId().toString());
 			output.writeUTF(player.getName());
 			output.writeUTF(settings.nickname);
 		}
@@ -412,6 +413,7 @@ public class BungeeChat extends Plugin implements Listener
 					event.getPlayer().setDisplayName(settings.nickname);
 				
 				new MessageOutput("BungeeChat", "Player+")
+					.writeUTF(event.getPlayer().getUniqueId().toString())
 					.writeUTF(event.getPlayer().getName())
 					.writeUTF(settings.nickname)
 					.send(false);
@@ -456,7 +458,7 @@ public class BungeeChat extends Plugin implements Listener
 			public void run()
 			{
 				new MessageOutput("BungeeChat", "Player-")
-				.writeUTF(event.getPlayer().getName())
+				.writeUTF(event.getPlayer().getUniqueId().toString())
 				.send(false);
 			}
 			
@@ -487,6 +489,7 @@ public class BungeeChat extends Plugin implements Listener
 			PlayerSettings settings = mSettings.getSettings(player);
 			
 			new MessageOutput("BungeeChat", "ProxyJoin")
+			.writeUTF(player.getUniqueId().toString())
 			.writeUTF(player.getName())
 			.writeUTF(settings.nickname)
 			.send(event.getServer().getInfo());

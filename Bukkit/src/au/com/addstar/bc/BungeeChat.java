@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
+
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
@@ -178,7 +180,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	public static void sendMessage(RemotePlayer player, String message)
 	{
 		new MessageOutput("BungeeChat", "Send")
-			.writeUTF(player.getName())
+			.writeUTF(player.getUniqueId().toString())
 			.writeUTF(message)
 			.send(mInstance);
 	}
@@ -227,7 +229,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 				}
 				else if(subChannel.equals("Message"))
 				{
-					Player ply = Bukkit.getPlayerExact(input.readUTF());
+					Player ply = Bukkit.getPlayer(UUID.fromString(input.readUTF()));
 					String message = input.readUTF();
 					if(ply != null)
 						ply.sendMessage(message);
@@ -297,11 +299,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	{
 		if(sender instanceof Player)
 		{
-			getPlayerManager().getPlayerSettings(sender).lastMsgTarget = target.getName();
+			getPlayerManager().getPlayerSettings(sender).lastMsgTarget = PlayerManager.getUniqueId(target);
 			getPlayerManager().updatePlayerSettings(sender);
 		}
 		else if(sender instanceof RemotePlayer)
-			getSyncManager().callSyncMethod("bchat:setMsgTarget", null, sender.getName(), target.getName());
+			getSyncManager().callSyncMethod("bchat:setMsgTarget", null, PlayerManager.getUniqueId(sender).toString(), PlayerManager.getUniqueId(target).toString());
 	}
 	
 	public static PlayerManager getPlayerManager()

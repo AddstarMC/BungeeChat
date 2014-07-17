@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.UUID;
 
 import net.cubespace.Yamler.Config.Config;
 
@@ -20,7 +21,7 @@ public class PlayerSettings extends Config
 	public String nickname = "";
 	
 	@NoSave
-	public String lastMsgTarget = null;
+	public UUID lastMsgTarget = null;
 	
 	public long muteTime = 0;
 	
@@ -39,7 +40,7 @@ public class PlayerSettings extends Config
 	{
 		try
 		{
-			lastMsgTarget = input.readUTF();
+			lastMsgTarget = UUID.fromString(input.readUTF());
 			nickname = input.readUTF();
 			socialSpyState = input.readByte();
 			msgEnabled = input.readBoolean();

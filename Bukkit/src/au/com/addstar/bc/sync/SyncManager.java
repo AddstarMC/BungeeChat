@@ -6,6 +6,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -114,12 +116,12 @@ public class SyncManager implements PluginMessageListener
 	/**
 	 * Stores a property against a player for as long as they are on the proxy 
 	 */
-	public void setPlayerProperty(String player, String property, Object value)
+	public void setPlayerProperty(UUID player, String property, Object value)
 	{
 		callSyncMethod("bungee:setProperty", null, player, property, value);
 	}
 	
-	public void getPlayerPropertyAsync(String player, String property, IMethodCallback<Object> callback)
+	public void getPlayerPropertyAsync(UUID player, String property, IMethodCallback<Object> callback)
 	{
 		callSyncMethod("bungee:getProperty", callback, player, property);
 	}

@@ -1,8 +1,8 @@
 package au.com.addstar.bc;
 
 import java.util.Set;
+import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
@@ -12,11 +12,13 @@ import org.bukkit.plugin.Plugin;
 
 public class RemotePlayer implements CommandSender
 {
+	private UUID mId;
 	private String mName;
 	
-	public RemotePlayer(String player)
+	public RemotePlayer(UUID id, String name)
 	{
-		mName = player;
+		mId = id;
+		mName = name;
 	}
 	
 	public String getDisplayName()
@@ -60,13 +62,13 @@ public class RemotePlayer implements CommandSender
 	@Override
 	public boolean hasPermission( String perm )
 	{
-		return BungeeChat.permissionManager.has(Bukkit.getWorlds().get(0), mName, perm);
+		return BungeeChat.permissionManager.has(this, perm);
 	}
 
 	@Override
 	public boolean hasPermission( Permission perm )
 	{
-		return BungeeChat.permissionManager.has(Bukkit.getWorlds().get(0), mName, perm.getName());
+		return BungeeChat.permissionManager.has(this, perm.getName());
 	}
 
 	@Override
@@ -106,6 +108,11 @@ public class RemotePlayer implements CommandSender
 	public String getName()
 	{
 		return mName;
+	}
+	
+	public UUID getUniqueId()
+	{
+		return mId;
 	}
 
 	@Override
