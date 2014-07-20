@@ -1,4 +1,4 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.event;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;

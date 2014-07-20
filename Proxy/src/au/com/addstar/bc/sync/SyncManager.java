@@ -1,13 +1,10 @@
 package au.com.addstar.bc.sync;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -15,32 +12,34 @@ import java.util.WeakHashMap;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.sync.packet.CallFailedResponsePacket;
+import au.com.addstar.bc.sync.packet.CallPacket;
 import au.com.addstar.bc.sync.packet.CallSuccessResponsePacket;
 import au.com.addstar.bc.sync.packet.ConfigPacket;
+import au.com.addstar.bc.sync.packet.ConfigRequestPacket;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 
-public class SyncManager implements Listener
+public class SyncManager implements Listener, IPacketHandler
 {
 	private HashMap<String, SyncMethod> mMethods;
 	private HashMap<String, SyncConfig> mConfigs;
 	
 	private WeakHashMap<ProxiedPlayer, HashMap<String, Object>> mPlayerProperties;
 	
+	@SuppressWarnings( "unchecked" )
 	public SyncManager(Plugin plugin)
 	{
 		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
-		ProxyServer.getInstance().registerChannel("BungeeSync");
+		
 		mMethods = new HashMap<String, SyncMethod>();
 		mConfigs = new HashMap<String, SyncConfig>();
 		mPlayerProperties = new WeakHashMap<ProxiedPlayer, HashMap<String,Object>>();
+		BungeeChat.instance.getPacketManager().addHandler(this, CallPacket.class, ConfigRequestPacket.class);
 		
 		StorageMethods storage = new StorageMethods();
 		addMethod("bungee:setProperty", storage);
@@ -59,27 +58,13 @@ public class SyncManager implements Listener
 		sendConfig(name);
 	}
 	
-	@EventHandler
-	public void onMessageReceived(PluginMessageEvent event)
+	@Override
+	public void handle( Packet packet, ServerInfo sender )
 	{
-		if(!(event.getSender() instanceof Server))
-			return;
-		
-		if(event.getTag().equals("BungeeSync"))
-		{
-			ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
-			DataInputStream input = new DataInputStream(stream);
-			
-			try
-			{
-				String subChannel = input.readUTF();
-				onDataReceived(subChannel, input, ((Server)event.getSender()).getInfo());
-			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
+		if(packet instanceof CallPacket)
+			doSyncMethod((CallPacket)packet, sender);
+		else if(packet instanceof ConfigRequestPacket)
+			sendConfig(((ConfigRequestPacket)packet).getName(), sender);
 	}
 	
 	@EventHandler(priority=127)
@@ -88,24 +73,11 @@ public class SyncManager implements Listener
 		mPlayerProperties.remove(event.getPlayer());
 	}
 	
-	private void onDataReceived(String channel, DataInput input, ServerInfo caller) throws IOException
+	private void doSyncMethod(CallPacket packet, ServerInfo caller)
 	{
-		if(channel.equals("Call"))
-		{
-			doSyncMethod(input, caller);
-		}
-		else if(channel.equals("ConfigUpdate"))
-		{
-			String config = input.readUTF();
-			sendConfig(config, caller);
-		}
-	}
-	
-	private void doSyncMethod(DataInput input, ServerInfo caller) throws IOException
-	{
-		String name = input.readUTF();
-		int id = input.readInt();
-		int count = input.readUnsignedByte();
+		String name = packet.getMethod();
+		int id = packet.getId();
+		List<Object> args = packet.getArgs();
 		
 		SyncMethod method = mMethods.get(name);
 		
@@ -113,11 +85,7 @@ public class SyncManager implements Listener
 		{
 			try
 			{
-				Object[] args = new Object[count];
-				for(int i = 0; i < count; ++i)
-					args[i] = SyncUtil.readObject(input);
-				
-				Object result = method.run(name, caller, args);
+				Object result = method.run(name, caller, args.toArray());
 				
 				BungeeChat.instance.getPacketManager().send(new CallSuccessResponsePacket(id, result), caller);
 			}

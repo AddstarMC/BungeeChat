@@ -1,6 +1,7 @@
 package au.com.addstar.bc;
 
 import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,6 +19,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.Plugin;
 
+import au.com.addstar.bc.event.AFKChangeEvent;
 import au.com.addstar.bc.sync.IMethodCallback;
 import au.com.addstar.bc.sync.IPacketHandler;
 import au.com.addstar.bc.sync.Packet;
@@ -87,11 +89,11 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			else
 				settings.afkStartTime = Long.MAX_VALUE;
 			
-			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, target.getName(), settings.isAFK);
+			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, PlayerManager.getUniqueId(target), settings.isAFK);
 			onAFKChange((Player)target, settings.isAFK);
 		}
 		else
-			BungeeChat.getSyncManager().callSyncMethod("bchat:toggleAFK", null, target.getName());
+			BungeeChat.getSyncManager().callSyncMethod("bchat:toggleAFK", null, PlayerManager.getUniqueId(target));
 		
 		if(target != sender)
 			sender.sendMessage(ChatColor.GREEN + "Toggled " + target.getName() + "'s AFK state");
@@ -143,7 +145,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 						sender.sendMessage(message);
 				}
 				
-			}, player.getName());
+			}, PlayerManager.getUniqueId(player));
 		}
 	}
 	
@@ -184,7 +186,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			settings.afkStartTime = Long.MAX_VALUE;
 			settings.lastActiveTime = System.currentTimeMillis();
 			
-			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), false);
+			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, PlayerManager.getUniqueId(player), false);
 			
 			onAFKChange(player, false);
 		}
@@ -289,7 +291,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 						{
 							settings.isAFK = true;
 							settings.afkStartTime = time;
-							BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getName(), true);
+							BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getUniqueId(), true);
 	
 							onAFKChange(player, true);
 						}
