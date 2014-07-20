@@ -12,15 +12,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.Map.Entry;
 
-import com.google.common.collect.HashBiMap;
-
 public class SyncUtil
 {
-	private static HashBiMap<Class<?>, String> mClassMappings = HashBiMap.create();
+	private static HashMap<Class<?>, String> mClassMappings = new HashMap<Class<?>, String>();
+	private static HashMap<String, Class<?>> mClassMappingsInverse = new HashMap<String, Class<?>>();
 	
 	public static void addSerializer(Class<? extends SyncSerializable> clazz, String typename)
 	{
 		mClassMappings.put(clazz, typename);
+		mClassMappingsInverse.put(typename, clazz);
 	}
 	
 	@SuppressWarnings( "unchecked" )
@@ -186,7 +186,7 @@ public class SyncUtil
 		String className = input.readUTF();
 		HashMap<String, Object> map = readMap(input);
 		
-		Class<?> clazz = mClassMappings.inverse().get(className);
+		Class<?> clazz = mClassMappingsInverse.get(className);
 		
 		try
 		{

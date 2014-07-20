@@ -13,7 +13,10 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
-import au.com.addstar.bc.MessageOutput;
+import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.sync.packet.CallFailedResponsePacket;
+import au.com.addstar.bc.sync.packet.CallSuccessResponsePacket;
+import au.com.addstar.bc.sync.packet.ConfigPacket;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -116,32 +119,18 @@ public class SyncManager implements Listener
 				
 				Object result = method.run(name, caller, args);
 				
-				MessageOutput out = new MessageOutput("BungeeSync", "CallRes")
-					.writeInt(id)
-					.writeBoolean(true);
-				
-				SyncUtil.writeObject(out.asDataOutput(), result);
-				out.send(caller);
+				BungeeChat.instance.getPacketManager().send(new CallSuccessResponsePacket(id, result), caller);
 			}
 			catch(Exception e)
 			{
 				e.printStackTrace();
-				new MessageOutput("BungeeSync", "CallRes")
-				.writeInt(id)
-				.writeBoolean(false)
-				.writeUTF(e.getClass().getSimpleName())
-				.writeUTF(e.getMessage() == null ? "" : e.getMessage())
-				.send(caller);
+				
+				BungeeChat.instance.getPacketManager().send(new CallFailedResponsePacket(id, e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage()), caller);
 			}
 		}
 		else
 		{
-			new MessageOutput("BungeeSync", "CallRes")
-				.writeInt(id)
-				.writeBoolean(false)
-				.writeUTF("NoSuchMethodException")
-				.writeUTF(name + " cannot be found")
-				.send(caller);
+			BungeeChat.instance.getPacketManager().send(new CallFailedResponsePacket(id, "NoSuchMethodException", name + " cannot be found"), caller);
 		}
 	}
 	
@@ -151,21 +140,12 @@ public class SyncManager implements Listener
 		if(config == null)
 			return;
 		
-		MessageOutput out = new MessageOutput("BungeeSync", "ConfigSync")
-			.writeUTF(name);
-		try
-		{
-			config.write(out.asDataOutput());
-		}
-		catch(IOException e)
-		{
-			// Cant happen
-		}
+		ConfigPacket packet = new ConfigPacket(name, config);
 		
 		if(server == null)
-			out.send(true);
+			BungeeChat.instance.getPacketManager().broadcast(packet);
 		else
-			out.send(server);
+			BungeeChat.instance.getPacketManager().send(packet, server);
 	}
 	
 	public void sendConfig(String name)

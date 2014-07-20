@@ -1,14 +1,13 @@
 package au.com.addstar.bc;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
@@ -21,20 +20,26 @@ import au.com.addstar.bc.config.ChatChannel;
 import au.com.addstar.bc.config.Config;
 import au.com.addstar.bc.config.KeywordHighlighterSettings;
 import au.com.addstar.bc.config.PermissionSetting;
+import au.com.addstar.bc.sync.Packet;
+import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
-
+import au.com.addstar.bc.sync.packet.FireEventPacket;
+import au.com.addstar.bc.sync.packet.GlobalMutePacket;
+import au.com.addstar.bc.sync.packet.MirrorPacket;
+import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
+import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
+import au.com.addstar.bc.sync.packet.PlayerListPacket;
+import au.com.addstar.bc.sync.packet.QuitMessagePacket;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
-import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
@@ -55,6 +60,7 @@ public class BungeeChat extends Plugin implements Listener
 	public static BungeeChat instance;
 	
 	private SyncManager mSyncManager;
+	private PacketManager mPacketManager;
 	private long mGMuteTime;
 	
 	@Override
@@ -82,6 +88,9 @@ public class BungeeChat extends Plugin implements Listener
 		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
+		
+		mPacketManager = new PacketManager(this);
+		mPacketManager.addHandler(new PacketHandler(), (Class<? extends Packet>[])null);
 		
 		saveResource("/keywords.txt", false);
 		
@@ -137,16 +146,6 @@ public class BungeeChat extends Plugin implements Listener
 			getLogger().severe("Could not load " + mConfig.keywordHighlighter.keywordFile);
 			e.printStackTrace();
 			return false;
-		}
-	}
-	
-	private void mirrorChat(byte[] data, Server except)
-	{
-		ServerInfo exceptInfo = except.getInfo();
-		for(ServerInfo server : getProxy().getServers().values())
-		{
-			if(!server.equals(exceptInfo) && !server.getPlayers().isEmpty())
-				server.sendData("BungeeChat", data);
 		}
 	}
 	
@@ -252,147 +251,26 @@ public class BungeeChat extends Plugin implements Listener
 		}
 	}
 	
-	private void sendMessage(ProxiedPlayer player, String message)
+	public void sendPlayerUpdates(ServerInfo server)
 	{
-		new MessageOutput("BungeeChat", "Message")
-			.writeUTF(player.getUniqueId().toString())
-			.writeUTF(message)
-			.send(player.getServer().getInfo());
-	}
-	
-	@EventHandler
-	public void onMessage(PluginMessageEvent event)
-	{
-		if(event.getTag().equals("BungeeChat") && event.getSender() instanceof Server)
-		{
-			ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
-			DataInputStream input = new DataInputStream(stream);
-			
-			try
-			{
-				String subChannel = input.readUTF();
-				
-				if(subChannel.equals("Mirror"))
-				{
-					mirrorChat(event.getData().clone(), (Server)event.getSender());
-					
-					// Mirror chat to proxy console
-					String chatChannel = input.readUTF();
-					if(!chatChannel.startsWith("~")) // Ignore special channels
-					{
-						String message = input.readUTF();
-						getProxy().getConsole().sendMessage(new TextComponent(message));
-					}
-				}
-				else if(subChannel.equals("Update"))
-				{
-					sendPlayerUpdates(((Server)event.getSender()).getInfo());
-				}
-				else if(subChannel.equals("Send"))
-				{
-					UUID player = UUID.fromString(input.readUTF());
-					String message = input.readUTF();
-					
-					ProxiedPlayer dest = getProxy().getPlayer(player);
-					if(dest != null)
-						sendMessage(dest, message);
-				}
-				else if(subChannel.equals("SyncPlayer"))
-				{
-					UUID player = UUID.fromString(input.readUTF());
-					PlayerSettings settings = mSettings.getSettings(player);
-					
-					String oldName = settings.nickname;
-					settings.read(input);
-					mSettings.savePlayer(player);
-					
-					ProxiedPlayer p = getProxy().getPlayer(player);
-					if(settings.nickname.isEmpty())
-						p.setDisplayName(p.getName());
-					else
-						p.setDisplayName(settings.nickname);
-					
-					if(!oldName.equals(settings.nickname))
-					{
-						new MessageOutput("BungeeChat", "UpdateName")
-						.writeUTF(player.toString())
-						.writeUTF(settings.nickname)
-						.send();
-					}
-				}
-				else if(subChannel.equals("UpdateName"))
-				{
-					UUID player = UUID.fromString(input.readUTF());
-					String name = input.readUTF();
-					PlayerSettings settings = mSettings.getSettings(player);
-					settings.nickname = name;
-					mSettings.savePlayer(player);
-					mSettings.updateSettings(player);
-					
-					ProxiedPlayer p = getProxy().getPlayer(player);
-					if(name.isEmpty())
-						p.setDisplayName(p.getName());
-					else
-						p.setDisplayName(name);
-					
-					new MessageOutput("BungeeChat", "UpdateName")
-						.writeUTF(player.toString())
-						.writeUTF(name)
-						.send();
-				}
-				else if(subChannel.equals("GMute"))
-				{
-					long time = input.readLong();
-					mGMuteTime = time;
-					
-					new MessageOutput("BungeeChat", "GMute")
-						.writeLong(time)
-						.send(true);
-				}
-				else if(subChannel.equals("QuitMessage"))
-				{
-					UUID id = UUID.fromString(input.readUTF());
-					String message = input.readUTF();
-					ScheduledTask task = mWaitingQuitMessages.remove(id);
-					if(task != null)
-					{
-						task.cancel();
-						
-						if(!message.isEmpty())
-						{
-							new MessageOutput("BungeeChat", "Mirror")
-							.writeUTF("~BC")
-							.writeUTF(message)
-							.send(false);
-						}
-					}
-				}
-			}
-			catch(IOException e)
-			{
-			}
-		}
-	}
-	
-	private void sendPlayerUpdates(ServerInfo server)
-	{
-		MessageOutput output = new MessageOutput("BungeeChat", "Player*");
-		
 		Collection<ProxiedPlayer> players = getProxy().getPlayers();
-		output.writeShort(players.size());
+		ArrayList<UUID> ids = new ArrayList<UUID>(players.size());
+		ArrayList<String> names = new ArrayList<String>(players.size());
+		ArrayList<String> nicknames = new ArrayList<String>(players.size());
 		
 		for(ProxiedPlayer player : players)
 		{
+			ids.add(player.getUniqueId());
+			names.add(player.getName());
 			PlayerSettings settings = mSettings.getSettings(player);
-			output.writeUTF(player.getUniqueId().toString());
-			output.writeUTF(player.getName());
-			output.writeUTF(settings.nickname);
+			nicknames.add(settings.nickname);
 		}
 		
-		if(server == null)
-			output.send();
+		PlayerListPacket packet = new PlayerListPacket(ids, names, nicknames);
+		if(server != null)
+			mPacketManager.send(packet, server);
 		else
-			output.send(server);
+			mPacketManager.broadcastNoQueue(packet);
 	}
 	
 	@EventHandler
@@ -412,11 +290,7 @@ public class BungeeChat extends Plugin implements Listener
 				else
 					event.getPlayer().setDisplayName(settings.nickname);
 				
-				new MessageOutput("BungeeChat", "Player+")
-					.writeUTF(event.getPlayer().getUniqueId().toString())
-					.writeUTF(event.getPlayer().getName())
-					.writeUTF(settings.nickname)
-					.send(false);
+				mPacketManager.broadcastNoQueue(new PlayerJoinPacket(event.getPlayer().getUniqueId(), event.getPlayer().getName(), settings.nickname));
 			}
 			
 		}, 50, TimeUnit.MILLISECONDS);
@@ -430,11 +304,7 @@ public class BungeeChat extends Plugin implements Listener
 		if(showQuitMessage != null && showQuitMessage == 0)
 			quitMessage = "";
 		
-		new MessageOutput("BungeeChat", "ProxyLeave")
-			.writeUTF(event.getPlayer().getUniqueId().toString())
-			.writeUTF(event.getPlayer().getDisplayName())
-			.writeUTF(quitMessage)
-			.send(event.getPlayer().getServer().getInfo());
+		mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, event.getPlayer().getUniqueId(), quitMessage), event.getPlayer().getServer().getInfo());
 		
 		final String fQuitMessage = quitMessage;
 		mWaitingQuitMessages.put(event.getPlayer().getUniqueId(), ProxyServer.getInstance().getScheduler().schedule(this, new Runnable()
@@ -443,12 +313,7 @@ public class BungeeChat extends Plugin implements Listener
 			public void run()
 			{
 				if(!fQuitMessage.isEmpty())
-				{
-					new MessageOutput("BungeeChat", "Mirror")
-						.writeUTF("~BC")
-						.writeUTF(fQuitMessage)
-						.send(false);
-				}
+					mPacketManager.broadcastNoQueue(new MirrorPacket("~BC", fQuitMessage));
 			}
 		}, 100, TimeUnit.MILLISECONDS));
 		
@@ -457,9 +322,7 @@ public class BungeeChat extends Plugin implements Listener
 			@Override
 			public void run()
 			{
-				new MessageOutput("BungeeChat", "Player-")
-				.writeUTF(event.getPlayer().getUniqueId().toString())
-				.send(false);
+				mPacketManager.broadcastNoQueue(new PlayerLeavePacket(event.getPlayer().getUniqueId()));
 			}
 			
 		}, 10, TimeUnit.MILLISECONDS);
@@ -488,11 +351,13 @@ public class BungeeChat extends Plugin implements Listener
 		{
 			PlayerSettings settings = mSettings.getSettings(player);
 			
-			new MessageOutput("BungeeChat", "ProxyJoin")
-			.writeUTF(player.getUniqueId().toString())
-			.writeUTF(player.getName())
-			.writeUTF(settings.nickname)
-			.send(event.getServer().getInfo());
+			String message;
+			if(settings.nickname.isEmpty())
+				message = ChatColor.YELLOW + event.getPlayer().getName() + " joined the game.";
+			else
+				message = ChatColor.YELLOW + settings.nickname + " joined the game.";
+			
+			mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
 			
 			getProxy().getScheduler().schedule(this, new Runnable()
 			{
@@ -526,6 +391,11 @@ public class BungeeChat extends Plugin implements Listener
 		}
 	}
 	
+	public PacketManager getPacketManager()
+	{
+		return mPacketManager;
+	}
+	
 	public PlayerSettingsManager getManager()
 	{
 		return mSettings;
@@ -557,9 +427,7 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				getProxy().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
 				mGMuteTime = 0;
-				new MessageOutput("BungeeChat", "GMute")
-					.writeLong(mGMuteTime)
-					.send(true);
+				mPacketManager.broadcast(new GlobalMutePacket(0));
 			}
 			
 			for(ProxiedPlayer player : getProxy().getPlayers())
@@ -574,6 +442,24 @@ public class BungeeChat extends Plugin implements Listener
 					player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are no longer muted. You may talk again."));
 				}
 			}
+		}
+	}
+
+	public void setGlobalMute( long time )
+	{
+		mGMuteTime = time;
+	}
+
+	public void handleQuitMessage( QuitMessagePacket packet )
+	{
+		ScheduledTask task = mWaitingQuitMessages.remove(packet.getID());
+		if(task != null)
+		{
+			task.cancel();
+			String message = packet.getMessage();
+			
+			if(!message.isEmpty())
+				mPacketManager.broadcastNoQueue(new MirrorPacket("~BC", message));
 		}
 	}
 }

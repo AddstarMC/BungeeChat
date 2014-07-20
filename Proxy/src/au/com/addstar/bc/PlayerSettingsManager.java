@@ -69,15 +69,6 @@ public class PlayerSettingsManager
 	public void updateSettings(ProxiedPlayer player)
 	{
 		PlayerSettings settings = getSettings(player);
-		
-		new MessageOutput("BungeeChat", "SyncPlayer")
-			.writeUTF(player.getUniqueId().toString())
-			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget.toString())
-			.writeUTF(settings.nickname)
-			.writeByte(settings.socialSpyState)
-			.writeBoolean(settings.msgEnabled)
-			.writeLong(settings.muteTime)
-			.writeBoolean(settings.isAFK)
-			.send(player.getServer().getInfo());
+		BungeeChat.instance.getPacketManager().send(settings.getUpdatePacket(player.getUniqueId()), player.getServer().getInfo());
 	}
 }
