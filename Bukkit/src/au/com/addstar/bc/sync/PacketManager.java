@@ -14,6 +14,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
@@ -21,6 +23,7 @@ import com.google.common.collect.HashMultimap;
 
 public class PacketManager implements PluginMessageListener, Listener
 {
+	public static boolean enabledDebug = false;
 	private LinkedList<Packet> mSendQueue;
 	private PacketCodec mCodec;
 	private Plugin mPlugin;
@@ -71,7 +74,15 @@ public class PacketManager implements PluginMessageListener, Listener
 	public boolean sendNoQueue(Packet packet)
 	{
 		Player player = getSendPlayer();
+		if(player == null)
+		{
+			if(enabledDebug)
+				debug("No send 0 players. " + packet);
+			return false;
+		}
 		
+		if(enabledDebug)
+			debug("Sending " + packet);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
 		try
@@ -112,6 +123,8 @@ public class PacketManager implements PluginMessageListener, Listener
 		
 		try
 		{
+			if(enabledDebug)
+				debug("Sending online message");
 			out.writeUTF("Online");
 			
 			byte[] data = stream.toByteArray();
@@ -128,6 +141,8 @@ public class PacketManager implements PluginMessageListener, Listener
 		
 		try
 		{
+			if(enabledDebug)
+				debug("Sending schema to proxy");
 			PacketRegistry.writeSchemaPacket(out);
 			
 			byte[] data = stream.toByteArray();
@@ -152,6 +167,9 @@ public class PacketManager implements PluginMessageListener, Listener
 				Packet packet = mCodec.read(input);
 				if(packet == null)
 					return;
+				
+				if(enabledDebug)
+					debug("Received packet " + packet.toString());
 				
 				// Handler spec handlers
 				for(IPacketHandler handler : mHandlers.get(packet.getClass()))
@@ -188,6 +206,20 @@ public class PacketManager implements PluginMessageListener, Listener
 		}
 	}
 	
+	@EventHandler
+	private void onPlayerLeave(PlayerQuitEvent event)
+	{
+		if(event.getPlayer().equals(mSendPlayer))
+			mSendPlayer = null;
+	}
+	
+	@EventHandler
+	private void onPlayerLeave(PlayerKickEvent event)
+	{
+		if(event.getPlayer().equals(mSendPlayer))
+			mSendPlayer = null;
+	}
+	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerLogin(PlayerJoinEvent event)
 	{
@@ -221,5 +253,10 @@ public class PacketManager implements PluginMessageListener, Listener
 				}
 			}
 		}, 2L);
+	}
+	
+	private void debug(String text)
+	{
+		System.out.println("[BungeeChatDebug] " + text);
 	}
 }

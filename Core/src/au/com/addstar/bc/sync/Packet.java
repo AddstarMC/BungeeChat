@@ -1,5 +1,7 @@
 package au.com.addstar.bc.sync;
 
+import java.util.Arrays;
+
 public class Packet
 {
 	private Object[] mData;
@@ -17,5 +19,11 @@ public class Packet
 	public Object[] getData()
 	{
 		return mData;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("%s: %s", getClass().getSimpleName(), Arrays.toString(mData));
 	}
 }

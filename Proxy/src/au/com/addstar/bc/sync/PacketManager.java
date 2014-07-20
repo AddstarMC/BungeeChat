@@ -22,6 +22,7 @@ import net.md_5.bungee.event.EventHandler;
 
 public class PacketManager implements Listener
 {
+	public static boolean enableDebug = false;
 	private HashMap<ServerInfo, PacketCodec> mCodecs;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
 	
@@ -68,6 +69,9 @@ public class PacketManager implements Listener
 	
 	public void send(Packet packet, ServerInfo server)
 	{
+		if(enableDebug)
+			debug("Sending to " + server.getName() + ": " + packet);
+		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
 		try
@@ -83,6 +87,9 @@ public class PacketManager implements Listener
 	
 	public void broadcast(Packet packet)
 	{
+		if(enableDebug)
+			debug("Broadcast: " + packet);
+		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
 		try
@@ -101,6 +108,9 @@ public class PacketManager implements Listener
 	
 	public void broadcastNoQueue( Packet packet )
 	{
+		if(enableDebug)
+			debug("Broadcast NQ: " + packet);
+		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
 		try
@@ -112,6 +122,11 @@ public class PacketManager implements Listener
 			{
 				if(!server.getPlayers().isEmpty())
 					server.sendData("BungeeChat", data);
+				else
+				{
+					if(enableDebug)
+						debug("* No send 0 players. " + server.getName());
+				}
 			}
 		}
 		catch(IOException e)
@@ -129,7 +144,14 @@ public class PacketManager implements Listener
 		{
 			Packet packet = codec.read(input);
 			if(packet == null)
+			{
+				if(enableDebug)
+					debug("Received packet but decoded to null. " + server.getName());
 				return;
+			}
+			
+			if(enableDebug)
+				debug("Received packet from " + server.getName() + ": " + packet);
 			
 			// Handler spec handlers
 			for(IPacketHandler handler : mHandlers.get(packet.getClass()))
@@ -162,6 +184,8 @@ public class PacketManager implements Listener
 			
 			if(codec == null)
 			{
+				if(enableDebug)
+					debug("Received packet. Pending codec. " + server.getName());
 				mPendingPackets.add(new SimpleEntry<ServerInfo, byte[]>(server, event.getData()));
 				return;
 			}
@@ -179,12 +203,16 @@ public class PacketManager implements Listener
 				String type = input.readUTF();
 				if(type.equals("Schema"))
 				{
+					if(enableDebug)
+						debug("Received schema from " + server.getName());
 					PacketCodec codec = PacketCodec.fromSchemaData(input);
 					mCodecs.put(server, codec);
 					doPending(server);
 				}
 				else if(type.equals("Online"))
 				{
+					if(enableDebug)
+						debug("Received online message from " + server.getName());
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					DataOutputStream out = new DataOutputStream(ostream);
 					PacketRegistry.writeSchemaPacket(out);
@@ -215,8 +243,15 @@ public class PacketManager implements Listener
 			if(entry.getKey().equals(server))
 			{
 				it.remove();
+				if(enableDebug)
+					debug("Do pending:");
 				handleDataPacket(server, codec, entry.getValue());
 			}
 		}
+	}
+	
+	private void debug(String message)
+	{
+		System.out.println("[BungeeChatDebug] " + message);
 	}
 }
