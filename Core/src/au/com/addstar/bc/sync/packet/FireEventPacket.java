@@ -17,6 +17,11 @@ public class FireEventPacket extends Packet
 		super((byte)event, id, message);
 	}
 	
+	protected FireEventPacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public int getEvent()
 	{
 		return ((Byte)getData(0)).intValue();

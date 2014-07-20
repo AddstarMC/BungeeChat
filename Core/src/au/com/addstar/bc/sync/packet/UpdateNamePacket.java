@@ -14,6 +14,11 @@ public class UpdateNamePacket extends Packet
 		super(id,name);
 	}
 	
+	protected UpdateNamePacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public UUID getID()
 	{
 		return (UUID)getData(0);

@@ -27,6 +27,8 @@ public class PacketManager implements Listener
 		mCodecs = new HashMap<ServerInfo, PacketCodec>();
 		mHandlers = HashMultimap.create();
 		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
+		ProxyServer.getInstance().registerChannel("BungeeChat");
+		ProxyServer.getInstance().registerChannel("BCState");
 	}
 	
 	public void addHandler(IPacketHandler handler, Class<? extends Packet>... packets)

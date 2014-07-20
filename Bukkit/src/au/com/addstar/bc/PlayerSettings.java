@@ -1,10 +1,10 @@
 package au.com.addstar.bc;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
+
+import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 
 public class PlayerSettings
 {
@@ -28,19 +28,18 @@ public class PlayerSettings
 		return BungeeChat.getPlayerManager().getPlayer(lastMsgTarget);
 	}
 	
-	public void read(DataInput input)
+	public void read(PlayerSettingsPacket packet)
 	{
-		try
-		{
-			lastMsgTarget = UUID.fromString(input.readUTF());
-			nickname = input.readUTF();
-			socialSpyState = input.readByte();
-			msgEnabled = input.readBoolean();
-			muteTime = input.readLong();
-			isAFK = input.readBoolean();
-		}
-		catch(IOException e)
-		{
-		}
+		lastMsgTarget = packet.getLastMessageTarget();
+		nickname = packet.getNickname();
+		socialSpyState = packet.getSocialSpyState();
+		msgEnabled = packet.getMsgToggle();
+		muteTime = packet.getMuteTime();
+		isAFK = packet.getAFK();
+	}
+	
+	public PlayerSettingsPacket toPacket(UUID id)
+	{
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK);
 	}
 }

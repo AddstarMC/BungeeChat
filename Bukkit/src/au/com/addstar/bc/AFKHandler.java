@@ -1,10 +1,6 @@
 package au.com.addstar.bc;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -23,21 +19,25 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.sync.IMethodCallback;
+import au.com.addstar.bc.sync.IPacketHandler;
+import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.SyncConfig;
+import au.com.addstar.bc.sync.packet.AFKPacket;
 import au.com.addstar.bc.utils.Utilities;
 
-public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDataReceiver
+public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPacketHandler
 {
 	public int delay = 30;
 	public int kickTime = 30;
 	public boolean kickEnabled = false;
 	public String kickMessage = "You have been kicked for idling %d minutes.";
 	
+	@SuppressWarnings( "unchecked" )
 	public AFKHandler(Plugin plugin)
 	{
 		Bukkit.getScheduler().runTaskTimer(plugin, new AFKTimer(), 20, 20);
 		Bukkit.getPluginManager().registerEvents(this, plugin);
-		BungeeChat.getInstance().addListener(this);
+		BungeeChat.getPacketManager().addHandler(this, AFKPacket.class);
 	}
 	
 	@Override
@@ -99,28 +99,23 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IDat
 	}
 	
 	@Override
-	public void onMessage( String channel, DataInput data ) throws IOException
+	public void handle( Packet raw )
 	{
-		if(channel.equals("AFK"))
+		AFKPacket packet = (AFKPacket)raw;
+		Player player = Bukkit.getPlayer(packet.getID());
+		if(player != null)
 		{
-			UUID id = UUID.fromString(data.readUTF());
-			boolean afk = data.readBoolean();
-			
-			Player pplayer = Bukkit.getPlayer(id);
-			if(pplayer != null)
-			{
-				PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(pplayer);
-				settings.isAFK = afk;
+			PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(player);
+			settings.isAFK = packet.getAFK();
 
-				settings.lastActiveTime = System.currentTimeMillis();
-				
-				if(settings.isAFK)
-					settings.afkStartTime = System.currentTimeMillis();
-				else
-					settings.afkStartTime = Long.MAX_VALUE;
-				
-				onAFKChange(pplayer, settings.isAFK);
-			}
+			settings.lastActiveTime = System.currentTimeMillis();
+			
+			if(settings.isAFK)
+				settings.afkStartTime = System.currentTimeMillis();
+			else
+				settings.afkStartTime = Long.MAX_VALUE;
+			
+			onAFKChange(player, settings.isAFK);
 		}
 	}
 	

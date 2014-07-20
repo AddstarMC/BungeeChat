@@ -14,6 +14,11 @@ public class QuitMessagePacket extends Packet
 		super(id, message);
 	}
 	
+	protected QuitMessagePacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public UUID getID()
 	{
 		return (UUID)getData(0);

@@ -14,6 +14,11 @@ public class PlayerJoinPacket extends Packet
 		super(id, name, nickname);
 	}
 	
+	protected PlayerJoinPacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public UUID getID()
 	{
 		return (UUID)getData(0);

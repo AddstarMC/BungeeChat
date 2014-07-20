@@ -17,6 +17,11 @@ public class SendPacket extends Packet
 		super(id, message);
 	}
 	
+	protected SendPacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public UUID getUUID()
 	{
 		return (UUID)getData(ID);

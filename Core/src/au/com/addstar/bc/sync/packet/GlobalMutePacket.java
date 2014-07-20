@@ -12,6 +12,11 @@ public class GlobalMutePacket extends Packet
 		super(time);
 	}
 	
+	protected GlobalMutePacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public long getTime()
 	{
 		return (Long)getData(0);

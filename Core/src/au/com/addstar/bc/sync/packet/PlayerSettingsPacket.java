@@ -7,11 +7,16 @@ import au.com.addstar.bc.sync.PacketSchema;
 
 public class PlayerSettingsPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("id=UUID,nickname=String,lmt=UUID,socialspy=Byte,msgtoggle=Boolean,mute=Long");
+	public static final PacketSchema schema = PacketSchema.from("id=UUID,nickname=String,lmt=UUID,socialspy=Byte,msgtoggle=Boolean,mute=Long,afk=Boolean");
 	
-	public PlayerSettingsPacket(UUID id, String nickname, UUID lastMessageTarget, int socialSpyState, boolean msgToggle, long muteTime)
+	public PlayerSettingsPacket(UUID id, String nickname, UUID lastMessageTarget, int socialSpyState, boolean msgToggle, long muteTime, boolean afk)
 	{
-		super(id, nickname, lastMessageTarget, (byte)socialSpyState, msgToggle, muteTime);
+		super(id, nickname, lastMessageTarget, (byte)socialSpyState, msgToggle, muteTime, afk);
+	}
+	
+	protected PlayerSettingsPacket(Object[] data)
+	{
+		super(data);
 	}
 	
 	public UUID getID()
@@ -42,5 +47,10 @@ public class PlayerSettingsPacket extends Packet
 	public long getMuteTime()
 	{
 		return (Long)getData(5);
+	}
+	
+	public boolean getAFK()
+	{
+		return (Boolean)getData(6);
 	}
 }

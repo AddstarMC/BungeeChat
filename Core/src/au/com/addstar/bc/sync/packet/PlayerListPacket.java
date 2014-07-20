@@ -16,6 +16,11 @@ public class PlayerListPacket extends Packet
 		super(ids, names, nicknames);
 	}
 	
+	protected PlayerListPacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public List<UUID> getIDs()
 	{
 		return (List<UUID>)getData(0);

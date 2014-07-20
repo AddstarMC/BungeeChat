@@ -1,6 +1,6 @@
 package au.com.addstar.bc;
 
-import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -23,25 +23,18 @@ public class ProxyLeaveEvent extends Event
 		return handlers;
 	}
 	
-	private OfflinePlayer mPlayer;
-	private String mDisplayName;
+	private Player mPlayer;
 	private String mMessage;
 	
-	public ProxyLeaveEvent(OfflinePlayer player, String displayName, String message)
+	public ProxyLeaveEvent(Player player, String message)
 	{
 		mPlayer = player;
-		mDisplayName = displayName;
 		mMessage = message;
 	}
 	
-	public OfflinePlayer getPlayer()
+	public Player getPlayer()
 	{
 		return mPlayer;
-	}
-	
-	public String getDisplayName()
-	{
-		return mDisplayName;
 	}
 	
 	public String getQuitMessage()

@@ -1,7 +1,5 @@
 package au.com.addstar.bc;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -21,9 +18,19 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import au.com.addstar.bc.sync.IPacketHandler;
+import au.com.addstar.bc.sync.Packet;
+import au.com.addstar.bc.sync.packet.FireEventPacket;
+import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
+import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
+import au.com.addstar.bc.sync.packet.PlayerListPacket;
+import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
+import au.com.addstar.bc.sync.packet.QuitMessagePacket;
+import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+
 import com.google.common.collect.HashBiMap;
 
-public class PlayerManager implements Listener, IDataReceiver
+public class PlayerManager implements Listener, IPacketHandler
 {
 	private HashBiMap<UUID, CommandSender> mAllProxied = HashBiMap.create();
 	private HashMap<String, UUID> mNameMap = new HashMap<String, UUID>();
@@ -142,10 +149,7 @@ public class PlayerManager implements Listener, IDataReceiver
 		}
 		else
 		{
-			new MessageOutput("BungeeChat", "UpdateName")
-				.writeUTF(getUniqueId(player).toString())
-				.writeUTF(name)
-				.send(BungeeChat.getInstance());
+			BungeeChat.getPacketManager().send(new UpdateNamePacket(getUniqueId(player), name));
 		}
 		
 		onPlayerNameChange(getUniqueId(player), name);
@@ -185,61 +189,65 @@ public class PlayerManager implements Listener, IDataReceiver
 		return false;
 	}
 	
-	private void onPlayerJoin(UUID id, String name, String nickname)
+	private void onPlayerJoin(PlayerJoinPacket packet)
 	{
-		RemotePlayer current = new RemotePlayer(id, name);
-		mAllProxied.put(id, current);
-		mNameMap.put(name.toLowerCase(), id);
+		RemotePlayer current = new RemotePlayer(packet.getID(), packet.getName());
+		mAllProxied.put(packet.getID(), current);
+		mNameMap.put(packet.getName().toLowerCase(), packet.getID());
 		
-		if(!nickname.isEmpty())
+		if(!packet.getNickname().isEmpty())
 		{
-			mNameMap.put(nickname.toLowerCase(), id);
-			mReverseNickMapping.put(id, nickname);
+			mNameMap.put(packet.getNickname().toLowerCase(), packet.getID());
+			mReverseNickMapping.put(packet.getID(), packet.getNickname());
 		}
 	}
 	
-	private void onPlayerJoinFirst(UUID uuid , String player, String nickname)
+	private void onPlayerLeave(PlayerLeavePacket packet)
 	{
-		String message;
-		if(nickname.isEmpty())
-			message = ChatColor.YELLOW + player + " joined the game.";
-		else
-			message = ChatColor.YELLOW + nickname + " joined the game.";
-		
-		ProxyJoinEvent event = new ProxyJoinEvent(Bukkit.getPlayer(uuid), message);
-		Bukkit.getPluginManager().callEvent(event);
-		
-		if(event.getJoinMessage() != null)
-			BungeeChat.getSysMsgHandler().onPlayerGlobalJoin(event.getJoinMessage());
-	}
-	
-	private void onPlayerLeave(UUID uuid)
-	{
-		CommandSender original = mAllProxied.remove(uuid);
+		CommandSender original = mAllProxied.remove(packet.getID());
 		mNameMap.remove(original.getName().toLowerCase());
 		
 		// Remove nickname registration
-		String nickname = mReverseNickMapping.remove(uuid);
+		String nickname = mReverseNickMapping.remove(packet.getID());
 		if(nickname != null)
 			mNameMap.remove(nickname.toLowerCase());
 	}
 	
-	private void onPlayerLeaveProxy(UUID id, String displayName, String message)
+	private void onFireEvent(FireEventPacket packet)
 	{
+		Player player = Bukkit.getPlayer(packet.getID());
+		String message = packet.getMessage();
+		
+		if(player == null)
+			return;
+		
 		if(message.isEmpty())
 			message = null;
 		
-		ProxyLeaveEvent event = new ProxyLeaveEvent(Bukkit.getOfflinePlayer(id), displayName, message);
-		Bukkit.getPluginManager().callEvent(event);
-		
-		message = event.getQuitMessage();
-		if(message == null)
-			message = "";
-		
-		new MessageOutput("BungeeChat", "QuitMessage")
-			.writeUTF(id.toString())
-			.writeUTF(message)
-			.send(BungeeChat.getInstance());
+		switch(packet.getEvent())
+		{
+		case FireEventPacket.EVENT_JOIN:
+		{
+			ProxyJoinEvent event = new ProxyJoinEvent(player, message);
+			Bukkit.getPluginManager().callEvent(event);
+			
+			if(event.getJoinMessage() != null)
+				BungeeChat.getSysMsgHandler().onPlayerGlobalJoin(event.getJoinMessage());
+			break;
+		}
+		case FireEventPacket.EVENT_QUIT:
+		{
+			ProxyLeaveEvent event = new ProxyLeaveEvent(player, message);
+			Bukkit.getPluginManager().callEvent(event);
+			
+			message = event.getQuitMessage();
+			if(message == null)
+				message = "";
+			
+			BungeeChat.getPacketManager().sendNoQueue(new QuitMessagePacket(packet.getID(), message));
+			break;
+		}
+		}
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -303,9 +311,15 @@ public class PlayerManager implements Listener, IDataReceiver
 		}
 	}
 	
-	private void onUpdatePlayers(DataInput input) throws IOException
+	private void onUpdatePlayers(PlayerListPacket packet)
 	{
 		mAllProxied.clear();
+		mNameMap.clear();
+		mReverseNickMapping.clear();
+		
+		List<UUID> ids = packet.getIDs();
+		List<String> names = packet.getNames();
+		List<String> nicknames = packet.getNicknames();
 		
 		for(Player player : Bukkit.getOnlinePlayers())
 		{
@@ -323,12 +337,11 @@ public class PlayerManager implements Listener, IDataReceiver
 				player.setDisplayName(player.getName());
 		}
 		
-		int count = input.readShort();
-		for(int i = 0; i < count; ++i)
+		for(int i = 0; i < ids.size(); ++i)
 		{
-			UUID id = UUID.fromString(input.readUTF());
-			String name = input.readUTF();
-			String nickname = input.readUTF();
+			UUID id = ids.get(i);
+			String name = names.get(i);
+			String nickname = nicknames.get(i);
 			
 			if(mAllProxied.containsKey(id))
 				continue;
@@ -345,21 +358,34 @@ public class PlayerManager implements Listener, IDataReceiver
 		}
 	}
 	
+	private void onPlayerSettings(PlayerSettingsPacket packet)
+	{
+		Player player = Bukkit.getPlayer(packet.getID());
+		if(player != null)
+		{
+			PlayerSettings settings = getPlayerSettings(player);
+			settings.read(packet);
+			
+			if(settings.nickname.isEmpty())
+			{
+				player.setDisplayName(player.getName());
+				onPlayerNameChange(player.getUniqueId(), "");
+			}
+			else
+			{
+				player.setDisplayName(settings.nickname);
+				onPlayerNameChange(player.getUniqueId(), settings.nickname);
+			}
+		}
+	}
+	
 	public void updatePlayerSettings(CommandSender player)
 	{
 		if(!(player instanceof Player))
 			return;
 		
 		PlayerSettings settings = getPlayerSettings(player);
-		
-		new MessageOutput("BungeeChat", "SyncPlayer")
-			.writeUTF(getUniqueId(player).toString())
-			.writeUTF(settings.lastMsgTarget == null ? "" : settings.lastMsgTarget.toString())
-			.writeUTF(settings.nickname)
-			.writeByte(settings.socialSpyState)
-			.writeBoolean(settings.msgEnabled)
-			.writeLong(settings.muteTime)
-			.send((Player)player, BungeeChat.getInstance());
+		BungeeChat.getPacketManager().sendNoQueue(settings.toPacket(getUniqueId(player)));
 	}
 	
 	private void onPlayerNameChange(UUID uuid, String newName)
@@ -376,36 +402,20 @@ public class PlayerManager implements Listener, IDataReceiver
 	}
 	
 	@Override
-	public void onMessage( String channel, DataInput input ) throws IOException
+	public void handle( Packet packet )
 	{
-		if(channel.equals("Player+"))
-			onPlayerJoin(UUID.fromString(input.readUTF()), input.readUTF(), input.readUTF());
-		else if(channel.equals("Player-"))
-			onPlayerLeave(UUID.fromString(input.readUTF()));
-		else if(channel.equals("Player*"))
-			onUpdatePlayers(input);
-		else if(channel.equals("UpdateName"))
-			onPlayerNameChange(UUID.fromString(input.readUTF()), input.readUTF());
-		else if(channel.equals("SyncPlayer"))
-		{
-			Player player = Bukkit.getPlayer(UUID.fromString(input.readUTF()));
-			if(player != null)
-			{
-				PlayerSettings settings = getPlayerSettings(player);
-				settings.read(input);
-				if(settings.nickname.isEmpty())
-					player.setDisplayName(player.getName());
-				else
-				{
-					player.setDisplayName(settings.nickname);
-					onPlayerNameChange(player.getUniqueId(), settings.nickname);
-				}
-			}
-		}
-		else if(channel.equals("ProxyJoin"))
-			onPlayerJoinFirst(UUID.fromString(input.readUTF()), input.readUTF(), input.readUTF());
-		else if(channel.equals("ProxyLeave"))
-			onPlayerLeaveProxy(UUID.fromString(input.readUTF()), input.readUTF(), input.readUTF());
+		if(packet instanceof PlayerJoinPacket)
+			onPlayerJoin((PlayerJoinPacket)packet);
+		else if(packet instanceof PlayerLeavePacket)
+			onPlayerLeave((PlayerLeavePacket)packet);
+		else if(packet instanceof PlayerListPacket)
+			onUpdatePlayers((PlayerListPacket)packet);
+		else if(packet instanceof UpdateNamePacket)
+			onPlayerNameChange(((UpdateNamePacket) packet).getID(), ((UpdateNamePacket) packet).getName());
+		else if(packet instanceof PlayerSettingsPacket)
+			onPlayerSettings((PlayerSettingsPacket)packet);
+		else if(packet instanceof FireEventPacket)
+			onFireEvent((FireEventPacket)packet);
 	}
 	
 	public static UUID getUniqueId(CommandSender sender)

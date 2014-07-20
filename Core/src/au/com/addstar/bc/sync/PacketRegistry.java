@@ -6,8 +6,12 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import au.com.addstar.bc.sync.packet.AFKPacket;
 import au.com.addstar.bc.sync.packet.CallFailedResponsePacket;
+import au.com.addstar.bc.sync.packet.CallPacket;
 import au.com.addstar.bc.sync.packet.CallSuccessResponsePacket;
+import au.com.addstar.bc.sync.packet.ConfigPacket;
+import au.com.addstar.bc.sync.packet.ConfigRequestPacket;
 import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.GlobalMutePacket;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
@@ -85,10 +89,16 @@ public class PacketRegistry
 		registerPacket("Pl", PlayerSettingsPacket.class, PlayerSettingsPacket.schema);
 		registerPacket("QM", QuitMessagePacket.class, QuitMessagePacket.schema);
 		registerPacket("Name", UpdateNamePacket.class, UpdateNamePacket.schema);
+		registerPacket("AFK", AFKPacket.class, AFKPacket.schema);
 		
 		// Remote method related
 		registerPacket("CR-", CallFailedResponsePacket.class, CallFailedResponsePacket.schema);
 		registerPacket("CR+", CallSuccessResponsePacket.class, CallSuccessResponsePacket.schema);
+		registerPacket("C", CallPacket.class, CallPacket.schema);
+		
+		registerPacket("Cfg", ConfigPacket.class, ConfigPacket.schema);
+		registerPacket("CfgR", ConfigRequestPacket.class, ConfigRequestPacket.schema);
+		
 	}
 	
 	private static class PacketDefinition

@@ -13,6 +13,11 @@ public class ConfigPacket extends Packet
 		super(name, config);
 	}
 	
+	protected ConfigPacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public String getName()
 	{
 		return (String)getData(0);

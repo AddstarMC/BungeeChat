@@ -14,6 +14,11 @@ public class PlayerLeavePacket extends Packet
 		super(id);
 	}
 	
+	protected PlayerLeavePacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public UUID getID()
 	{
 		return (UUID)getData(0);

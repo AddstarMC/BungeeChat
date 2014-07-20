@@ -1,11 +1,5 @@
 package au.com.addstar.bc;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.UUID;
-
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
@@ -18,18 +12,20 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
-
 import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.config.KeywordHighlighterConfig;
 import au.com.addstar.bc.config.PermissionSettingConfig;
 import au.com.addstar.bc.sync.ConfigReceiveEvent;
 import au.com.addstar.bc.sync.IMethodCallback;
+import au.com.addstar.bc.sync.Packet;
+import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
+import au.com.addstar.bc.sync.packet.MirrorPacket;
+import au.com.addstar.bc.sync.packet.SendPacket;
 
-public class BungeeChat extends JavaPlugin implements PluginMessageListener, Listener
+public class BungeeChat extends JavaPlugin implements Listener
 {
 	static Permission permissionManager;
 	
@@ -43,9 +39,8 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	private ChatChannelManager mChatChannels;
 	private SocialSpyHandler mSocialSpyHandler;
 	
-	private ArrayList<IDataReceiver> mReceivers = new ArrayList<IDataReceiver>();
-	
 	private PlayerManager mPlayerManager;
+	private PacketManager mPacketManager;
 	
 	private AFKHandler mAfkHandler;
 	private SystemMessagesHandler mMsgHandler;
@@ -53,6 +48,7 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	
 	private SyncManager mSyncManager;
 	
+	@SuppressWarnings( "unchecked" )
 	@Override
 	public void onEnable()
 	{
@@ -65,8 +61,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 			permissionManager = null;
 		
 		Bukkit.getPluginManager().registerEvents(new ChatHandler(), this);
-		Bukkit.getMessenger().registerIncomingPluginChannel(this, "BungeeChat", this);
-		Bukkit.getMessenger().registerOutgoingPluginChannel(this, "BungeeChat");
 		
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
@@ -74,13 +68,16 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		mSocialSpyHandler = new SocialSpyHandler(this);
 		mPlayerManager = new PlayerManager(this);
 		mMsgHandler = new SystemMessagesHandler(this);
-		mSyncManager = new SyncManager(this);
+		mSyncManager = new SyncManager();
+		mPacketManager = new PacketManager(this);
 		SyncUtil.addSerializer(ChatChannelConfig.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterConfig.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSettingConfig.class, "PermSetting");
 		
-		addListener(mPlayerManager);
+		mPacketManager.addHandler(new PacketHandler(), MirrorPacket.class, SendPacket.class);
+		mPacketManager.addHandler(mPlayerManager, (Class<? extends Packet>[])null);
 		
+		mPacketManager.initialize();
 		requestUpdate();
 		
 		MessageCommand cmd = new MessageCommand();
@@ -179,18 +176,12 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 
 	public static void sendMessage(RemotePlayer player, String message)
 	{
-		new MessageOutput("BungeeChat", "Send")
-			.writeUTF(player.getUniqueId().toString())
-			.writeUTF(message)
-			.send(mInstance);
+		getPacketManager().sendNoQueue(new SendPacket(player.getUniqueId(), message));
 	}
 	
 	public static void mirrorChat(String fullChat, String channel)
 	{
-		new MessageOutput("BungeeChat", "Mirror")
-			.writeUTF(channel)
-			.writeUTF(fullChat)
-			.send(mInstance);
+		getPacketManager().sendNoQueue(new MirrorPacket(channel, fullChat));
 	}
 	
 	public static String getPrimaryGroup(Player player)
@@ -206,48 +197,6 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 		{
 			return null;
 		}
-	}
-
-	@Override
-	public void onPluginMessageReceived( String channel, Player sender, byte[] data )
-	{
-		ByteArrayInputStream stream = new ByteArrayInputStream(data);
-		DataInputStream input = new DataInputStream(stream);
-		try
-		{
-			String subChannel = input.readUTF();
-			if(channel.equals("BungeeChat"))
-			{
-				if(subChannel.equals("Mirror"))
-				{
-					String chatChannel = input.readUTF();
-					String message = input.readUTF();
-					
-					ChannelType type = ChannelType.from(chatChannel);
-					
-					Bukkit.getPluginManager().callEvent(new ChatChannelEvent(chatChannel, type, message));
-				}
-				else if(subChannel.equals("Message"))
-				{
-					Player ply = Bukkit.getPlayer(UUID.fromString(input.readUTF()));
-					String message = input.readUTF();
-					if(ply != null)
-						ply.sendMessage(message);
-				}
-				
-				for(IDataReceiver receiver : mReceivers)
-					receiver.onMessage(subChannel, input);
-			}
-		}
-		catch(IOException e) 
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	public void addListener(IDataReceiver receiver)
-	{
-		mReceivers.add(receiver);
 	}
 	
 	public static String colorize(String message, CommandSender sender)
@@ -329,6 +278,11 @@ public class BungeeChat extends JavaPlugin implements PluginMessageListener, Lis
 	public static SyncManager getSyncManager()
 	{
 		return mInstance.mSyncManager;
+	}
+	
+	public static PacketManager getPacketManager()
+	{
+		return mInstance.mPacketManager;
 	}
 	
 	static BungeeChat getInstance()

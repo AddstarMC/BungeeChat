@@ -1,21 +1,18 @@
 package au.com.addstar.bc.sync;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
+import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.sync.packet.CallFailedResponsePacket;
+import au.com.addstar.bc.sync.packet.CallPacket;
+import au.com.addstar.bc.sync.packet.CallSuccessResponsePacket;
+import au.com.addstar.bc.sync.packet.ConfigPacket;
+import au.com.addstar.bc.sync.packet.ConfigRequestPacket;
 
-import au.com.addstar.bc.MessageOutput;
-
-public class SyncManager implements PluginMessageListener
+public class SyncManager implements IPacketHandler
 {
 	public static final int protocolVersion = 1;
 	
@@ -23,94 +20,58 @@ public class SyncManager implements PluginMessageListener
 	
 	private HashMap<Integer, IMethodCallback<Object>> mWaitingCallbacks;
 	
-	private Plugin mPlugin;
-	public SyncManager(Plugin plugin)
+	@SuppressWarnings( "unchecked" )
+	public SyncManager()
 	{
-		mPlugin = plugin;
-		Bukkit.getMessenger().registerIncomingPluginChannel(plugin, "BungeeSync", this);
-		Bukkit.getMessenger().registerOutgoingPluginChannel(plugin, "BungeeSync");
 		mWaitingCallbacks = new HashMap<Integer, IMethodCallback<Object>>();
+		BungeeChat.getPacketManager().addHandler(this, ConfigPacket.class, CallFailedResponsePacket.class, CallSuccessResponsePacket.class);
 	}
 	
 	@Override
-	public void onPluginMessageReceived( String channel, Player player, byte[] data )
+	public void handle( Packet packet )
 	{
-		ByteArrayInputStream stream = new ByteArrayInputStream(data);
-		DataInputStream input = new DataInputStream(stream);
-		
-		try
-		{
-			String subChannel = input.readUTF();
-			onDataReceived(subChannel, input);
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	private void onDataReceived(String channel, DataInput input) throws IOException
-	{
-		if(channel.equals("ConfigSync"))
-		{
-			String name = input.readUTF();
-			SyncConfig config = new SyncConfig();
-			config.load(input);
-			
-			Bukkit.getPluginManager().callEvent(new ConfigReceiveEvent(name, config));
-		}
-		else if(channel.equals("CallRes"))
-		{
-			int id = input.readInt();
-			onMethodResult(id, input);
-		}
+		if(packet instanceof ConfigPacket)
+			Bukkit.getPluginManager().callEvent(new ConfigReceiveEvent(((ConfigPacket) packet).getName(), ((ConfigPacket) packet).getConfig()));
+		else if(packet instanceof CallFailedResponsePacket)
+			onCallFailed((CallFailedResponsePacket)packet);
+		else if(packet instanceof CallSuccessResponsePacket)
+			onCallSuccess((CallSuccessResponsePacket)packet);
 	}
 	
 	@SuppressWarnings( "unchecked" )
 	public void callSyncMethod(String method, IMethodCallback<?> callback, Object... args)
 	{
 		int id = mNextId++;
-		MessageOutput out = new MessageOutput("BungeeSync", "Call")
-			.writeUTF(method)
-			.writeInt(id)
-			.writeByte(args.length);
-
-		try
-		{
-			for(int i = 0; i < args.length; ++i)
-				SyncUtil.writeObject(out.asDataOutput(), args[i]);
-		}
-		catch(IOException e)
-		{
-			// Cant happen
-		}
 		
-		out.send(mPlugin);
-		
+		BungeeChat.getPacketManager().send(new CallPacket(method, id, args));
+				
 		if(callback != null)
 			mWaitingCallbacks.put(id, (IMethodCallback<Object>) callback);
 	}
 	
-	private void onMethodResult(int id, DataInput input) throws IOException
+	private void onCallFailed(CallFailedResponsePacket packet)
 	{
-		IMethodCallback<Object> callback = mWaitingCallbacks.remove(id);
+		IMethodCallback<Object> callback = mWaitingCallbacks.remove(packet.getId());
 		
 		if(callback == null)
 			return;
 		
-		boolean success = input.readBoolean();
+		callback.onError(packet.getErrorName(), packet.getErrorMessage());
+	}
+	
+	private void onCallSuccess(CallSuccessResponsePacket packet)
+	{
+		IMethodCallback<Object> callback = mWaitingCallbacks.remove(packet.getId());
 		
-		if(success)
-			callback.onFinished(SyncUtil.readObject(input));
-		else
-			callback.onError(input.readUTF(), input.readUTF());
+		if(callback == null)
+			return;
+		
+		callback.onFinished(packet.getResult());
 	}
 	
 	public void requestConfigUpdate(String name)
 	{
-		new MessageOutput("BungeeSync", "ConfigUpdate")
-			.writeUTF(name)
-			.send(mPlugin);
+		BungeeChat.getPacketManager().send(new ConfigRequestPacket(name));
 	}
 	
 	/**

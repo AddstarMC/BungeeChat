@@ -216,20 +216,20 @@ public class MessageOutput
 		return mOutput;
 	}
 
-	public byte[] toBytes()
-	{
-		return mStream.toByteArray();
-	}
-	
-	public void send(Plugin plugin)
-	{
-		Player[] players = Bukkit.getOnlinePlayers();
-		if(players.length > 0)
-			players[0].sendPluginMessage(plugin, mChannel, mStream.toByteArray());
-	}
-	
-	public void send(Player player, Plugin plugin)
-	{
-		player.sendPluginMessage(plugin, mChannel, mStream.toByteArray());
-	}
+//	public byte[] toBytes()
+//	{
+//		return mStream.toByteArray();
+//	}
+//	
+//	public void send(Plugin plugin)
+//	{
+//		Player[] players = Bukkit.getOnlinePlayers();
+//		if(players.length > 0)
+//			players[0].sendPluginMessage(plugin, mChannel, mStream.toByteArray());
+//	}
+//	
+//	public void send(Player player, Plugin plugin)
+//	{
+//		player.sendPluginMessage(plugin, mChannel, mStream.toByteArray());
+//	}
 }

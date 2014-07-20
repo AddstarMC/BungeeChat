@@ -12,6 +12,11 @@ public class CallFailedResponsePacket extends Packet
 		super(id, errorName, errorMessage);
 	}
 	
+	protected CallFailedResponsePacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public int getId()
 	{
 		return (Integer)getData(0);

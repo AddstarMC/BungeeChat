@@ -12,6 +12,11 @@ public class CallSuccessResponsePacket extends Packet
 		super(id, data);
 	}
 	
+	protected CallSuccessResponsePacket(Object[] data)
+	{
+		super(data);
+	}
+	
 	public int getId()
 	{
 		return (Integer)getData(0);

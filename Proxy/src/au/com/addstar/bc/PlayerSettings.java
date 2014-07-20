@@ -42,10 +42,11 @@ public class PlayerSettings extends Config
 		socialSpyState = packet.getSocialSpyState();
 		msgEnabled = packet.getMsgToggle();
 		muteTime = packet.getMuteTime();
+		isAFK = packet.getAFK();
 	}
 	
 	public PlayerSettingsPacket getUpdatePacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK);
 	}
 }

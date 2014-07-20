@@ -1,7 +1,5 @@
 package au.com.addstar.bc;
 
-import java.io.DataInput;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,19 +18,23 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.sync.IMethodCallback;
+import au.com.addstar.bc.sync.IPacketHandler;
+import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.SyncConfig;
+import au.com.addstar.bc.sync.packet.GlobalMutePacket;
 import au.com.addstar.bc.utils.Utilities;
 
-public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IDataReceiver
+public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPacketHandler
 {
 	private long mGMuteTime = 0;
 	
 	private List<String> mMutedCommands = Collections.emptyList();
 	
+	@SuppressWarnings( "unchecked" )
 	public MuteHandler(Plugin plugin)
 	{
 		Bukkit.getPluginManager().registerEvents(this, plugin);
-		BungeeChat.getInstance().addListener(this);
+		BungeeChat.getPacketManager().addHandler(this, GlobalMutePacket.class);
 	}
 	
 	@Override
@@ -116,9 +118,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IDa
 			else if(mGMuteTime != 0)
 			{
 				mGMuteTime = 0;
-				new MessageOutput("BungeeChat", "GMute")
-				.writeLong(0)
-				.send(BungeeChat.getInstance());
+				BungeeChat.getPacketManager().send(new GlobalMutePacket(0));
 				
 				String message = ChatColor.AQUA + "The global mute has ended";
 				BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
@@ -127,9 +127,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IDa
 			}
 
 			mGMuteTime = time;
-			new MessageOutput("BungeeChat", "GMute")
-				.writeLong(time)
-				.send(BungeeChat.getInstance());
+			BungeeChat.getPacketManager().send(new GlobalMutePacket(time));
 			
 			String message = ChatColor.AQUA + "A " + ChatColor.RED + "global" + ChatColor.AQUA + " mute has been started";
 			
@@ -235,12 +233,10 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IDa
 	}
 	
 	@Override
-	public void onMessage( String channel, DataInput data ) throws IOException
+	public void handle( Packet raw )
 	{
-		if(channel.equals("GMute"))
-		{
-			mGMuteTime = data.readLong();
-		}
+		GlobalMutePacket packet = (GlobalMutePacket)raw;
+		mGMuteTime = packet.getTime();
 	}
 	
 	@SuppressWarnings( "unchecked" )
