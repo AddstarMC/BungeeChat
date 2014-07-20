@@ -134,6 +134,11 @@ public class PacketSchema
 			output.writeUTF(((UUID)object).toString());
 			break;
 		case Object:
+			SyncUtil.writeObject(output, object);
+			break;
+		case SyncConfig:
+			((SyncConfig)object).write(output);
+			break;
 		case List:
 			writeList((List<?>)object, subType, output);
 			break;
@@ -175,6 +180,14 @@ public class PacketSchema
 			return input.readUTF();
 		case UUID:
 			return UUID.fromString(input.readUTF());
+		case Object:
+			return SyncUtil.readObject(input);
+		case SyncConfig:
+		{
+			SyncConfig config = new SyncConfig();
+			config.load(input);
+			return config;
+		}
 		case List:
 			return readList(subType, input);
 		default:
@@ -282,6 +295,8 @@ public class PacketSchema
 		String[] fields = definition.split(",");
 		
 		PacketSchema schema = new PacketSchema();
+		if(definition.isEmpty())
+			return schema;
 		
 		for(String field : fields)
 		{

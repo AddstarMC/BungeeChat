@@ -64,12 +64,12 @@ public class BungeeChat extends JavaPlugin implements Listener
 		
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
+		mPacketManager = new PacketManager(this);
 		mChatChannels = new ChatChannelManager(this);
 		mSocialSpyHandler = new SocialSpyHandler(this);
 		mPlayerManager = new PlayerManager(this);
 		mMsgHandler = new SystemMessagesHandler(this);
 		mSyncManager = new SyncManager();
-		mPacketManager = new PacketManager(this);
 		SyncUtil.addSerializer(ChatChannelConfig.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterConfig.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSettingConfig.class, "PermSetting");
