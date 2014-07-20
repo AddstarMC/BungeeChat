@@ -125,11 +125,11 @@ public class PacketRegistry
 		{
 			try
 			{
-				return constructor.newInstance(data);
+				return constructor.newInstance(new Object[]{data});
 			}
 			catch(Exception e)
 			{
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException(e);
 			}
 		}
 		

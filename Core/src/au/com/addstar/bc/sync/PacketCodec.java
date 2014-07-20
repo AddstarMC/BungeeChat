@@ -65,11 +65,13 @@ public class PacketCodec
 		PacketCodec codec = new PacketCodec();
 		
 		int count = in.readByte();
+		System.out.println("Loading decoder: " + count + " packets");
 		for(int i = 0; i < count; ++i)
 		{
 			String type = in.readUTF();
 			String schemaDef = in.readUTF();
 			
+			System.out.println("* Packet: " + type + ": " + schemaDef);
 			PacketSchema schema = PacketSchema.from(schemaDef);
 			codec.mReadSchemas.put(type, schema);
 		}

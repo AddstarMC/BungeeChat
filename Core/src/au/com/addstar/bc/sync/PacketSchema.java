@@ -24,7 +24,7 @@ public class PacketSchema
 	private void addField(String name, FieldType type, FieldType subType, boolean required)
 	{
 		mFields.add(new FieldDefinition(name, type, subType, required));
-		mFieldMap.put(name, mFields.size());
+		mFieldMap.put(name, mFields.size()-1);
 	}
 	
 	/**
@@ -96,6 +96,29 @@ public class PacketSchema
 		return translated;
 	}
 	
+	private void writeString(String string, DataOutput output) throws IOException
+	{
+		if(string == null)
+			output.writeShort(-1);
+		else
+		{
+			byte[] data = string.getBytes("UTF-8");
+			output.writeShort(data.length);
+			output.write(data);
+		}
+	}
+	
+	private String readString(DataInput input) throws IOException
+	{
+		short count = input.readShort();
+		if(count == -1)
+			return null;
+		
+		byte[] data = new byte[count];
+		input.readFully(data);
+		return new String(data, "UTF-8");
+	}
+	
 	private boolean write(FieldType type, FieldType subType, Object object, DataOutput output) throws IOException
 	{
 		if(!type.isCorrectType(object))
@@ -128,10 +151,13 @@ public class PacketSchema
 			output.writeShort((Short)object);
 			break;
 		case String:
-			output.writeUTF((String)object);
+			writeString((String)object, output);
 			break;
 		case UUID:
-			output.writeUTF(((UUID)object).toString());
+			if(object == null)
+				output.writeShort(-1);
+			else
+				writeString(((UUID)object).toString(), output);
 			break;
 		case Object:
 			SyncUtil.writeObject(output, object);
@@ -177,9 +203,14 @@ public class PacketSchema
 		case Short:
 			return input.readShort();
 		case String:
-			return input.readUTF();
+			return readString(input);
 		case UUID:
-			return UUID.fromString(input.readUTF());
+		{
+			String str = readString(input);
+			if(str == null)
+				return null;
+			return UUID.fromString(str);
+		}
 		case Object:
 			return SyncUtil.readObject(input);
 		case SyncConfig:
@@ -216,14 +247,20 @@ public class PacketSchema
 			if(theirId == null)
 			{
 				if(field.required)
+				{
+					System.out.println("field " + field.name + " is missing");
 					return false;
+				}
 				continue;
 			}
 			
 			FieldDefinition theirField = readSchema.mFields.get(theirId);
 			
-			if(field.type != theirField.type)
+			if(!field.type.equals(theirField.type))
+			{
+				System.out.println("field " + field.name + " type mismatch " + field.type + " to " + theirField.type);
 				return false;
+			}
 		}
 		
 		for(int i = 0; i < readSchema.mFields.size(); ++i)
@@ -234,17 +271,23 @@ public class PacketSchema
 			if(theirId == null)
 			{
 				if(field.required)
+				{
+					System.out.println("myfield " + field.name + " is missing");
 					return false;
+				}
 				continue;
 			}
 			
 			FieldDefinition theirField = mFields.get(theirId);
 			
-			if(field.type != theirField.type)
+			if(!field.type.equals(theirField.type))
+			{
+				System.out.println("myfield " + field.name + " type mismatch");
 				return false;
+			}
 		}
 		
-		return false;
+		return true;
 	}
 	
 	@Override
@@ -305,7 +348,7 @@ public class PacketSchema
 				throw new IllegalArgumentException("Syntax error in field definition '" + field + "'. Must be in the format of: name=type.");
 			
 			String name = matcher.group(1);
-			boolean optional = (matcher.group(2).equals(":="));
+			boolean required = (matcher.group(2).equals("="));
 			FieldType type = FieldType.getByName(matcher.group(3));
 			FieldType subType = null;
 			
@@ -323,7 +366,7 @@ public class PacketSchema
 					throw new IllegalArgumentException("Type " + subType.name() + " requires a subtype but is used as one. in" + field);
 			}
 			
-			schema.addField(name, type, subType, optional);
+			schema.addField(name, type, subType, required);
 		}
 		
 		return schema;

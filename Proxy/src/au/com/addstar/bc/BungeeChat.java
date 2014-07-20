@@ -72,6 +72,10 @@ public class BungeeChat extends Plugin implements Listener
 		if(!getDataFolder().exists())
 			getDataFolder().mkdirs();
 		
+		mPacketManager = new PacketManager(this);
+		mPacketManager.initialize();
+		mPacketManager.addHandler(new PacketHandler(), (Class<? extends Packet>[])null);
+		
 		mSettings = new PlayerSettingsManager(new File(getDataFolder(), "players"));
 		mSyncManager = new SyncManager(this);
 		StandardServMethods methods = new StandardServMethods();
@@ -88,9 +92,6 @@ public class BungeeChat extends Plugin implements Listener
 		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
 		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
-		
-		mPacketManager = new PacketManager(this);
-		mPacketManager.addHandler(new PacketHandler(), (Class<? extends Packet>[])null);
 		
 		saveResource("/keywords.txt", false);
 		

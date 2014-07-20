@@ -7,7 +7,7 @@ import au.com.addstar.bc.sync.PacketSchema;
 
 public class FireEventPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("id=Byte,id=UUID,message=String");
+	public static final PacketSchema schema = PacketSchema.from("event=Byte,id=UUID,message=String");
 	
 	public static final int EVENT_JOIN = 0;
 	public static final int EVENT_QUIT = 1;

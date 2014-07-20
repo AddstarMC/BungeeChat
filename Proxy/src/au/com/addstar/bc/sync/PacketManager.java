@@ -31,6 +31,23 @@ public class PacketManager implements Listener
 		ProxyServer.getInstance().registerChannel("BCState");
 	}
 	
+	public void initialize()
+	{
+		ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(ostream);
+		try
+		{
+			PacketRegistry.writeSchemaPacket(out);
+		}
+		catch(IOException e)
+		{
+			// Cant happen
+		}
+		
+		for(ServerInfo server : ProxyServer.getInstance().getServers().values())
+			server.sendData("BCState", ostream.toByteArray());
+	}
+	
 	public void addHandler(IPacketHandler handler, Class<? extends Packet>... packets)
 	{
 		if(packets == null)
@@ -44,12 +61,11 @@ public class PacketManager implements Listener
 	
 	public void send(Packet packet, ServerInfo server)
 	{
-		PacketCodec codec = mCodecs.get(server);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
 		try
 		{
-			codec.write(packet, out);
+			PacketRegistry.write(packet, out);
 			server.sendData("BungeeChat", stream.toByteArray());
 		}
 		catch(IOException e)
@@ -98,7 +114,7 @@ public class PacketManager implements Listener
 	}
 	
 	@EventHandler
-	private void onReceive(PluginMessageEvent event)
+	public void onReceive(PluginMessageEvent event)
 	{
 		if(!(event.getSender() instanceof Server))
 			return;
@@ -150,6 +166,7 @@ public class PacketManager implements Listener
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					DataOutputStream out = new DataOutputStream(ostream);
 					PacketRegistry.writeSchemaPacket(out);
+					server.sendData("BCState", ostream.toByteArray());
 				}
 			}
 			catch(IOException e)
