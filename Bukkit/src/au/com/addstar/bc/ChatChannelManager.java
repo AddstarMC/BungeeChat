@@ -14,6 +14,7 @@ import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.config.ChatChannelConfig;
+import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.sync.SyncConfig;
 
 

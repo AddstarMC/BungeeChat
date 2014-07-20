@@ -12,10 +12,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.config.KeywordHighlighterConfig;
 import au.com.addstar.bc.config.PermissionSettingConfig;
-import au.com.addstar.bc.sync.ConfigReceiveEvent;
+import au.com.addstar.bc.event.ConfigReceiveEvent;
 import au.com.addstar.bc.sync.IMethodCallback;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketManager;

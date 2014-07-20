@@ -10,6 +10,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChatTabCompleteEvent;
 import org.bukkit.permissions.Permissible;
 
+import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.utils.Utilities;
 
 public class ChatHandler implements Listener

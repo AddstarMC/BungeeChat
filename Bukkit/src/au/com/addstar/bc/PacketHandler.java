@@ -3,6 +3,7 @@ package au.com.addstar.bc;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.sync.IPacketHandler;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.packet.MirrorPacket;

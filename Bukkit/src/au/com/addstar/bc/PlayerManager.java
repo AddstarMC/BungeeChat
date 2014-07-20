@@ -18,6 +18,8 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import au.com.addstar.bc.event.ProxyJoinEvent;
+import au.com.addstar.bc.event.ProxyLeaveEvent;
 import au.com.addstar.bc.sync.IPacketHandler;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.packet.FireEventPacket;

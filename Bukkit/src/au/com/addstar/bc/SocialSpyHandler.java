@@ -15,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
 
+import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.Utilities;
 

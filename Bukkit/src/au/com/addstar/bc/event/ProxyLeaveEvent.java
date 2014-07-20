@@ -1,10 +1,14 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.event;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class ProxyJoinEvent extends Event
+/**
+ * Called on the last server a player was on when they leave the proxy.
+ * NOTE: If there are no players left on the server (or on others) there will be no event fired.
+ */
+public class ProxyLeaveEvent extends Event
 {
 	private static HandlerList handlers = new HandlerList();
 	
@@ -18,15 +22,14 @@ public class ProxyJoinEvent extends Event
 	{
 		return handlers;
 	}
-
+	
 	private Player mPlayer;
 	private String mMessage;
 	
-	
-	public ProxyJoinEvent(Player player, String joinMessage)
+	public ProxyLeaveEvent(Player player, String message)
 	{
 		mPlayer = player;
-		mMessage = joinMessage;
+		mMessage = message;
 	}
 	
 	public Player getPlayer()
@@ -34,12 +37,12 @@ public class ProxyJoinEvent extends Event
 		return mPlayer;
 	}
 	
-	public String getJoinMessage()
+	public String getQuitMessage()
 	{
 		return mMessage;
 	}
 	
-	public void setJoinMessage(String message)
+	public void setQuitMessage(String message)
 	{
 		mMessage = message;
 	}

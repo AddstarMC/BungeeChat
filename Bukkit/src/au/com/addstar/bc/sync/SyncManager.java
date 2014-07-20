@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+
 import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.event.ConfigReceiveEvent;
 import au.com.addstar.bc.sync.packet.CallFailedResponsePacket;
 import au.com.addstar.bc.sync.packet.CallPacket;
 import au.com.addstar.bc.sync.packet.CallSuccessResponsePacket;

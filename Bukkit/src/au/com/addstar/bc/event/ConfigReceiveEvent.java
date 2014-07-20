@@ -1,7 +1,9 @@
-package au.com.addstar.bc.sync;
+package au.com.addstar.bc.event;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+
+import au.com.addstar.bc.sync.SyncConfig;
 
 public class ConfigReceiveEvent extends Event
 {
