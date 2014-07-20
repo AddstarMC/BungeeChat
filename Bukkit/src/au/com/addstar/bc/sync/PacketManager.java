@@ -31,6 +31,9 @@ public class PacketManager implements PluginMessageListener, Listener
 	private Player mSendPlayer;
 	private boolean mInitialized;
 	
+	// Packets that arrived before the schema did
+	private LinkedList<byte[]> mPendingPackets;
+	
 	public PacketManager(Plugin plugin)
 	{
 		Bukkit.getMessenger().registerIncomingPluginChannel(plugin, "BungeeChat", this);
@@ -42,6 +45,7 @@ public class PacketManager implements PluginMessageListener, Listener
 		mSendQueue = new LinkedList<Packet>();
 		mPlugin = plugin;
 		mHandlers = HashMultimap.create();
+		mPendingPackets = new LinkedList<byte[]>();
 	}
 	
 	public void addHandler(IPacketHandler handler, Class<? extends Packet>... packets)
@@ -154,39 +158,51 @@ public class PacketManager implements PluginMessageListener, Listener
 		}
 	}
 	
+	private void handleDataPacket(byte[] data)
+	{
+		ByteArrayInputStream stream = new ByteArrayInputStream(data);
+		DataInputStream input = new DataInputStream(stream);
+		
+		try
+		{
+			Packet packet = mCodec.read(input);
+			if(packet == null)
+				return;
+			
+			if(enabledDebug)
+				debug("Received packet " + packet.toString());
+			
+			// Handler spec handlers
+			for(IPacketHandler handler : mHandlers.get(packet.getClass()))
+				handler.handle(packet);
+			
+			// Handle non spec handlers
+			for(IPacketHandler handler : mHandlers.get(null))
+				handler.handle(packet);
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		catch(IllegalArgumentException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	@Override
 	public void onPluginMessageReceived( String channel, Player player, byte[] data  )
 	{
 		if(channel.equals("BungeeChat"))
 		{
-			ByteArrayInputStream stream = new ByteArrayInputStream(data);
-			DataInputStream input = new DataInputStream(stream);
-			
-			try
+			if(mCodec == null)
 			{
-				Packet packet = mCodec.read(input);
-				if(packet == null)
-					return;
-				
 				if(enabledDebug)
-					debug("Received packet " + packet.toString());
-				
-				// Handler spec handlers
-				for(IPacketHandler handler : mHandlers.get(packet.getClass()))
-					handler.handle(packet);
-				
-				// Handle non spec handlers
-				for(IPacketHandler handler : mHandlers.get(null))
-					handler.handle(packet);
+					debug("Received packet. Pending codec.");
+				mPendingPackets.add(data);
 			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
-			catch(IllegalArgumentException e)
-			{
-				e.printStackTrace();
-			}
+			else
+				handleDataPacket(data);
 		}
 		else if(channel.equals("BCState"))
 		{
@@ -197,12 +213,32 @@ public class PacketManager implements PluginMessageListener, Listener
 			{
 				String type = input.readUTF();
 				if(type.equals("Schema"))
+				{
 					mCodec = PacketCodec.fromSchemaData(input);
+					doPending();
+				}
 			}
 			catch(IOException e)
 			{
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private void doPending()
+	{
+		if(mCodec == null)
+			return;
+		
+		Iterator<byte[]> it = mPendingPackets.iterator();
+		
+		while(it.hasNext())
+		{
+			byte[] data = it.next();
+			it.remove();
+			if(enabledDebug)
+				debug("Do pending:");
+			handleDataPacket(data);
 		}
 	}
 	
