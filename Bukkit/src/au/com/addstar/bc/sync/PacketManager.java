@@ -128,7 +128,6 @@ public class PacketManager implements PluginMessageListener, Listener
 		
 		try
 		{
-			out.writeUTF("Schema");
 			PacketRegistry.writeSchemaPacket(out);
 			
 			byte[] data = stream.toByteArray();
@@ -151,6 +150,8 @@ public class PacketManager implements PluginMessageListener, Listener
 			try
 			{
 				Packet packet = mCodec.read(input);
+				if(packet == null)
+					return;
 				
 				// Handler spec handlers
 				for(IPacketHandler handler : mHandlers.get(packet.getClass()))

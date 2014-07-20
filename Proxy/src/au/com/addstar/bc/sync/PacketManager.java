@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.AbstractMap.SimpleEntry;
 
 import com.google.common.collect.HashMultimap;
 
@@ -22,10 +25,14 @@ public class PacketManager implements Listener
 	private HashMap<ServerInfo, PacketCodec> mCodecs;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
 	
+	// Packets that arrived before the schema did
+	private LinkedList<SimpleEntry<ServerInfo, byte[]>> mPendingPackets;
+	
 	public PacketManager(Plugin plugin)
 	{
 		mCodecs = new HashMap<ServerInfo, PacketCodec>();
 		mHandlers = HashMultimap.create();
+		mPendingPackets = new LinkedList<SimpleEntry<ServerInfo,byte[]>>();
 		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
 		ProxyServer.getInstance().registerChannel("BungeeChat");
 		ProxyServer.getInstance().registerChannel("BCState");
@@ -113,6 +120,35 @@ public class PacketManager implements Listener
 		}
 	}
 	
+	private void handleDataPacket(ServerInfo server, PacketCodec codec, byte[] data)
+	{
+		ByteArrayInputStream stream = new ByteArrayInputStream(data);
+		DataInputStream input = new DataInputStream(stream);
+		
+		try
+		{
+			Packet packet = codec.read(input);
+			if(packet == null)
+				return;
+			
+			// Handler spec handlers
+			for(IPacketHandler handler : mHandlers.get(packet.getClass()))
+				handler.handle(packet, server);
+			
+			// Handle non spec handlers
+			for(IPacketHandler handler : mHandlers.get(null))
+				handler.handle(packet, server);
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		catch(IllegalArgumentException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	@EventHandler
 	public void onReceive(PluginMessageEvent event)
 	{
@@ -122,30 +158,15 @@ public class PacketManager implements Listener
 		if(event.getTag().equals("BungeeChat"))
 		{
 			ServerInfo server = ((Server)event.getSender()).getInfo();
-			ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
-			DataInputStream input = new DataInputStream(stream);
-			
 			PacketCodec codec = mCodecs.get(server);
-			try
+			
+			if(codec == null)
 			{
-				Packet packet = codec.read(input);
-				
-				// Handler spec handlers
-				for(IPacketHandler handler : mHandlers.get(packet.getClass()))
-					handler.handle(packet, server);
-				
-				// Handle non spec handlers
-				for(IPacketHandler handler : mHandlers.get(null))
-					handler.handle(packet, server);
+				mPendingPackets.add(new SimpleEntry<ServerInfo, byte[]>(server, event.getData()));
+				return;
 			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
-			catch(IllegalArgumentException e)
-			{
-				e.printStackTrace();
-			}
+			
+			handleDataPacket(server, codec, event.getData());
 		}
 		else if(event.getTag().equals("BCState"))
 		{
@@ -160,6 +181,7 @@ public class PacketManager implements Listener
 				{
 					PacketCodec codec = PacketCodec.fromSchemaData(input);
 					mCodecs.put(server, codec);
+					doPending(server);
 				}
 				else if(type.equals("Online"))
 				{
@@ -175,6 +197,26 @@ public class PacketManager implements Listener
 			}
 			
 			
+		}
+	}
+	
+	private void doPending(ServerInfo server)
+	{
+		PacketCodec codec = mCodecs.get(server);
+		if(codec == null)
+			return;
+		
+		Iterator<SimpleEntry<ServerInfo, byte[]>> it = mPendingPackets.iterator();
+		
+		while(it.hasNext())
+		{
+			SimpleEntry<ServerInfo, byte[]> entry = it.next();
+			
+			if(entry.getKey().equals(server))
+			{
+				it.remove();
+				handleDataPacket(server, codec, entry.getValue());
+			}
 		}
 	}
 }
