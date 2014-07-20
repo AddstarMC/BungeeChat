@@ -7,7 +7,7 @@
   <name>BungeeChat</name>
   
   <properties>
-    <version.build>1.0.0.${env.BUILD_NUMBER}</version.build>
+    <version.build>1.0.1.${env.BUILD_NUMBER}</version.build>
   </properties>
   
   <modules>
