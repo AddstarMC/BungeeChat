@@ -78,6 +78,8 @@ public class PacketHandler implements IPacketHandler
 		else
 			player.setDisplayName(settings.nickname);
 		
+		ColourTabList.readdPlayer(player);
+		
 		if(!oldName.equals(settings.nickname))
 			getPacketManager().broadcast(new UpdateNamePacket(packet.getID(), settings.nickname));
 	}
@@ -95,6 +97,8 @@ public class PacketHandler implements IPacketHandler
 			player.setDisplayName(player.getName());
 		else
 			player.setDisplayName(settings.nickname);
+		
+		ColourTabList.readdPlayer(player);
 		
 		if(!oldName.equals(settings.nickname))
 			getPacketManager().broadcast(new UpdateNamePacket(packet.getID(), settings.nickname));

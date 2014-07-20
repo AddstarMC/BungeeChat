@@ -158,6 +158,18 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
+	public static void readdPlayer(ProxiedPlayer player)
+	{
+		PlayerListItem packet2 = new PlayerListItem(getName(player), true, (short)player.getPing());
+		for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
+		{
+			if(isVisible(p, player))
+			{
+				p.unsafe().sendPacket(packet2);
+			}
+		}
+	}
+	
 	public static class ListUpdater implements Listener
 	{
 		@EventHandler
