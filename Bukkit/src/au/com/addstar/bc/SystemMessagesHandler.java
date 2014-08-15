@@ -43,6 +43,8 @@ public class SystemMessagesHandler implements Listener
 	private void onPlayerDeath(PlayerDeathEvent event)
 	{
 		String message = event.getDeathMessage();
+		if(message == null)
+			return;
 
 		message = message.replace(event.getEntity().getName(), ChatColor.stripColor(event.getEntity().getDisplayName()));
 		
