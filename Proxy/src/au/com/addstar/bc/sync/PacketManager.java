@@ -227,7 +227,36 @@ public class PacketManager implements Listener
 			
 		}
 	}
-	
+
+	public void sendSchemas()
+	{
+		try
+		{
+			// Send schemas to all servers
+			ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+			DataOutputStream out = new DataOutputStream(ostream);
+			PacketRegistry.writeSchemaPacket(out);
+			byte[] data = ostream.toByteArray();
+
+			for (ServerInfo server : ProxyServer.getInstance().getServers().values())
+				server.sendData("BCState", data);
+			
+			// Request schemas from all servers
+			ostream = new ByteArrayOutputStream();
+			out = new DataOutputStream(ostream);
+			out.writeUTF("SchemaRequest");
+			data = ostream.toByteArray();
+
+			for (ServerInfo server : ProxyServer.getInstance().getServers().values())
+				server.sendData("BCState", data);
+		}
+		catch ( IOException e )
+		{
+			// cant happen
+			e.printStackTrace();
+		}
+	}
+
 	private void doPending(ServerInfo server)
 	{
 		PacketCodec codec = mCodecs.get(server);

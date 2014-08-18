@@ -217,6 +217,15 @@ public class PacketManager implements PluginMessageListener, Listener
 					mCodec = PacketCodec.fromSchemaData(input);
 					doPending();
 				}
+				else if (type.equals("SchemaRequest"))
+				{
+					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+					DataOutputStream out = new DataOutputStream(ostream);
+					PacketRegistry.writeSchemaPacket(out);
+					
+					byte[] odata = ostream.toByteArray();
+					player.sendPluginMessage(mPlugin, "BCState", odata);
+				}
 			}
 			catch(IOException e)
 			{

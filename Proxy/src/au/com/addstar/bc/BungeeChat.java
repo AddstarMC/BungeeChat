@@ -107,6 +107,7 @@ public class BungeeChat extends Plugin implements Listener
 		
 		loadConfig();
 		mSyncManager.sendConfig("bungeechat");
+		mPacketManager.sendSchemas();
 	}
 	
 	public boolean loadConfig()

@@ -3,3 +3,5 @@ main: au.com.addstar.bc.BungeeChat
 version: ${version.build}
 
 author: Schmoller
+
+depends: [Yamler]
