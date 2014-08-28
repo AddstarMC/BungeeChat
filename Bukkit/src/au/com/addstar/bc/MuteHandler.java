@@ -172,7 +172,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPa
 				
 				time = System.currentTimeMillis() + time;
 				BungeeChat.getPlayerManager().setPlayerMuteTime(player, time);
-				sender.sendMessage(ChatColor.AQUA + name + " has been muted for " + timeString);
+				BungeeChat.mirrorChat(ChatColor.AQUA + name + " has been muted for " + timeString, ChannelType.Broadcast.getName());
 				
 				player.sendMessage(ChatColor.AQUA + "You have been muted for " + timeString);
 				
