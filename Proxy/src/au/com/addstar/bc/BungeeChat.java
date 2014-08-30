@@ -400,9 +400,9 @@ public class BungeeChat extends Plugin implements Listener
 		if(event.getPlayer().getServer() == null)
 			return;
 		
-		Byte showQuitMessage = (Byte)mSyncManager.getProperty(event.getPlayer(), "hasQuitMessage"); 
+		boolean showQuitMessage = mSyncManager.getPropertyBoolean(event.getPlayer(), "hasQuitMessage", true); 
 		String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
-		if(showQuitMessage != null && showQuitMessage == 0)
+		if(!showQuitMessage)
 			quitMessage = "";
 		
 		mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, event.getPlayer().getUniqueId(), quitMessage), event.getPlayer().getServer().getInfo());
