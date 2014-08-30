@@ -62,22 +62,22 @@ public class SyncUtil
 		}
 		else if(value instanceof Boolean)
 		{
-			output.writeByte(0);
-			output.writeByte((Boolean)value ? 1 : 0);
+			output.writeByte(6);
+			output.writeBoolean((Boolean)value);
 		}
 		else if(value instanceof String)
 		{
-			output.writeByte(6);
+			output.writeByte(7);
 			output.writeUTF((String)value);
 		}
 		else if(value instanceof Character)
 		{
-			output.writeByte(7);
+			output.writeByte(8);
 			output.writeChar((Character)value);
 		}
 		else if(value instanceof List<?>)
 		{
-			output.writeByte(8);
+			output.writeByte(9);
 			List<?> list = (List<?>)value;
 			output.writeShort(list.size());
 			for(Object obj : list)
@@ -85,22 +85,22 @@ public class SyncUtil
 		}
 		else if(value instanceof Map<?, ?>)
 		{
-			output.writeByte(9);
+			output.writeByte(10);
 			writeMap(output, (Map<String, Object>)value);
 		}
 		else if(value instanceof SyncConfig)
 		{
-			output.writeByte(9);
+			output.writeByte(10);
 			writeMap(output, ((SyncConfig)value).getInternalMap());
 		}
 		else if(value instanceof SyncSerializable)
 		{
-			output.writeByte(10);
+			output.writeByte(11);
 			writeSerializable(output, (SyncSerializable)value);
 		}
 		else if(value instanceof UUID)
 		{
-			output.writeByte(11);
+			output.writeByte(12);
 			output.writeUTF(value.toString());
 		}
 		else
@@ -147,10 +147,12 @@ public class SyncUtil
 		case 5:
 			return input.readDouble();
 		case 6:
-			return input.readUTF();
+			return input.readBoolean();
 		case 7:
-			return input.readChar();
+			return input.readUTF();
 		case 8:
+			return input.readChar();
+		case 9:
 		{
 			int count = input.readShort();
 			ArrayList<Object> list = new ArrayList<Object>(count);
@@ -159,11 +161,11 @@ public class SyncUtil
 			
 			return list;
 		}
-		case 9:
-			return readMap(input);
 		case 10:
-			return readSerializable(input);
+			return readMap(input);
 		case 11:
+			return readSerializable(input);
+		case 12:
 			return UUID.fromString(input.readUTF());
 		default:
 			throw new AssertionError("Encountered unknown type " + type + " when reading object");
