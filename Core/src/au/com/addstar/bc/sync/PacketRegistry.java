@@ -20,7 +20,6 @@ import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
-import au.com.addstar.bc.sync.packet.QuitMessagePacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
@@ -87,7 +86,6 @@ public class PacketRegistry
 		registerPacket("Pl*", PlayerListPacket.class, PlayerListPacket.schema);
 		registerPacket("UPl", PlayerListRequestPacket.class, PlayerListRequestPacket.schema);
 		registerPacket("Pl", PlayerSettingsPacket.class, PlayerSettingsPacket.schema);
-		registerPacket("QM", QuitMessagePacket.class, QuitMessagePacket.schema);
 		registerPacket("Name", UpdateNamePacket.class, UpdateNamePacket.schema);
 		registerPacket("AFK", AFKPacket.class, AFKPacket.schema);
 		

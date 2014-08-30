@@ -36,11 +36,9 @@ import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
-import au.com.addstar.bc.sync.packet.QuitMessagePacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -53,7 +51,6 @@ import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.scheduler.ScheduledTask;
 import net.md_5.bungee.event.EventHandler;
 
 public class BungeeChat extends Plugin implements Listener
@@ -63,7 +60,6 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
 	private PlayerSettingsManager mSettings;
-	private HashMap<UUID, ScheduledTask> mWaitingQuitMessages = new HashMap<UUID, ScheduledTask>();
 	
 	public static BungeeChat instance;
 	
@@ -411,17 +407,6 @@ public class BungeeChat extends Plugin implements Listener
 		
 		mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, event.getPlayer().getUniqueId(), quitMessage), event.getPlayer().getServer().getInfo());
 		
-		final String fQuitMessage = quitMessage;
-		mWaitingQuitMessages.put(event.getPlayer().getUniqueId(), ProxyServer.getInstance().getScheduler().schedule(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if(!fQuitMessage.isEmpty())
-					mPacketManager.broadcast(new MirrorPacket("~BC", fQuitMessage));
-			}
-		}, 100, TimeUnit.MILLISECONDS));
-		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
@@ -452,14 +437,7 @@ public class BungeeChat extends Plugin implements Listener
 		final ProxiedPlayer player = event.getPlayer();
 		if(player.getServer() == null)
 		{
-			PlayerSettings settings = mSettings.getSettings(player);
-			
-			String message;
-			if(settings.nickname.isEmpty())
-				message = ChatColor.YELLOW + event.getPlayer().getName() + " joined the game.";
-			else
-				message = ChatColor.YELLOW + settings.nickname + " joined the game.";
-			
+			String message = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " joined the game.";
 			mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
 			
 			getProxy().getScheduler().schedule(this, new Runnable()
@@ -556,18 +534,5 @@ public class BungeeChat extends Plugin implements Listener
 	public void setGlobalMute( long time )
 	{
 		mGMuteTime = time;
-	}
-
-	public void handleQuitMessage( QuitMessagePacket packet )
-	{
-		ScheduledTask task = mWaitingQuitMessages.remove(packet.getID());
-		if(task != null)
-		{
-			task.cancel();
-			String message = packet.getMessage();
-			
-			if(!message.isEmpty())
-				mPacketManager.broadcast(new MirrorPacket("~BC", message));
-		}
 	}
 }

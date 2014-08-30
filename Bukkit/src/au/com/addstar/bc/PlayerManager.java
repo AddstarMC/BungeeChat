@@ -27,7 +27,6 @@ import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
-import au.com.addstar.bc.sync.packet.QuitMessagePacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
 import com.google.common.collect.HashBiMap;
@@ -234,7 +233,7 @@ public class PlayerManager implements Listener, IPacketHandler
 			Bukkit.getPluginManager().callEvent(event);
 			
 			if(event.getJoinMessage() != null)
-				BungeeChat.getSysMsgHandler().onPlayerGlobalJoin(event.getJoinMessage());
+				BungeeChat.broadcast(event.getJoinMessage());
 			break;
 		}
 		case FireEventPacket.EVENT_QUIT:
@@ -242,11 +241,8 @@ public class PlayerManager implements Listener, IPacketHandler
 			ProxyLeaveEvent event = new ProxyLeaveEvent(player, message);
 			Bukkit.getPluginManager().callEvent(event);
 			
-			message = event.getQuitMessage();
-			if(message == null)
-				message = "";
-			
-			BungeeChat.getPacketManager().sendNoQueue(new QuitMessagePacket(packet.getID(), message));
+			if(event.getQuitMessage() != null)
+				BungeeChat.broadcast(event.getQuitMessage());
 			break;
 		}
 		}

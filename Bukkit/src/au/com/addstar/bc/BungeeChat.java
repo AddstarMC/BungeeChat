@@ -26,6 +26,7 @@ import au.com.addstar.bc.sync.SyncUtil;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
+import au.com.addstar.bc.utils.Utilities;
 
 public class BungeeChat extends JavaPlugin implements Listener
 {
@@ -180,6 +181,12 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public static void mirrorChat(String fullChat, String channel)
 	{
 		getPacketManager().broadcast(new MirrorPacket(channel, fullChat));
+	}
+	
+	public static void broadcast(String message)
+	{
+		Utilities.broadcast(message, null, null);
+		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 	}
 	
 	public static String getPrimaryGroup(Player player)

@@ -12,8 +12,6 @@ import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
-import au.com.addstar.bc.utils.Utilities;
-
 public class SystemMessagesHandler implements Listener
 {
 	public SystemMessagesHandler(Plugin plugin)
@@ -55,11 +53,5 @@ public class SystemMessagesHandler implements Listener
 		}
 		
 		event.setDeathMessage(message);
-	}
-	
-	public void onPlayerGlobalJoin(String message)
-	{
-		Utilities.broadcast(message, null, null);
-		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 	}
 }

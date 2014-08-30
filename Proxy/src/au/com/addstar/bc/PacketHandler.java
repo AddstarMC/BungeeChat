@@ -11,7 +11,6 @@ import au.com.addstar.bc.sync.packet.GlobalMutePacket;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
-import au.com.addstar.bc.sync.packet.QuitMessagePacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
 public class PacketHandler implements IPacketHandler
@@ -37,8 +36,6 @@ public class PacketHandler implements IPacketHandler
 			handleUpdateName((UpdateNamePacket)packet);
 		else if(packet instanceof GlobalMutePacket)
 			handleGMute((GlobalMutePacket)packet);
-		else if(packet instanceof QuitMessagePacket)
-			handleQuitMessage((QuitMessagePacket)packet);
 		else if(packet instanceof PlayerListRequestPacket)
 			handlePlayerListRequest((PlayerListRequestPacket)packet, sender);
 	}
@@ -92,11 +89,6 @@ public class PacketHandler implements IPacketHandler
 	{
 		BungeeChat.instance.setGlobalMute(packet.getTime());
 		getPacketManager().broadcast(packet);
-	}
-	
-	private void handleQuitMessage(QuitMessagePacket packet)
-	{
-		BungeeChat.instance.handleQuitMessage(packet);
 	}
 	
 	private void handlePlayerListRequest( PlayerListRequestPacket packet, ServerInfo sender )
