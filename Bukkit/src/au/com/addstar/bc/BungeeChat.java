@@ -24,6 +24,7 @@ import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
+import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 
 public class BungeeChat extends JavaPlugin implements Listener
@@ -153,6 +154,8 @@ public class BungeeChat extends JavaPlugin implements Listener
 				throw new RuntimeException(type + ": " + message);
 			}
 		});
+		
+		mPacketManager.send(new PlayerListRequestPacket());
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)

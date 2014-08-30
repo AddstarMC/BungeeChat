@@ -390,8 +390,6 @@ public class BungeeChat extends Plugin implements Listener
 			@Override
 			public void run()
 			{
-				if(event.getPlayer().getServer().getInfo().getPlayers().size() <= 1)
-					sendPlayerUpdates(event.getPlayer().getServer().getInfo());
 				mSettings.updateSettings(event.getPlayer());
 			}
 		}, 10, TimeUnit.MILLISECONDS);
