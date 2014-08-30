@@ -24,7 +24,7 @@ public class KeywordHighlighterConfig implements SyncSerializable
 	{
 		KeywordHighlighterConfig settings = new KeywordHighlighterConfig();
 		settings.permission = (String)map.get("perm");
-		settings.enabled = (Byte)map.get("enabled") != 0;
+		settings.enabled = (Boolean)map.get("enabled");
 		
 		return settings;
 	}
