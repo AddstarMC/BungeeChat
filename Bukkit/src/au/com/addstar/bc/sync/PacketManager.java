@@ -93,6 +93,25 @@ public class PacketManager implements IDataReceiver, Listener
 		return true;
 	}
 	
+	public void broadcast( Packet packet )
+	{
+		if(enabledDebug)
+			debug("Broadcast " + packet);
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(stream);
+		try
+		{
+			PacketRegistry.write(packet, out);
+			byte[] data = stream.toByteArray();
+			
+			mComLink.broadcastMessage("BungeeChat", data);
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	private void sendInitPackets()
 	{
 		// Notify proxy that this server is now online
@@ -241,4 +260,6 @@ public class PacketManager implements IDataReceiver, Listener
 	{
 		System.out.println("[BungeeChatDebug] " + text);
 	}
+
+	
 }

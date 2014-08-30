@@ -12,7 +12,6 @@ import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.QuitMessagePacket;
-import au.com.addstar.bc.sync.packet.SendPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
 public class PacketHandler implements IPacketHandler
@@ -32,8 +31,6 @@ public class PacketHandler implements IPacketHandler
 	{
 		if(packet instanceof MirrorPacket)
 			handleMirror((MirrorPacket)packet, sender);
-		else if(packet instanceof SendPacket)
-			handleSend((SendPacket)packet);
 		else if(packet instanceof PlayerSettingsPacket)
 			handlePlayerSettings((PlayerSettingsPacket)packet);
 		else if(packet instanceof UpdateNamePacket)
@@ -48,21 +45,8 @@ public class PacketHandler implements IPacketHandler
 	
 	private void handleMirror(MirrorPacket packet, ServerInfo sender)
 	{
-		for(ServerInfo server : ProxyServer.getInstance().getServers().values())
-		{
-			if(!server.equals(sender) && !server.getPlayers().isEmpty())
-				BungeeChat.instance.getPacketManager().send(packet, server);
-		}
-		
 		if(!packet.getChannel().startsWith("~"))
 			ProxyServer.getInstance().getConsole().sendMessage(TextComponent.fromLegacyText(packet.getMessage()));
-	}
-	
-	private void handleSend(SendPacket packet)
-	{
-		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(packet.getUUID()); 
-		if(player != null)
-			BungeeChat.instance.getPacketManager().send(packet, player.getServer().getInfo());
 	}
 	
 	private void handlePlayerSettings(PlayerSettingsPacket packet)

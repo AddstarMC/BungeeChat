@@ -174,12 +174,12 @@ public class BungeeChat extends JavaPlugin implements Listener
 
 	public static void sendMessage(RemotePlayer player, String message)
 	{
-		getPacketManager().sendNoQueue(new SendPacket(player.getUniqueId(), message));
+		getPacketManager().broadcast(new SendPacket(player.getUniqueId(), message));
 	}
 	
 	public static void mirrorChat(String fullChat, String channel)
 	{
-		getPacketManager().sendNoQueue(new MirrorPacket(channel, fullChat));
+		getPacketManager().broadcast(new MirrorPacket(channel, fullChat));
 	}
 	
 	public static String getPrimaryGroup(Player player)
