@@ -20,7 +20,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 
 public class PacketManager implements Listener, IDataReceiver
 {
-	public static boolean enableDebug = true;
+	public static boolean enableDebug = false;
 	private HashMap<ServerInfo, PacketCodec> mCodecs;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
 	private ProxyComLink mComLink;

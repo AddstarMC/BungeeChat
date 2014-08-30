@@ -91,12 +91,10 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				try
 				{
-					System.out.println("Setup");
 					mComLink.init(mConfig.redis.host, mConfig.redis.port, mConfig.redis.password);
 				}
 				finally
 				{
-					System.out.println("Done");
 					setupWait.countDown();
 				}
 			}
@@ -104,9 +102,7 @@ public class BungeeChat extends Plugin implements Listener
 		
 		try
 		{
-			System.out.println("Wait");
 			setupWait.await();
-			System.out.println("Go");
 		}
 		catch(InterruptedException e)
 		{
@@ -117,6 +113,10 @@ public class BungeeChat extends Plugin implements Listener
 		mPacketManager.addHandler(new PacketHandler(), (Class<? extends Packet>[])null);
 		
 		mSyncManager = new SyncManager(this);
+		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
+		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
+		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
+		
 		applySyncConfig();
 		
 		StandardServMethods methods = new StandardServMethods();
@@ -130,10 +130,6 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:setMsgTarget", methods);
 		mSyncManager.addMethod("bchat:getMuteList", methods);
 		
-		SyncUtil.addSerializer(ChatChannel.class, "ChatChannel");
-		SyncUtil.addSerializer(KeywordHighlighterSettings.class, "KHSettings");
-		SyncUtil.addSerializer(PermissionSetting.class, "PermSetting");
-		
 		saveResource("/keywords.txt", false);
 		
 		getProxy().getPluginManager().registerListener(this, this);
@@ -144,9 +140,7 @@ public class BungeeChat extends Plugin implements Listener
 		ColourTabList.initialize(this);
 		
 		mSyncManager.sendConfig("bungeechat");
-		System.out.println("Send schemas");
 		mPacketManager.sendSchemas();
-		System.out.println("All Done");
 	}
 	
 	public boolean loadConfig()
@@ -327,7 +321,7 @@ public class BungeeChat extends Plugin implements Listener
 		if(server != null)
 			mPacketManager.send(packet, server);
 		else
-			mPacketManager.broadcastNoQueue(packet);
+			mPacketManager.broadcast(packet);
 	}
 	
 	@EventHandler
@@ -347,7 +341,7 @@ public class BungeeChat extends Plugin implements Listener
 				else
 					event.getPlayer().setDisplayName(settings.nickname);
 				
-				mPacketManager.broadcastNoQueue(new PlayerJoinPacket(event.getPlayer().getUniqueId(), event.getPlayer().getName(), settings.nickname));
+				mPacketManager.broadcast(new PlayerJoinPacket(event.getPlayer().getUniqueId(), event.getPlayer().getName(), settings.nickname));
 			}
 			
 		}, 50, TimeUnit.MILLISECONDS);
@@ -373,7 +367,7 @@ public class BungeeChat extends Plugin implements Listener
 			public void run()
 			{
 				if(!fQuitMessage.isEmpty())
-					mPacketManager.broadcastNoQueue(new MirrorPacket("~BC", fQuitMessage));
+					mPacketManager.broadcast(new MirrorPacket("~BC", fQuitMessage));
 			}
 		}, 100, TimeUnit.MILLISECONDS));
 		
@@ -382,7 +376,7 @@ public class BungeeChat extends Plugin implements Listener
 			@Override
 			public void run()
 			{
-				mPacketManager.broadcastNoQueue(new PlayerLeavePacket(event.getPlayer().getUniqueId()));
+				mPacketManager.broadcast(new PlayerLeavePacket(event.getPlayer().getUniqueId()));
 			}
 			
 		}, 10, TimeUnit.MILLISECONDS);
@@ -524,7 +518,7 @@ public class BungeeChat extends Plugin implements Listener
 			String message = packet.getMessage();
 			
 			if(!message.isEmpty())
-				mPacketManager.broadcastNoQueue(new MirrorPacket("~BC", message));
+				mPacketManager.broadcast(new MirrorPacket("~BC", message));
 		}
 	}
 }

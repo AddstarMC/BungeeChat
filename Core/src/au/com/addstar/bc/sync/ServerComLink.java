@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.Future;
 
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
@@ -30,16 +31,16 @@ public abstract class ServerComLink
 			mPool = new JedisPool(new JedisPoolConfig(), host, port, 0, password);
 	}
 	
-	public abstract void listenToChannel(String channel, IDataReceiver receiver);
+	public abstract Future<Void> listenToChannel(String channel, IDataReceiver receiver);
 	
 	/**
 	 * Subscribes to a channel. NOTE: This MUST be called on a thread as this WILL block until this is unsubscribed
 	 */
-	protected void subscribeChannel(String channel, IDataReceiver receiver)
+	protected void subscribeChannel(String channel, IDataReceiver receiver, SubscribeFuture future)
 	{
 		Jedis jedis = mPool.getResource();
 		
-		jedis.subscribe(new ListenerWrapper(receiver), channel.getBytes(UTF_8));
+		jedis.subscribe(new ListenerWrapper(receiver, future), channel.getBytes(UTF_8));
 		
 		mPool.returnResource(jedis);
 	}
@@ -108,9 +109,11 @@ public abstract class ServerComLink
 	private class ListenerWrapper extends BinaryJedisPubSub
 	{
 		private IDataReceiver mReceiver;
-		public ListenerWrapper( IDataReceiver receiver )
+		private SubscribeFuture mFuture;
+		public ListenerWrapper( IDataReceiver receiver, SubscribeFuture future  )
 		{
 			mReceiver = receiver;
+			mFuture = future;
 		}
 
 		@Override
@@ -142,6 +145,7 @@ public abstract class ServerComLink
 		@Override
 		public void onSubscribe( byte[] channel, int paramInt )
 		{
+			mFuture.setDone();
 		}
 
 		@Override

@@ -1,10 +1,9 @@
 package au.com.addstar.bc.sync;
 
 import java.util.HashMap;
+import java.util.concurrent.Future;
 
 import org.bukkit.Bukkit;
-
-import au.com.addstar.bc.BungeeChat;
 
 public class BukkitComLink extends ServerComLink
 {
@@ -16,16 +15,21 @@ public class BukkitComLink extends ServerComLink
 	}
 	
 	@Override
-	public void listenToChannel( final String channel, final IDataReceiver receiver )
+	public Future<Void> listenToChannel( final String channel, final IDataReceiver receiver )
 	{
-		Bukkit.getScheduler().runTaskAsynchronously(BungeeChat.getInstance(), new Runnable()
+		final SubscribeFuture future = new SubscribeFuture();
+		Thread thread = new Thread(new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				subscribeChannel(channel, receiver);
+				subscribeChannel(channel, receiver, future);
 			}
 		});
+		
+		thread.start();
+		
+		return future;
 	}
 
 	@Override

@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -33,10 +32,6 @@ public class BungeeChat extends JavaPlugin implements Listener
 	
 	public static String serverName = "ERROR";
 	private static BungeeChat mInstance;
-	
-	private boolean mHasRequestedUpdate = false;
-	private boolean mHasUpdated = false;
-	
 	
 	private ChatChannelManager mChatChannels;
 	private SocialSpyHandler mSocialSpyHandler;
@@ -81,8 +76,15 @@ public class BungeeChat extends JavaPlugin implements Listener
 		mPacketManager.addHandler(new PacketHandler(), MirrorPacket.class, SendPacket.class);
 		mPacketManager.addHandler(mPlayerManager, (Class<? extends Packet>[])null);
 		
-		mPacketManager.initialize();
-		requestUpdate();
+		Bukkit.getScheduler().runTask(this, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				mPacketManager.initialize();
+				requestUpdate();
+			}
+		});
 		
 		MessageCommand cmd = new MessageCommand();
 		
@@ -136,9 +138,6 @@ public class BungeeChat extends JavaPlugin implements Listener
 	
 	private void requestUpdate()
 	{
-		if(Bukkit.getOnlinePlayers().length == 0)
-			return;
-		
 		mSyncManager.requestConfigUpdate("bungeechat");
 		mSyncManager.callSyncMethod("bungee:getServerName", new IMethodCallback<String>()
 		{
@@ -154,24 +153,6 @@ public class BungeeChat extends JavaPlugin implements Listener
 				throw new RuntimeException(type + ": " + message);
 			}
 		});
-		
-		mHasRequestedUpdate = true;
-	}
-	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerJoin(PlayerJoinEvent event)
-	{
-		if(!mHasRequestedUpdate || !mHasUpdated)
-		{
-			Bukkit.getScheduler().runTaskLater(this, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					requestUpdate();
-				}
-			}, 2);
-		}
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR)
@@ -179,8 +160,6 @@ public class BungeeChat extends JavaPlugin implements Listener
 	{
 		if(event.getName().equals("bungeechat"))
 		{
-			mHasRequestedUpdate = true;
-			mHasUpdated = true;
 			SyncConfig config = event.getConfig();
 			Formatter.load(config);
 			mChatChannels.load(config);

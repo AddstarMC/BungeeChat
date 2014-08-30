@@ -1,6 +1,7 @@
 package au.com.addstar.bc.sync;
 
 import java.util.HashMap;
+import java.util.concurrent.Future;
 
 import au.com.addstar.bc.BungeeChat;
 import net.md_5.bungee.api.ProxyServer;
@@ -37,16 +38,18 @@ public class ProxyComLink extends ServerComLink
 	}
 	
 	@Override
-	public void listenToChannel( final String channel, final IDataReceiver receiver )
+	public Future<Void> listenToChannel( final String channel, final IDataReceiver receiver )
 	{
+		final SubscribeFuture future = new SubscribeFuture();
 		ProxyServer.getInstance().getScheduler().runAsync(BungeeChat.instance, new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				subscribeChannel(channel, receiver);
+				subscribeChannel(channel, receiver, future);
 			}
 		});
+		return future;
 	}
 	
 	public void sendMessage( String channel, byte[] data, ServerInfo target )

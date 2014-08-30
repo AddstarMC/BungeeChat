@@ -14,13 +14,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
+
 import au.com.addstar.bc.BungeeChat;
 
 import com.google.common.collect.HashMultimap;
 
 public class PacketManager implements IDataReceiver, Listener
 {
-	public static boolean enabledDebug = true;
+	public static boolean enabledDebug = false;
 	private PacketCodec mCodec;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
 	private Player mSendPlayer;
@@ -32,9 +33,6 @@ public class PacketManager implements IDataReceiver, Listener
 	public PacketManager(Plugin plugin)
 	{
 		mComLink = BungeeChat.getComLink();
-		
-		mComLink.listenToChannel("BungeeChat", this);
-		mComLink.listenToChannel("BCState", this);
 		
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 		
@@ -55,7 +53,17 @@ public class PacketManager implements IDataReceiver, Listener
 	
 	public void initialize()
 	{
-		// Send schema information
+		try
+		{
+			mComLink.listenToChannel("BungeeChat", this).get();
+			mComLink.listenToChannel("BCState", this).get();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			return;
+		}
+		
 		sendInitPackets();
 	}
 	
@@ -174,11 +182,15 @@ public class PacketManager implements IDataReceiver, Listener
 				String type = in.readUTF();
 				if(type.equals("Schema"))
 				{
+					if (enabledDebug)
+						debug("Received Schema.");
 					mCodec = PacketCodec.fromSchemaData(in);
 					doPending();
 				}
 				else if (type.equals("SchemaRequest"))
 				{
+					if (enabledDebug)
+						debug("Received Schema Request.");
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					DataOutputStream out = new DataOutputStream(ostream);
 					PacketRegistry.writeSchemaPacket(out);
