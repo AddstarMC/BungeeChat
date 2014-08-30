@@ -1,8 +1,7 @@
 package au.com.addstar.bc.sync;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -10,33 +9,34 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.AbstractMap.SimpleEntry;
 
+import au.com.addstar.bc.BungeeChat;
+
 import com.google.common.collect.HashMultimap;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.event.EventHandler;
 
-public class PacketManager implements Listener
+public class PacketManager implements Listener, IDataReceiver
 {
-	public static boolean enableDebug = false;
+	public static boolean enableDebug = true;
 	private HashMap<ServerInfo, PacketCodec> mCodecs;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
+	private ProxyComLink mComLink;
 	
 	// Packets that arrived before the schema did
-	private LinkedList<SimpleEntry<ServerInfo, byte[]>> mPendingPackets;
+	private LinkedList<SimpleEntry<ServerInfo, DataInput>> mPendingPackets;
 	
 	public PacketManager(Plugin plugin)
 	{
 		mCodecs = new HashMap<ServerInfo, PacketCodec>();
 		mHandlers = HashMultimap.create();
-		mPendingPackets = new LinkedList<SimpleEntry<ServerInfo,byte[]>>();
+		mPendingPackets = new LinkedList<SimpleEntry<ServerInfo,DataInput>>();
+		mComLink = BungeeChat.instance.getComLink();
+		mComLink.listenToChannel("BungeeChat", this);
+		mComLink.listenToChannel("BCState", this);
 		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
-		ProxyServer.getInstance().registerChannel("BungeeChat");
-		ProxyServer.getInstance().registerChannel("BCState");
 	}
 	
 	public void initialize()
@@ -52,8 +52,7 @@ public class PacketManager implements Listener
 			// Cant happen
 		}
 		
-		for(ServerInfo server : ProxyServer.getInstance().getServers().values())
-			server.sendData("BCState", ostream.toByteArray());
+		BungeeChat.instance.getComLink().broadcastMessage("BCState", ostream.toByteArray());
 	}
 	
 	public void addHandler(IPacketHandler handler, Class<? extends Packet>... packets)
@@ -77,7 +76,7 @@ public class PacketManager implements Listener
 		try
 		{
 			PacketRegistry.write(packet, out);
-			server.sendData("BungeeChat", stream.toByteArray());
+			BungeeChat.instance.getComLink().sendMessage("BungeeChat", stream.toByteArray(), server);
 		}
 		catch(IOException e)
 		{
@@ -95,10 +94,7 @@ public class PacketManager implements Listener
 		try
 		{
 			PacketRegistry.write(packet, out);
-			byte[] data = stream.toByteArray();
-			
-			for(ServerInfo server : ProxyServer.getInstance().getServers().values())
-				server.sendData("BungeeChat", data);
+			BungeeChat.instance.getComLink().broadcastMessage("BungeeChat", stream.toByteArray());
 		}
 		catch(IOException e)
 		{
@@ -106,43 +102,17 @@ public class PacketManager implements Listener
 		}
 	}
 	
+	@Deprecated
 	public void broadcastNoQueue( Packet packet )
 	{
-		if(enableDebug)
-			debug("Broadcast NQ: " + packet);
-		
-		ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		DataOutputStream out = new DataOutputStream(stream);
-		try
-		{
-			PacketRegistry.write(packet, out);
-			byte[] data = stream.toByteArray();
-			
-			for(ServerInfo server : ProxyServer.getInstance().getServers().values())
-			{
-				if(!server.getPlayers().isEmpty())
-					server.sendData("BungeeChat", data);
-				else
-				{
-					if(enableDebug)
-						debug("* No send 0 players. " + server.getName());
-				}
-			}
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
+		broadcast(packet);
 	}
 	
-	private void handleDataPacket(ServerInfo server, PacketCodec codec, byte[] data)
+	private void handleDataPacket(ServerInfo server, PacketCodec codec, DataInput in)
 	{
-		ByteArrayInputStream stream = new ByteArrayInputStream(data);
-		DataInputStream input = new DataInputStream(stream);
-		
 		try
 		{
-			Packet packet = codec.read(input);
+			Packet packet = codec.read(in);
 			if(packet == null)
 			{
 				if(enableDebug)
@@ -171,41 +141,36 @@ public class PacketManager implements Listener
 		}
 	}
 	
-	@EventHandler
-	public void onReceive(PluginMessageEvent event)
+	@Override
+	public void onReceive( String channel, DataInput in, MessageSender sender )
 	{
-		if(!(event.getSender() instanceof Server))
-			return;
-		
-		if(event.getTag().equals("BungeeChat"))
+		if(channel.equals("BungeeChat"))
 		{
-			ServerInfo server = ((Server)event.getSender()).getInfo();
+			ServerInfo server = ProxyServer.getInstance().getServerInfo(sender.getName());
 			PacketCodec codec = mCodecs.get(server);
 			
 			if(codec == null)
 			{
 				if(enableDebug)
 					debug("Received packet. Pending codec. " + server.getName());
-				mPendingPackets.add(new SimpleEntry<ServerInfo, byte[]>(server, event.getData()));
+				mPendingPackets.add(new SimpleEntry<ServerInfo, DataInput>(server, in));
 				return;
 			}
 			
-			handleDataPacket(server, codec, event.getData());
+			handleDataPacket(server, codec, in);
 		}
-		else if(event.getTag().equals("BCState"))
+		else if(channel.equals("BCState"))
 		{
-			ServerInfo server = ((Server)event.getSender()).getInfo();
-			ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
-			DataInputStream input = new DataInputStream(stream);
+			ServerInfo server = ProxyServer.getInstance().getServerInfo(sender.getName());
 			
 			try
 			{
-				String type = input.readUTF();
+				String type = in.readUTF();
 				if(type.equals("Schema"))
 				{
 					if(enableDebug)
 						debug("Received schema from " + server.getName());
-					PacketCodec codec = PacketCodec.fromSchemaData(input);
+					PacketCodec codec = PacketCodec.fromSchemaData(in);
 					mCodecs.put(server, codec);
 					doPending(server);
 				}
@@ -216,7 +181,7 @@ public class PacketManager implements Listener
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					DataOutputStream out = new DataOutputStream(ostream);
 					PacketRegistry.writeSchemaPacket(out);
-					server.sendData("BCState", ostream.toByteArray());
+					mComLink.sendMessage("BCState", ostream.toByteArray(), sender);
 				}
 			}
 			catch(IOException e)
@@ -236,19 +201,15 @@ public class PacketManager implements Listener
 			ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 			DataOutputStream out = new DataOutputStream(ostream);
 			PacketRegistry.writeSchemaPacket(out);
-			byte[] data = ostream.toByteArray();
-
-			for (ServerInfo server : ProxyServer.getInstance().getServers().values())
-				server.sendData("BCState", data);
 			
+			mComLink.broadcastMessage("BCState", ostream.toByteArray());
+
 			// Request schemas from all servers
 			ostream = new ByteArrayOutputStream();
 			out = new DataOutputStream(ostream);
 			out.writeUTF("SchemaRequest");
-			data = ostream.toByteArray();
-
-			for (ServerInfo server : ProxyServer.getInstance().getServers().values())
-				server.sendData("BCState", data);
+			
+			mComLink.broadcastMessage("BCState", ostream.toByteArray());
 		}
 		catch ( IOException e )
 		{
@@ -263,11 +224,11 @@ public class PacketManager implements Listener
 		if(codec == null)
 			return;
 		
-		Iterator<SimpleEntry<ServerInfo, byte[]>> it = mPendingPackets.iterator();
+		Iterator<SimpleEntry<ServerInfo, DataInput>> it = mPendingPackets.iterator();
 		
 		while(it.hasNext())
 		{
-			SimpleEntry<ServerInfo, byte[]> entry = it.next();
+			SimpleEntry<ServerInfo, DataInput> entry = it.next();
 			
 			if(entry.getKey().equals(server))
 			{

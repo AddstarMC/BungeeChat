@@ -1,8 +1,7 @@
 package au.com.addstar.bc.sync;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
@@ -11,41 +10,36 @@ import java.util.LinkedList;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.messaging.PluginMessageListener;
+import au.com.addstar.bc.BungeeChat;
 
 import com.google.common.collect.HashMultimap;
 
-public class PacketManager implements PluginMessageListener, Listener
+public class PacketManager implements IDataReceiver, Listener
 {
-	public static boolean enabledDebug = false;
-	private LinkedList<Packet> mSendQueue;
+	public static boolean enabledDebug = true;
 	private PacketCodec mCodec;
-	private Plugin mPlugin;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
 	private Player mSendPlayer;
-	private boolean mInitialized;
+	private BukkitComLink mComLink;
 	
 	// Packets that arrived before the schema did
-	private LinkedList<byte[]> mPendingPackets;
+	private LinkedList<DataInput> mPendingPackets;
 	
 	public PacketManager(Plugin plugin)
 	{
-		Bukkit.getMessenger().registerIncomingPluginChannel(plugin, "BungeeChat", this);
-		Bukkit.getMessenger().registerIncomingPluginChannel(plugin, "BCState", this);
-		Bukkit.getMessenger().registerOutgoingPluginChannel(plugin, "BungeeChat");
-		Bukkit.getMessenger().registerOutgoingPluginChannel(plugin, "BCState");
+		mComLink = BungeeChat.getComLink();
+		
+		mComLink.listenToChannel("BungeeChat", this);
+		mComLink.listenToChannel("BCState", this);
+		
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 		
-		mSendQueue = new LinkedList<Packet>();
-		mPlugin = plugin;
 		mHandlers = HashMultimap.create();
-		mPendingPackets = new LinkedList<byte[]>();
+		mPendingPackets = new LinkedList<DataInput>();
 	}
 	
 	public void addHandler(IPacketHandler handler, Class<? extends Packet>... packets)
@@ -62,29 +56,16 @@ public class PacketManager implements PluginMessageListener, Listener
 	public void initialize()
 	{
 		// Send schema information
-		if(getSendPlayer() != null)
-		{
-			sendInitPackets();
-			mInitialized = true;
-		}
+		sendInitPackets();
 	}
 	
 	public void send(Packet packet)
 	{
-		if(!sendNoQueue(packet))
-			mSendQueue.add(packet);
+		sendNoQueue(packet);
 	}
 	
 	public boolean sendNoQueue(Packet packet)
 	{
-		Player player = getSendPlayer();
-		if(player == null)
-		{
-			if(enabledDebug)
-				debug("No send 0 players. " + packet);
-			return false;
-		}
-		
 		if(enabledDebug)
 			debug("Sending " + packet);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -94,7 +75,7 @@ public class PacketManager implements PluginMessageListener, Listener
 			PacketRegistry.write(packet, out);
 			byte[] data = stream.toByteArray();
 			
-			player.sendPluginMessage(mPlugin, "BungeeChat", data);
+			mComLink.sendMessage("BungeeChat", data);
 		}
 		catch(IOException e)
 		{
@@ -104,23 +85,8 @@ public class PacketManager implements PluginMessageListener, Listener
 		return true;
 	}
 	
-	private Player getSendPlayer()
-	{
-		if(mSendPlayer == null || !mSendPlayer.isOnline())
-		{
-			Player[] players = Bukkit.getOnlinePlayers();
-			if(players.length == 0)
-				mSendPlayer = null;
-			else
-				mSendPlayer = players[0];
-		}
-		return mSendPlayer;
-	}
-	
 	private void sendInitPackets()
 	{
-		Player player = getSendPlayer();
-		
 		// Notify proxy that this server is now online
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
@@ -132,7 +98,7 @@ public class PacketManager implements PluginMessageListener, Listener
 			out.writeUTF("Online");
 			
 			byte[] data = stream.toByteArray();
-			player.sendPluginMessage(mPlugin, "BCState", data);
+			mComLink.sendMessage("BCState", data);
 		}
 		catch(IOException e)
 		{
@@ -150,7 +116,7 @@ public class PacketManager implements PluginMessageListener, Listener
 			PacketRegistry.writeSchemaPacket(out);
 			
 			byte[] data = stream.toByteArray();
-			player.sendPluginMessage(mPlugin, "BCState", data);
+			mComLink.sendMessage("BCState", data);
 		}
 		catch(IOException e)
 		{
@@ -158,14 +124,11 @@ public class PacketManager implements PluginMessageListener, Listener
 		}
 	}
 	
-	private void handleDataPacket(byte[] data)
+	private void handleDataPacket(DataInput in)
 	{
-		ByteArrayInputStream stream = new ByteArrayInputStream(data);
-		DataInputStream input = new DataInputStream(stream);
-		
 		try
 		{
-			Packet packet = mCodec.read(input);
+			Packet packet = mCodec.read(in);
 			if(packet == null)
 				return;
 			
@@ -191,7 +154,7 @@ public class PacketManager implements PluginMessageListener, Listener
 	}
 	
 	@Override
-	public void onPluginMessageReceived( String channel, Player player, byte[] data  )
+	public void onReceive( String channel, DataInput in, MessageSender sender )
 	{
 		if(channel.equals("BungeeChat"))
 		{
@@ -199,22 +162,19 @@ public class PacketManager implements PluginMessageListener, Listener
 			{
 				if(enabledDebug)
 					debug("Received packet. Pending codec.");
-				mPendingPackets.add(data);
+				mPendingPackets.add(in);
 			}
 			else
-				handleDataPacket(data);
+				handleDataPacket(in);
 		}
 		else if(channel.equals("BCState"))
 		{
-			ByteArrayInputStream stream = new ByteArrayInputStream(data);
-			DataInputStream input = new DataInputStream(stream);
-			
 			try
 			{
-				String type = input.readUTF();
+				String type = in.readUTF();
 				if(type.equals("Schema"))
 				{
-					mCodec = PacketCodec.fromSchemaData(input);
+					mCodec = PacketCodec.fromSchemaData(in);
 					doPending();
 				}
 				else if (type.equals("SchemaRequest"))
@@ -224,7 +184,7 @@ public class PacketManager implements PluginMessageListener, Listener
 					PacketRegistry.writeSchemaPacket(out);
 					
 					byte[] odata = ostream.toByteArray();
-					player.sendPluginMessage(mPlugin, "BCState", odata);
+					mComLink.sendMessage("BCState", odata);
 				}
 			}
 			catch(IOException e)
@@ -239,11 +199,11 @@ public class PacketManager implements PluginMessageListener, Listener
 		if(mCodec == null)
 			return;
 		
-		Iterator<byte[]> it = mPendingPackets.iterator();
+		Iterator<DataInput> it = mPendingPackets.iterator();
 		
 		while(it.hasNext())
 		{
-			byte[] data = it.next();
+			DataInput data = it.next();
 			it.remove();
 			if(enabledDebug)
 				debug("Do pending:");
@@ -263,41 +223,6 @@ public class PacketManager implements PluginMessageListener, Listener
 	{
 		if(event.getPlayer().equals(mSendPlayer))
 			mSendPlayer = null;
-	}
-	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerLogin(PlayerJoinEvent event)
-	{
-		Player[] players = Bukkit.getOnlinePlayers();
-		
-		if(players.length != 1)
-			return;
-		
-		Bukkit.getScheduler().runTaskLater(mPlugin, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if(getSendPlayer() == null)
-					return;
-				
-				if(!mInitialized)
-				{
-					sendInitPackets();
-					mInitialized = true;
-				}
-				
-				Iterator<Packet> it = mSendQueue.iterator();
-				while(it.hasNext())
-				{
-					Packet packet = it.next();
-					if(sendNoQueue(packet))
-						it.remove();
-					else
-						break;
-				}
-			}
-		}, 2L);
 	}
 	
 	private void debug(String text)

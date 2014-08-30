@@ -17,6 +17,7 @@ import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.config.KeywordHighlighterConfig;
 import au.com.addstar.bc.config.PermissionSettingConfig;
 import au.com.addstar.bc.event.ConfigReceiveEvent;
+import au.com.addstar.bc.sync.BukkitComLink;
 import au.com.addstar.bc.sync.IMethodCallback;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketManager;
@@ -48,6 +49,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 	private MuteHandler mMuteHandler;
 	
 	private SyncManager mSyncManager;
+	private BukkitComLink mComLink;
 	
 	@SuppressWarnings( "unchecked" )
 	@Override
@@ -65,6 +67,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
+		mComLink = setupComLink();
 		mPacketManager = new PacketManager(this);
 		mChatChannels = new ChatChannelManager(this);
 		mSocialSpyHandler = new SocialSpyHandler(this);
@@ -117,6 +120,18 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public void onDisable()
 	{
 		mChatChannels.unregisterAll();
+	}
+	
+	private BukkitComLink setupComLink()
+	{
+		saveDefaultConfig();
+		String host = getConfig().getString("redis.host", "localhost");
+		int port = getConfig().getInt("redis.host", 6379);
+		String password = getConfig().getString("redis.password", "");
+		
+		BukkitComLink link = new BukkitComLink();
+		link.init(host, port, password);
+		return link;
 	}
 	
 	private void requestUpdate()
@@ -286,7 +301,12 @@ public class BungeeChat extends JavaPlugin implements Listener
 		return mInstance.mPacketManager;
 	}
 	
-	static BungeeChat getInstance()
+	public static BukkitComLink getComLink()
+	{
+		return mInstance.mComLink;
+	}
+	
+	public static BungeeChat getInstance()
 	{
 		return mInstance;
 	}

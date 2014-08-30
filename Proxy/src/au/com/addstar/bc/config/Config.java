@@ -67,6 +67,9 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	@Path("afk-kick-message")
 	public String afkKickMessage = "You have been kicked for idling for %d minutes";
 	
+	@Comment("Settings for redis so that")
+	public RedisSettings redis = new RedisSettings();
+	
 	public SyncConfig toSyncConfig()
 	{
 		SyncConfig config = new SyncConfig();

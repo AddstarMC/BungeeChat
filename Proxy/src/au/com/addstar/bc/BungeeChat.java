@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -22,6 +23,7 @@ import au.com.addstar.bc.config.KeywordHighlighterSettings;
 import au.com.addstar.bc.config.PermissionSetting;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketManager;
+import au.com.addstar.bc.sync.ProxyComLink;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
@@ -63,6 +65,8 @@ public class BungeeChat extends Plugin implements Listener
 	private PacketManager mPacketManager;
 	private long mGMuteTime;
 	
+	private ProxyComLink mComLink;
+	
 	@Override
 	public void onEnable()
 	{
@@ -72,12 +76,49 @@ public class BungeeChat extends Plugin implements Listener
 		if(!getDataFolder().exists())
 			getDataFolder().mkdirs();
 		
+		mConfig = new Config(configFile);
+		loadConfig();
+		
+		mSettings = new PlayerSettingsManager(new File(getDataFolder(), "players"));
+		
+		mComLink = new ProxyComLink();
+		// This setup is needed as the redis connection cannot be established on the main thread, but we need it to be established before continuing
+		final CountDownLatch setupWait = new CountDownLatch(1);
+		getProxy().getScheduler().runAsync(this, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				try
+				{
+					System.out.println("Setup");
+					mComLink.init(mConfig.redis.host, mConfig.redis.port, mConfig.redis.password);
+				}
+				finally
+				{
+					System.out.println("Done");
+					setupWait.countDown();
+				}
+			}
+		});
+		
+		try
+		{
+			System.out.println("Wait");
+			setupWait.await();
+			System.out.println("Go");
+		}
+		catch(InterruptedException e)
+		{
+		}
+		
 		mPacketManager = new PacketManager(this);
 		mPacketManager.initialize();
 		mPacketManager.addHandler(new PacketHandler(), (Class<? extends Packet>[])null);
 		
-		mSettings = new PlayerSettingsManager(new File(getDataFolder(), "players"));
 		mSyncManager = new SyncManager(this);
+		applySyncConfig();
+		
 		StandardServMethods methods = new StandardServMethods();
 		mSyncManager.addMethod("bungee:getServerName", methods);
 		mSyncManager.addMethod("bchat:isAFK", methods);
@@ -95,9 +136,6 @@ public class BungeeChat extends Plugin implements Listener
 		
 		saveResource("/keywords.txt", false);
 		
-		mConfig = new Config(configFile);
-		
-		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 
@@ -105,9 +143,10 @@ public class BungeeChat extends Plugin implements Listener
 		
 		ColourTabList.initialize(this);
 		
-		loadConfig();
 		mSyncManager.sendConfig("bungeechat");
+		System.out.println("Send schemas");
 		mPacketManager.sendSchemas();
+		System.out.println("All Done");
 	}
 	
 	public boolean loadConfig()
@@ -124,17 +163,10 @@ public class BungeeChat extends Plugin implements Listener
 					channel.listenPermission = "";
 			}
 			
-			SyncConfig syncConfig = mConfig.toSyncConfig();
 			if(mConfig.keywordHighlighter.enabled)
 			{
 				loadKeywordFile(mConfig.keywordHighlighter.keywordFile);
-				SyncConfig keywords = syncConfig.createSection("keywords");
-				for(Entry<String, String> entry : mKeywordSettings.entrySet())
-					keywords.set(entry.getKey(), entry.getValue());
 			}
-			
-			mConfigSync = syncConfig;
-			mSyncManager.setConfig("bungeechat", mConfigSync);
 			return true;
 		}
 		catch ( InvalidConfigurationException e )
@@ -151,6 +183,29 @@ public class BungeeChat extends Plugin implements Listener
 		}
 	}
 	
+	public boolean applySyncConfig()
+	{
+		try
+		{
+			SyncConfig syncConfig = mConfig.toSyncConfig();
+			if(mConfig.keywordHighlighter.enabled)
+			{
+				loadKeywordFile(mConfig.keywordHighlighter.keywordFile);
+				SyncConfig keywords = syncConfig.createSection("keywords");
+				for(Entry<String, String> entry : mKeywordSettings.entrySet())
+					keywords.set(entry.getKey(), entry.getValue());
+			}
+			
+			mConfigSync = syncConfig;
+			mSyncManager.setConfig("bungeechat", mConfigSync);
+			return true;
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+			return false;
+		}
+	}
 	private void loadKeywordFile(String file) throws IOException
 	{
 		mKeywordSettings.clear();
@@ -409,6 +464,11 @@ public class BungeeChat extends Plugin implements Listener
 	public SyncManager getSyncManager()
 	{
 		return mSyncManager;
+	}
+	
+	public ProxyComLink getComLink()
+	{
+		return mComLink;
 	}
 	
 	public void updateTabLists(String oldColor, ProxiedPlayer player)
