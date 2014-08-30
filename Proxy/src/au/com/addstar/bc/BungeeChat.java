@@ -1,6 +1,9 @@
 package au.com.addstar.bc;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,14 +37,17 @@ import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.QuitMessagePacket;
+import au.com.addstar.bc.sync.packet.SendPacket;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
@@ -132,6 +138,7 @@ public class BungeeChat extends Plugin implements Listener
 		
 		saveResource("/keywords.txt", false);
 		
+		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 
@@ -345,6 +352,50 @@ public class BungeeChat extends Plugin implements Listener
 			}
 			
 		}, 50, TimeUnit.MILLISECONDS);
+	}
+	
+	@EventHandler
+	public void onOldMessage(PluginMessageEvent event)
+	{
+		if (event.getTag().equals("BungeeChat") && event.getSender() instanceof Server)
+		{
+			ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
+			DataInput input = new DataInputStream(stream);
+			
+			try
+			{
+				String subChannel = input.readUTF();
+				if(subChannel.equals("Mirror"))
+				{
+					String chatChannel = input.readUTF();
+					String message = input.readUTF();
+					
+					mPacketManager.broadcast(new MirrorPacket(chatChannel, message));
+				}
+				else if (subChannel.equals("Send"))
+				{
+					String idString = input.readUTF();
+					UUID id;
+					try
+					{
+						id = UUID.fromString(idString);
+					}
+					catch(IllegalArgumentException e)
+					{
+						ProxiedPlayer player = getProxy().getPlayer(idString);
+						if(player == null)
+							return;
+						id = player.getUniqueId();
+					}
+					
+					mPacketManager.broadcast(new SendPacket(id, input.readUTF()));
+				}
+			}
+			catch(IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	@EventHandler
