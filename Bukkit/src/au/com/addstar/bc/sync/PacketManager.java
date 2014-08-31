@@ -181,7 +181,7 @@ public class PacketManager implements IDataReceiver, Listener
 	}
 	
 	@Override
-	public void onReceive( String channel, DataInput in, MessageSender sender )
+	public void onReceive( String channel, final DataInput in, MessageSender sender )
 	{
 		if(channel.equals("BungeeChat"))
 		{
@@ -192,7 +192,16 @@ public class PacketManager implements IDataReceiver, Listener
 				mPendingPackets.add(in);
 			}
 			else
-				handleDataPacket(in);
+			{
+				Bukkit.getScheduler().runTask(BungeeChat.getInstance(), new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						handleDataPacket(in);
+					}
+				});
+			}
 		}
 		else if(channel.equals("BCState"))
 		{
