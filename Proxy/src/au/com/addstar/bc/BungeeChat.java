@@ -451,7 +451,7 @@ public class BungeeChat extends Plugin implements Listener
 				public void run()
 				{
 					if(player.getTabListHandler() instanceof ColourTabList)
-						((ColourTabList)player.getTabListHandler()).updateList();
+						((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
 				}
 			}, 1, TimeUnit.SECONDS);
 		}

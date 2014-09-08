@@ -37,6 +37,7 @@ public class ColourTabList extends TabListAdapter
 	private WeakHashMap<ProxiedPlayer, Void> mVisiblePlayers = new WeakHashMap<ProxiedPlayer, Void>();
 	private String mHeaderContents;
 	private String mFooterContents;
+	private boolean mHasInited;
 	// ==== 1.7 compat ====
 	private String mLastName;
 
@@ -65,6 +66,12 @@ public class ColourTabList extends TabListAdapter
 	public void onConnect()
 	{
 		mLastName = getName(getPlayer());
+		updateAll();
+	}
+	
+	public void onJoinPeriodComplete()
+	{
+		mHasInited = true;
 		updateAll();
 	}
 	
@@ -183,6 +190,12 @@ public class ColourTabList extends TabListAdapter
 	{
 		if(to == player)
 			return true;
+		
+		if (player.getTabListHandler() instanceof ColourTabList)
+		{
+			if(!((ColourTabList)player.getTabListHandler()).mHasInited)
+				return false;
+		}
 		
 		SyncManager manager = BungeeChat.instance.getSyncManager();
 		
