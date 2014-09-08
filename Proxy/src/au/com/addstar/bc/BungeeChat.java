@@ -165,6 +165,8 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				loadKeywordFile(mConfig.keywordHighlighter.keywordFile);
 			}
+			
+			ColourTabList.updateAll();
 			return true;
 		}
 		catch ( InvalidConfigurationException e )
