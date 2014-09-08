@@ -3,6 +3,7 @@ package au.com.addstar.bc.config;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,8 @@ public class Config extends net.cubespace.Yamler.Config.Config
 		
 		socialSpyKeywords = new ArrayList<String>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply"));
 		mutedCommands = new ArrayList<String>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply", "me", "afk"));
+		
+		servers.put("servername", new ServerConfig());
 	}
 	
 	@Comment("You can override the name of the console here. Leave blank for no change")
@@ -76,6 +79,9 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	@Comments({"Changes what text appears in the tab footer. This may contain tokens:", "{PLAYER} The players name", "{DISPLAYNAME} The players display name", "{TABNAME} The players tab display name (includes colour)", "{COUNT} The player count", "{MAX} The max player count", "{SERVER} The servers name"})
 	@Path("tab.footer")
 	public String tabListFooter = "&l{COUNT}/{MAX}";
+	
+	@Comments("Place server specific settings here")
+	public HashMap<String, ServerConfig> servers = new HashMap<String, ServerConfig>();
 	
 	public SyncConfig toSyncConfig()
 	{

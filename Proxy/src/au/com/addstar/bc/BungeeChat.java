@@ -24,6 +24,7 @@ import au.com.addstar.bc.config.ChatChannel;
 import au.com.addstar.bc.config.Config;
 import au.com.addstar.bc.config.KeywordHighlighterSettings;
 import au.com.addstar.bc.config.PermissionSetting;
+import au.com.addstar.bc.config.ServerConfig;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.ProxyComLink;
@@ -478,7 +479,15 @@ public class BungeeChat extends Plugin implements Listener
 	
 	public String getTabHeaderString(ProxiedPlayer player)
 	{
-		String header = mConfig.tabListHeader;
+		String header = null;
+		if (player.getServer() != null)
+		{
+			ServerConfig config = mConfig.servers.get(player.getServer().getInfo().getName()); 
+			if (config != null)
+				header = config.tabListHeader;
+		}
+		if (header == null)
+			header = mConfig.tabListHeader;
 		if (header == null)
 			return "";
 		
@@ -487,7 +496,15 @@ public class BungeeChat extends Plugin implements Listener
 	
 	public String getTabFooterString(ProxiedPlayer player)
 	{
-		String header = mConfig.tabListFooter;
+		String header = null;
+		if (player.getServer() != null)
+		{
+			ServerConfig config = mConfig.servers.get(player.getServer().getInfo().getName()); 
+			if (config != null)
+				header = config.tabListFooter;
+		}
+		if (header == null)
+			header = mConfig.tabListFooter;
 		if (header == null)
 			return "";
 		
