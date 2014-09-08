@@ -90,6 +90,8 @@ public class StandardServMethods implements SyncMethod
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
 		settings.tabColor = color;
+		pplayer.getTabListHandler().onUpdateName();
+		
 		return null;
 	}
 	

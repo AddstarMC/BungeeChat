@@ -140,6 +140,8 @@ public class BungeeChat extends Plugin implements Listener
 
 		getProxy().getScheduler().schedule(this, new UnmuteTimer(), 5, 5, TimeUnit.SECONDS);
 		
+		ColourTabList.initialize(this);
+		
 		mSyncManager.sendConfig("bungeechat");
 		mPacketManager.sendSchemas();
 	}
@@ -328,6 +330,7 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onPlayerJoin(final PostLoginEvent event)
 	{
+		event.getPlayer().setTabListHandler(new ColourTabList());
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
@@ -436,6 +439,16 @@ public class BungeeChat extends Plugin implements Listener
 		{
 			String message = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " joined the game.";
 			mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
+			
+			getProxy().getScheduler().schedule(this, new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					if(player.getTabListHandler() instanceof ColourTabList)
+						((ColourTabList)player.getTabListHandler()).updateList();
+				}
+			}, 1, TimeUnit.SECONDS);
 		}
 	}
 	
