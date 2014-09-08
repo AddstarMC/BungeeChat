@@ -331,6 +331,7 @@ public class BungeeChat extends Plugin implements Listener
 	public void onPlayerJoin(final PostLoginEvent event)
 	{
 		event.getPlayer().setTabListHandler(new ColourTabList());
+		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
@@ -413,6 +414,7 @@ public class BungeeChat extends Plugin implements Listener
 			public void run()
 			{
 				mPacketManager.broadcast(new PlayerLeavePacket(event.getPlayer().getUniqueId()));
+				ColourTabList.updateAll();
 			}
 			
 		}, 10, TimeUnit.MILLISECONDS);
@@ -429,6 +431,8 @@ public class BungeeChat extends Plugin implements Listener
 				mSettings.updateSettings(event.getPlayer());
 			}
 		}, 10, TimeUnit.MILLISECONDS);
+		
+		ColourTabList.updateAll();
 	}
 	
 	@EventHandler
@@ -470,6 +474,36 @@ public class BungeeChat extends Plugin implements Listener
 				mSettings.updateSettings((ProxiedPlayer)event.getSender());
 			}
 		}
+	}
+	
+	public String getTabHeaderString(ProxiedPlayer player)
+	{
+		String header = mConfig.tabListHeader;
+		if (header == null)
+			return "";
+		
+		return formatHeaderString(header, player);
+	}
+	
+	public String getTabFooterString(ProxiedPlayer player)
+	{
+		String header = mConfig.tabListFooter;
+		if (header == null)
+			return "";
+		
+		return formatHeaderString(header, player);
+	}
+	
+	private String formatHeaderString(String string, ProxiedPlayer player)
+	{
+		PlayerSettings settings = mSettings.getSettings(player);
+		return ChatColor.translateAlternateColorCodes('&', string
+				.replace("{PLAYER}", player.getName())
+				.replace("{DISPLAYNAME}", player.getDisplayName())
+				.replace("{TABNAME}", settings.tabColor + player.getDisplayName())
+				.replace("{SERVER}", player.getServer() != null ? player.getServer().getInfo().getName() : "")
+				.replace("{COUNT}", String.valueOf(getProxy().getPlayers().size()))
+				.replace("{MAX}", String.valueOf(player.getPendingConnection().getListener().getMaxPlayers())));
 	}
 	
 	public PacketManager getPacketManager()

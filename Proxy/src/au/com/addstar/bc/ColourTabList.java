@@ -35,6 +35,8 @@ public class ColourTabList extends TabListAdapter
 	
 	private int lastPing;
 	private WeakHashMap<ProxiedPlayer, Void> mVisiblePlayers = new WeakHashMap<ProxiedPlayer, Void>();
+	private String mHeaderContents;
+	private String mFooterContents;
 	// ==== 1.7 compat ====
 	private String mLastName;
 
@@ -63,20 +65,7 @@ public class ColourTabList extends TabListAdapter
 	public void onConnect()
 	{
 		mLastName = getName(getPlayer());
-		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
-		PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, createItem(getPlayer()));
-		
-		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
-		{
-			if(isVisible(player, getPlayer()))
-			{
-				sendPacket(packetAdd, player);
-				if (isNewTab(player))
-					sendPacket(packetUpdate, player);
-			}
-		}
-		
-		updateList();
+		updateAll();
 	}
 	
 	@Override
@@ -111,6 +100,22 @@ public class ColourTabList extends TabListAdapter
 	public void onUpdate( PlayerListItem packet )
 	{
 		
+	}
+	
+	public void updateTabHeaders()
+	{
+		if (!isNewTab(getPlayer()))
+			return;
+		
+		String headerString = BungeeChat.instance.getTabHeaderString(getPlayer());
+		String footerString = BungeeChat.instance.getTabFooterString(getPlayer());
+		
+		if (!headerString.equals(mHeaderContents) || !footerString.equals(mFooterContents))
+		{
+			getPlayer().setTabHeader(TextComponent.fromLegacyText(headerString), TextComponent.fromLegacyText(footerString));
+			mHeaderContents = headerString;
+			mFooterContents = footerString;
+		}
 	}
 	
 	public void updateList()
@@ -167,6 +172,8 @@ public class ColourTabList extends TabListAdapter
 				sendPacket(packet, getPlayer());
 			}
 		}
+		
+		updateTabHeaders();
 	}
 	
 	/**
