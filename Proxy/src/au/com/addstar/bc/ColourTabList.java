@@ -17,6 +17,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.tab.TabListAdapter;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 import net.md_5.bungee.protocol.packet.PlayerListItem.Action;
 import net.md_5.bungee.protocol.packet.PlayerListItem.Item;
@@ -34,6 +35,8 @@ public class ColourTabList extends TabListAdapter
 	
 	private int lastPing;
 	private WeakHashMap<ProxiedPlayer, Void> mVisiblePlayers = new WeakHashMap<ProxiedPlayer, Void>();
+	// ==== 1.7 compat ====
+	private String mLastName;
 
 	public ColourTabList()
 	{
@@ -51,18 +54,25 @@ public class ColourTabList extends TabListAdapter
 		return TextComponent.fromLegacyText(getName(player));
 	}
 	
+	private static boolean isNewTab(ProxiedPlayer player)
+	{
+		return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_SNAPSHOT;
+	}
+	
 	@Override
 	public void onConnect()
 	{
-		PlayerListItem packet1 = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
-		PlayerListItem packet2 = createPacket(Action.UPDATE_DISPLAY_NAME, createItem(getPlayer()));
+		mLastName = getName(getPlayer());
+		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
+		PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, createItem(getPlayer()));
 		
 		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 		{
 			if(isVisible(player, getPlayer()))
 			{
-				player.unsafe().sendPacket(packet1);
-				player.unsafe().sendPacket(packet2);
+				sendPacket(packetAdd, player);
+				if (isNewTab(player))
+					sendPacket(packetUpdate, player);
 			}
 		}
 		
@@ -80,7 +90,7 @@ public class ColourTabList extends TabListAdapter
 			for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 			{
 				if(isVisible(player, getPlayer()))
-					player.unsafe().sendPacket(packet);
+					sendPacket(packet, player);
 			}
 		}
 	}
@@ -93,7 +103,7 @@ public class ColourTabList extends TabListAdapter
 		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 		{
 			if(isVisible(player, getPlayer()))
-				player.unsafe().sendPacket(packet);
+				sendPacket(packet, player);
 		}
 	}
 
@@ -105,10 +115,6 @@ public class ColourTabList extends TabListAdapter
 	
 	public void updateList()
 	{
-		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER);
-		PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME);
-		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER);
-		
 		ArrayList<Item> toAdd = new ArrayList<Item>();
 		ArrayList<Item> toRemove = new ArrayList<Item>();
 		
@@ -129,18 +135,37 @@ public class ColourTabList extends TabListAdapter
 			}
 		}
 		
-		if (!toAdd.isEmpty())
+		if (isNewTab(getPlayer()))
 		{
-			packetAdd.setItems(toAdd.toArray(new Item[toAdd.size()]));
-			packetUpdate.setItems(toAdd.toArray(new Item[toAdd.size()]));
-			getPlayer().unsafe().sendPacket(packetAdd);
-			getPlayer().unsafe().sendPacket(packetUpdate);
+			if (!toAdd.isEmpty())
+			{
+				PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, toAdd.toArray(new Item[toAdd.size()]));
+				PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, toAdd.toArray(new Item[toAdd.size()]));
+				
+				sendPacket(packetAdd, getPlayer());
+				sendPacket(packetUpdate, getPlayer());
+			}
+			
+			if (!toRemove.isEmpty())
+			{
+				PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, toRemove.toArray(new Item[toRemove.size()]));
+				
+				sendPacket(packetRemove, getPlayer());
+			}
 		}
-		
-		if (!toRemove.isEmpty())
+		else
 		{
-			packetRemove.setItems(toRemove.toArray(new Item[toRemove.size()]));
-			getPlayer().unsafe().sendPacket(packetRemove);
+			for (Item item : toAdd)
+			{
+				PlayerListItem packet = createPacket(Action.ADD_PLAYER, item);
+				sendPacket(packet, getPlayer());
+			}
+			
+			for (Item item : toRemove)
+			{
+				PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, item);
+				sendPacket(packet, getPlayer());
+			}
 		}
 	}
 	
@@ -182,13 +207,30 @@ public class ColourTabList extends TabListAdapter
 	@Override
 	public void onUpdateName()
 	{
-		PlayerListItem packet = createPacket(Action.UPDATE_DISPLAY_NAME, createItem(getPlayer()));
+		PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, createItem(getPlayer()));
+		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), mLastName));
+		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
+		mLastName = getName(getPlayer());
 		
 		for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
 			if(isVisible(p, getPlayer()))
-				p.unsafe().sendPacket(packet);
+			{
+				if (isNewTab(p))
+					sendPacket(packetUpdate, p);
+				else
+				{
+					sendPacket(packetRemove, p);
+					sendPacket(packetAdd, p);
+				}
+			}
 		}
+	}
+	
+	private void sendPacket(PlayerListItem packet, ProxiedPlayer player)
+	{
+		//printPacket(packet, player.getName());
+		player.unsafe().sendPacket(packet);
 	}
 	
 	private static void setProfile(Item item, GameProfile profile)
@@ -221,6 +263,18 @@ public class ColourTabList extends TabListAdapter
 		return item;
 	}
 	
+	private static Item createItem(ProxiedPlayer player, String name)
+	{
+		Item item = new Item();
+		setProfile(item, player.getProfile());
+		
+		item.setDisplayName(TextComponent.fromLegacyText(name));
+		item.setGamemode(0);
+		item.setPing(player.getPing());
+		
+		return item;
+	}
+	
 	private static PlayerListItem createPacket(Action action, Item... items)
 	{
 		PlayerListItem packet = new PlayerListItem();
@@ -240,7 +294,7 @@ public class ColourTabList extends TabListAdapter
 				message = String.format("%d,%d,%s", item.getPing(), item.getGamemode(), BaseComponent.toLegacyText(item.getDisplayName()));
 				break;
 			case REMOVE_PLAYER:
-				message = "";
+				message = BaseComponent.toLegacyText(item.getDisplayName());
 				break;
 			case UPDATE_DISPLAY_NAME:
 				message = BaseComponent.toLegacyText(item.getDisplayName());
