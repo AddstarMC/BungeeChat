@@ -79,6 +79,8 @@ public class BungeeChat extends Plugin implements Listener
 		if(!getDataFolder().exists())
 			getDataFolder().mkdirs();
 		
+		saveResource("/keywords.txt", false);
+		
 		mConfig = new Config(configFile);
 		loadConfig();
 		
@@ -132,8 +134,6 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:setMute", methods);
 		mSyncManager.addMethod("bchat:setMsgTarget", methods);
 		mSyncManager.addMethod("bchat:getMuteList", methods);
-		
-		saveResource("/keywords.txt", false);
 		
 		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);

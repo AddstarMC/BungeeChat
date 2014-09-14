@@ -27,6 +27,7 @@ public class ManagementCommand extends Command
 		{
 			if(mPlugin.loadConfig())
 			{
+				mPlugin.applySyncConfig();
 				mPlugin.getSyncManager().sendConfig("bungeechat");
 				sender.sendMessage(new TextComponent("BungeeChat config reloaded"));
 			}
