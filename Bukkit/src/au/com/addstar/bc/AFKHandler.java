@@ -130,7 +130,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		}
 		else
 		{
-			BungeeChat.getSyncManager().callSyncMethod("bchat:isAFK", new IMethodCallback<Byte>()
+			BungeeChat.getSyncManager().callSyncMethod("bchat:isAFK", new IMethodCallback<Boolean>()
 			{
 				@Override
 				public void onError( String type, String message )
@@ -139,9 +139,9 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 				}
 				
 				@Override
-				public void onFinished( Byte data )
+				public void onFinished( Boolean data )
 				{
-					if(data != 0)
+					if(data)
 						sender.sendMessage(message);
 				}
 				
