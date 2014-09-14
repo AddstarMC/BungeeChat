@@ -62,25 +62,25 @@ public class RemotePlayer implements CommandSender
 	@Override
 	public boolean hasPermission( String perm )
 	{
-		return BungeeChat.permissionManager.has(this, perm);
+		return false;
 	}
 
 	@Override
 	public boolean hasPermission( Permission perm )
 	{
-		return BungeeChat.permissionManager.has(this, perm.getName());
+		return false;
 	}
 
 	@Override
 	public boolean isPermissionSet( String perm )
 	{
-		return hasPermission(perm);
+		return false;
 	}
 
 	@Override
 	public boolean isPermissionSet( Permission perm )
 	{
-		return hasPermission(perm);
+		return false;
 	}
 
 	@Override

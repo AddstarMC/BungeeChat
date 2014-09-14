@@ -95,6 +95,9 @@ public class Formatter
 		if((sender instanceof ConsoleCommandSender) && !permissionLevels.isEmpty())
 			return permissionLevels.get(permissionLevels.size()-1);
 		
+		if (!(sender instanceof Player))
+			return null;
+		
 		PermissionSetting level = null;
 		for(PermissionSetting setting : permissionLevels)
 		{
