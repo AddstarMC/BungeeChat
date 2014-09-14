@@ -19,7 +19,7 @@ public class PlayerSettings
 	public String tabFormat = "";
 	
 	public long lastActiveTime = Long.MAX_VALUE;
-	public long afkStartTime = Long.MAX_VALUE;
+	public long afkStartTime = 0;
 	
 	public boolean isAFK = false;
 	

@@ -80,6 +80,11 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		if(target instanceof Player)
 		{
 			PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(target);
+			
+			// Prevent re-enabling afk when you leave afk with /afk
+			if(!settings.isAFK && System.currentTimeMillis() - settings.afkStartTime < 100)
+				return true;
+			
 			settings.isAFK = !settings.isAFK;
 
 			settings.lastActiveTime = System.currentTimeMillis();
@@ -179,17 +184,20 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 	{
 		AFKChangeEvent event = new AFKChangeEvent(player, true);
 		Bukkit.getPluginManager().callEvent(event);
+		PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(player);
+		
 		if(!event.isCancelled())
 		{
-			PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(player);
 			settings.isAFK = false;
-			settings.afkStartTime = Long.MAX_VALUE;
+			settings.afkStartTime = System.currentTimeMillis();
 			settings.lastActiveTime = System.currentTimeMillis();
 			
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, PlayerManager.getUniqueId(player), false);
 			
 			onAFKChange(player, false);
 		}
+		else
+			settings.lastActiveTime = System.currentTimeMillis();
 	}
 	
 	private void updateActiveTime(Player player)
