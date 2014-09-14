@@ -179,7 +179,7 @@ public class PlayerManager implements Listener, IPacketHandler
 			updatePlayerSettings(player);
 		}
 		else
-			BungeeChat.getSyncManager().callSyncMethod("bchat:setMute", null, player.getName(), endTime);
+			BungeeChat.getSyncManager().callSyncMethod("bchat:setMute", null, PlayerManager.getUniqueId(player), endTime);
 	}
 	
 	public boolean isPlayerMuted(CommandSender player)

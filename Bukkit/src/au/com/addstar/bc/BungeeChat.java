@@ -257,7 +257,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 			getPlayerManager().updatePlayerSettings(sender);
 		}
 		else if(sender instanceof RemotePlayer)
-			getSyncManager().callSyncMethod("bchat:setMsgTarget", null, PlayerManager.getUniqueId(sender).toString(), PlayerManager.getUniqueId(target).toString());
+			getSyncManager().callSyncMethod("bchat:setMsgTarget", null, PlayerManager.getUniqueId(sender), PlayerManager.getUniqueId(target));
 	}
 	
 	public static PlayerManager getPlayerManager()

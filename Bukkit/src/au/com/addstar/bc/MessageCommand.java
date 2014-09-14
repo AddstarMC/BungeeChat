@@ -107,7 +107,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 								doSendMessage(player, sender, message);
 						}
 						
-					}, player.getName());
+					}, PlayerManager.getUniqueId(player));
 					return true;
 				}
 				else if(player instanceof Player)
