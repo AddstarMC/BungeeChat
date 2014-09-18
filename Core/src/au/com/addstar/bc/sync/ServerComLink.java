@@ -6,21 +6,31 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.AbstractMap;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class ServerComLink
 {
 	public static final Charset UTF_8 = Charset.forName("UTF-8");
 	
 	private JedisPool mPool;
+	private long mLastNotifyTime = 0;
+	private ConnectionStateNotify mNotifyHandler;
+	private LinkedBlockingQueue<Entry<String, byte[]>> mWaitingData;
 	
 	public ServerComLink()
 	{
+		mWaitingData = new LinkedBlockingQueue<Entry<String, byte[]>>();
 	}
 	
 	public void init(String host, int port, String password)
@@ -29,6 +39,15 @@ public abstract class ServerComLink
 			mPool = new JedisPool(new JedisPoolConfig(), host, port, 0);
 		else
 			mPool = new JedisPool(new JedisPoolConfig(), host, port, 0, password);
+		
+		initializeQueueHandler(mWaitingData);
+	}
+	
+	protected abstract void initializeQueueHandler(BlockingQueue<Entry<String, byte[]>> queue);
+	
+	public void setNotifyHandle(ConnectionStateNotify handler)
+	{
+		mNotifyHandler = handler;
 	}
 	
 	public abstract Future<Void> listenToChannel(String channel, IDataReceiver receiver);
@@ -38,13 +57,100 @@ public abstract class ServerComLink
 	 */
 	protected void subscribeChannel(String channel, IDataReceiver receiver, SubscribeFuture future)
 	{
-		Jedis jedis = mPool.getResource();
-		
-		jedis.subscribe(new ListenerWrapper(receiver, future), channel.getBytes(UTF_8));
-		
-		mPool.returnResource(jedis);
+		boolean err = true;
+		while(err)
+		{
+			Jedis jedis = null;
+			try
+			{
+				jedis = mPool.getResource();
+				jedis.clientSetname("BungeeChat-" + getServerId() + "-" + channel);
+				notifyOnline();
+				jedis.subscribe(new ListenerWrapper(receiver, future), channel.getBytes(UTF_8));
+				err = false;
+			}
+			catch(JedisConnectionException e)
+			{
+				notifyFailure(e);
+				mPool.returnBrokenResource(jedis);
+				jedis = null;
+				try
+				{
+					Thread.sleep(2000);
+				}
+				catch (InterruptedException ex)
+				{
+					err = false;
+				}
+			}
+			catch(JedisException e)
+			{
+				e.printStackTrace();
+				err = false;
+			}
+			finally
+			{
+				mPool.returnResource(jedis);
+			}
+		}
 	}
 	
+	private void notifyOnline()
+	{
+		synchronized(this)
+		{
+			if(mLastNotifyTime == 0)
+				return;
+			
+			mLastNotifyTime = 0;
+			
+			if(mNotifyHandler != null)
+				mNotifyHandler.onConnectionRestored();
+		}
+	}
+	private void notifyFailure(Throwable e)
+	{
+		synchronized(this)
+		{
+			if (System.currentTimeMillis() - mLastNotifyTime < 60000)
+				return;
+			
+			if(mLastNotifyTime == 0)
+			{
+				e.printStackTrace();
+				if (mNotifyHandler != null)
+					mNotifyHandler.onConnectionLost(e);
+			}
+			System.err.println("[BungeeChat] Warning: Redis connection is unavailble!");
+			
+			mLastNotifyTime = System.currentTimeMillis();
+		}
+	}
+	
+	protected void publish(String channel, byte[] data)
+	{
+		Jedis jedis = null;
+		try
+		{
+			jedis = mPool.getResource();
+			jedis.publish(channel.getBytes(UTF_8), data);
+			notifyOnline();
+		}
+		catch(JedisConnectionException e)
+		{
+			notifyFailure(e);
+			mPool.returnBrokenResource(jedis);
+			jedis = null;
+		}
+		catch(JedisException e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			mPool.returnResource(jedis);
+		}
+	}
 	public void broadcastMessage(String channel, byte[] data)
 	{
 		ByteArrayOutputStream stream = new ByteArrayOutputStream(data.length + 2);
@@ -60,18 +166,7 @@ public abstract class ServerComLink
 		{ // Cant happen
 		}
 		
-		Jedis jedis = mPool.getResource();
-		try
-		{
-			jedis.publish(channel.getBytes(UTF_8), stream.toByteArray());
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			mPool.returnBrokenResource(jedis);
-			return;
-		}
-		mPool.returnResource(jedis);
+		mWaitingData.offer(new AbstractMap.SimpleEntry<String, byte[]>(channel, stream.toByteArray()));
 	}
 	
 	public void sendMessage(String channel, byte[] data, MessageSender target)
@@ -89,18 +184,7 @@ public abstract class ServerComLink
 		{ // Cant happen
 		}
 		
-		Jedis jedis = mPool.getResource();
-		try
-		{
-			jedis.publish(channel.getBytes(UTF_8), stream.toByteArray());
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			mPool.returnBrokenResource(jedis);
-			return;
-		}
-		mPool.returnResource(jedis);
+		mWaitingData.offer(new AbstractMap.SimpleEntry<String, byte[]>(channel, stream.toByteArray()));
 	}
 	
 	protected abstract MessageSender getSender(int id);
@@ -162,5 +246,17 @@ public abstract class ServerComLink
 		public void onPSubscribe( byte[] paramArrayOfByte, int paramInt )
 		{
 		}
+	}
+	
+	public interface ConnectionStateNotify
+	{
+		/**
+		 * Note, this must not do anything now. Schedule something
+		 */
+		public void onConnectionLost(Throwable e);
+		/**
+		 * Note, this must not do anything now. Schedule something
+		 */
+		public void onConnectionRestored();
 	}
 }

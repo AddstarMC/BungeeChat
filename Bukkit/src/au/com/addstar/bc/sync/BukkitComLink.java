@@ -1,9 +1,13 @@
 package au.com.addstar.bc.sync;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 
 import org.bukkit.Bukkit;
+
+import au.com.addstar.bc.BungeeChat;
 
 public class BukkitComLink extends ServerComLink
 {
@@ -12,6 +16,12 @@ public class BukkitComLink extends ServerComLink
 	public BukkitComLink()
 	{
 		mServers = new HashMap<Integer, RemoteServer>();
+	}
+	
+	@Override
+	protected void initializeQueueHandler( BlockingQueue<Entry<String, byte[]>> queue )
+	{
+		Bukkit.getScheduler().runTaskAsynchronously(BungeeChat.getInstance(), new DataSender(queue));
 	}
 	
 	@Override
@@ -80,5 +90,30 @@ public class BukkitComLink extends ServerComLink
 			return null;
 		}
 		
+	}
+	
+	private class DataSender implements Runnable
+	{
+		private BlockingQueue<Entry<String, byte[]>> mQueue;
+		public DataSender(BlockingQueue<Entry<String, byte[]>> queue)
+		{
+			mQueue = queue;
+		}
+		
+		@Override
+		public void run()
+		{
+			try
+			{
+				while(true)
+				{
+					Entry<String, byte[]> item = mQueue.take();
+					publish(item.getKey(), item.getValue());
+				}
+			}
+			catch(InterruptedException e)
+			{
+			}
+		}
 	}
 }

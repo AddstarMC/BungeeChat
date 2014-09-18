@@ -1,6 +1,8 @@
 package au.com.addstar.bc.sync;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
 
 import au.com.addstar.bc.BungeeChat;
@@ -23,6 +25,12 @@ public class ProxyComLink extends ServerComLink
 			mServers.put(id, sender);
 			mRevServers.put(server, sender);
 		}
+	}
+	
+	@Override
+	protected void initializeQueueHandler( BlockingQueue<Entry<String, byte[]>> queue )
+	{
+		ProxyServer.getInstance().getScheduler().runAsync(BungeeChat.instance, new DataSender(queue));
 	}
 
 	@Override
@@ -80,5 +88,30 @@ public class ProxyComLink extends ServerComLink
 			return mName;
 		}
 		
+	}
+	
+	private class DataSender implements Runnable
+	{
+		private BlockingQueue<Entry<String, byte[]>> mQueue;
+		public DataSender(BlockingQueue<Entry<String, byte[]>> queue)
+		{
+			mQueue = queue;
+		}
+		
+		@Override
+		public void run()
+		{
+			try
+			{
+				while(true)
+				{
+					Entry<String, byte[]> item = mQueue.take();
+					publish(item.getKey(), item.getValue());
+				}
+			}
+			catch(InterruptedException e)
+			{
+			}
+		}
 	}
 }

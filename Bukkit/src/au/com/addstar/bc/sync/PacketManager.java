@@ -16,10 +16,11 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.sync.ServerComLink.ConnectionStateNotify;
 
 import com.google.common.collect.HashMultimap;
 
-public class PacketManager implements IDataReceiver, Listener
+public class PacketManager implements IDataReceiver, Listener, ConnectionStateNotify
 {
 	public static boolean enabledDebug = false;
 	private PacketCodec mCodec;
@@ -33,6 +34,7 @@ public class PacketManager implements IDataReceiver, Listener
 	public PacketManager(Plugin plugin)
 	{
 		mComLink = BungeeChat.getComLink();
+		mComLink.setNotifyHandle(this);
 		
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 		
@@ -268,6 +270,25 @@ public class PacketManager implements IDataReceiver, Listener
 	private void debug(String text)
 	{
 		System.out.println("[BungeeChatDebug] " + text);
+	}
+
+	@Override
+	public void onConnectionLost( Throwable e )
+	{
+	}
+
+	@Override
+	public void onConnectionRestored()
+	{
+		Bukkit.getScheduler().runTask(BungeeChat.getInstance(), new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				System.out.println("[BungeeChat] Redis connection restored");
+				sendInitPackets();
+			}
+		});
 	}
 
 	

@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.AbstractMap.SimpleEntry;
 
 import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.sync.ServerComLink.ConnectionStateNotify;
 
 import com.google.common.collect.HashMultimap;
 
@@ -18,7 +19,7 @@ import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 
-public class PacketManager implements Listener, IDataReceiver
+public class PacketManager implements Listener, IDataReceiver, ConnectionStateNotify
 {
 	public static boolean enableDebug = false;
 	private HashMap<ServerInfo, PacketCodec> mCodecs;
@@ -37,6 +38,7 @@ public class PacketManager implements Listener, IDataReceiver
 		mComLink.listenToChannel("BungeeChat", this);
 		mComLink.listenToChannel("BCState", this);
 		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
+		BungeeChat.instance.getComLink().setNotifyHandle(this);
 	}
 	
 	public void initialize()
@@ -243,5 +245,24 @@ public class PacketManager implements Listener, IDataReceiver
 	private void debug(String message)
 	{
 		System.out.println("[BungeeChatDebug] " + message);
+	}
+
+	@Override
+	public void onConnectionLost( Throwable e )
+	{
+	}
+
+	@Override
+	public void onConnectionRestored()
+	{
+		ProxyServer.getInstance().getScheduler().runAsync(BungeeChat.instance, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				System.out.println("[BungeeChat] Redis connection restored");
+				BungeeChat.instance.getSyncManager().sendConfig("bungeechat");
+			}
+		});
 	}
 }
