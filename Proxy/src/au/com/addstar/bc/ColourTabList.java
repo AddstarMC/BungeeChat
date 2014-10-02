@@ -2,6 +2,8 @@ package au.com.addstar.bc;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import au.com.addstar.bc.sync.PropertyChangeEvent;
@@ -38,6 +40,7 @@ public class ColourTabList extends TabListAdapter
 	private String mHeaderContents;
 	private String mFooterContents;
 	private boolean mHasInited;
+	private HashSet<UUID> mFakePlayers = new HashSet<UUID>();
 	// ==== 1.7 compat ====
 	private String mLastName;
 
@@ -112,6 +115,24 @@ public class ColourTabList extends TabListAdapter
 			// Only fake players will be allowed to pass through. This should allow citizens to work
 			if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null)
 			{
+				boolean known = false;
+				switch(packet.getAction())
+				{
+				case ADD_PLAYER:
+					mFakePlayers.add(item.getUuid());
+					known = true;
+					break;
+				case REMOVE_PLAYER:
+					known = mFakePlayers.remove(item.getUuid());
+					break;
+				default:
+					known = mFakePlayers.contains(item.getUuid());
+					break;
+				}
+				
+				if (!known)
+					continue;
+				
 				if (items == null)
 					items = new ArrayList<Item>(packet.getItems().length);
 				items.add(item);
