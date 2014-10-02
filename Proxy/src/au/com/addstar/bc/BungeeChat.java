@@ -521,8 +521,20 @@ public class BungeeChat extends Plugin implements Listener
 				.replace("{DISPLAYNAME}", player.getDisplayName())
 				.replace("{TABNAME}", settings.tabColor + player.getDisplayName())
 				.replace("{SERVER}", player.getServer() != null ? player.getServer().getInfo().getName() : "")
-				.replace("{COUNT}", String.valueOf(getProxy().getPlayers().size()))
+				.replace("{COUNT}", String.valueOf(getPlayerCount(player)))
 				.replace("{MAX}", String.valueOf(player.getPendingConnection().getListener().getMaxPlayers())));
+	}
+	
+	private int getPlayerCount(ProxiedPlayer player)
+	{
+		int count = 0;
+		for(ProxiedPlayer other : getProxy().getPlayers())
+		{
+			if (ColourTabList.isVisible(player, other))
+				++count;
+		}
+		
+		return count;
 	}
 	
 	public PacketManager getPacketManager()
