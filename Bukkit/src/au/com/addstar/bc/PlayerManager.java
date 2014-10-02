@@ -1,6 +1,8 @@
 package au.com.addstar.bc;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -99,6 +101,11 @@ public class PlayerManager implements Listener, IPacketHandler
 		if(!includeAliases && sender != null && !name.equalsIgnoreCase(sender.getName()))
 			return null;
 		return sender;
+	}
+	
+	public Collection<CommandSender> getPlayers()
+	{
+		return Collections.unmodifiableCollection(mAllProxied.values());
 	}
 	
 	public List<String> matchNames(String name)
@@ -274,8 +281,13 @@ public class PlayerManager implements Listener, IPacketHandler
 	{
 		Player player = event.getPlayer();
 		mPlayerSettings.remove(player.getUniqueId());
-		RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
-		mAllProxied.put(player.getUniqueId(), current);
+		
+		// Prevent re-adding the player when they leave the proxy
+		if (mAllProxied.containsKey(player.getUniqueId()))
+		{
+			RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
+			mAllProxied.put(player.getUniqueId(), current);
+		}
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
