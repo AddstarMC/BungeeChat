@@ -106,7 +106,23 @@ public class ColourTabList extends TabListAdapter
 	@Override
 	public void onUpdate( PlayerListItem packet )
 	{
+		ArrayList<Item> items = null;
+		for(Item item : packet.getItems())
+		{
+			// Only fake players will be allowed to pass through. This should allow citizens to work
+			if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null)
+			{
+				if (items == null)
+					items = new ArrayList<Item>(packet.getItems().length);
+				items.add(item);
+			}
+		}
 		
+		if (items != null)
+		{
+			packet.setItems(items.toArray(new Item[items.size()]));
+			getPlayer().unsafe().sendPacket(packet);
+		}
 	}
 	
 	public void updateTabHeaders()
@@ -314,7 +330,7 @@ public class ColourTabList extends TabListAdapter
 				message = String.format("%d,%d,%s", item.getPing(), item.getGamemode(), BaseComponent.toLegacyText(item.getDisplayName()));
 				break;
 			case REMOVE_PLAYER:
-				message = BaseComponent.toLegacyText(item.getDisplayName());
+				message = item.getUuid().toString();
 				break;
 			case UPDATE_DISPLAY_NAME:
 				message = BaseComponent.toLegacyText(item.getDisplayName());
