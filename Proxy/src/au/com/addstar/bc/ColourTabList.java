@@ -109,6 +109,10 @@ public class ColourTabList extends TabListAdapter
 	@Override
 	public void onUpdate( PlayerListItem packet )
 	{
+		// Fake players do not need to be handled pre 1.8
+		if (getPlayer().getPendingConnection().getVersion() < 47)
+			return;
+		
 		ArrayList<Item> items = null;
 		for(Item item : packet.getItems())
 		{
