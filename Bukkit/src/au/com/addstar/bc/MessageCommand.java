@@ -90,7 +90,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 			{
 				if(player instanceof RemotePlayer)
 				{
-					BungeeChat.getSyncManager().callSyncMethod("bchat:canMsg", new IMethodCallback<Byte>()
+					BungeeChat.getSyncManager().callSyncMethod("bchat:canMsg", new IMethodCallback<Boolean>()
 					{
 						@Override
 						public void onError( String type, String message )
@@ -99,9 +99,9 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 						}
 						
 						@Override
-						public void onFinished( Byte data )
+						public void onFinished( Boolean data )
 						{
-							if(data == 0)
+							if(!data)
 								sender.sendMessage(ChatColor.RED + "That player has messaging disabled.");
 							else
 								doSendMessage(player, sender, message);
