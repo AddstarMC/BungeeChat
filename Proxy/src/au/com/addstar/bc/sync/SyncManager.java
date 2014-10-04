@@ -91,8 +91,6 @@ public class SyncManager implements Listener, IPacketHandler
 			}
 			catch(Exception e)
 			{
-				e.printStackTrace();
-				
 				BungeeChat.instance.getPacketManager().send(new CallFailedResponsePacket(id, e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage()), caller);
 			}
 		}

@@ -46,7 +46,10 @@ public class ColourTabList extends TabListAdapter
 
 	public ColourTabList()
 	{
-		mTabLists.put(this, null);
+		synchronized(mTabLists)
+		{
+			mTabLists.put(this, null);
+		}
 	}
 	
 	private static String getName(ProxiedPlayer player)
@@ -261,8 +264,11 @@ public class ColourTabList extends TabListAdapter
 	
 	public static void updateAll()
 	{
-		for(ColourTabList list : mTabLists.keySet())
-			list.updateList();
+		synchronized(mTabLists)
+		{
+			for(ColourTabList list : mTabLists.keySet())
+				list.updateList();
+		}
 	}
 	
 	@Override
