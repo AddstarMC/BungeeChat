@@ -43,7 +43,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		}
 	}
 	
-	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	@EventHandler(priority=EventPriority.LOW, ignoreCancelled=true)
 	private void onPlayerCommand(PlayerCommandPreprocessEvent event)
 	{
 		if(processCommands(event.getPlayer(), event.getMessage().substring(1)))
@@ -53,7 +53,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		}
 	}
 	
-	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	@EventHandler(priority=EventPriority.LOW, ignoreCancelled=true)
 	private void onServerCommand(ServerCommandEvent event)
 	{
 		if(processCommands(event.getSender(), event.getCommand()))
