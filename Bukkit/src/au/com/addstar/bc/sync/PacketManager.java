@@ -8,11 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.BungeeChat;
@@ -20,12 +15,11 @@ import au.com.addstar.bc.sync.ServerComLink.ConnectionStateNotify;
 
 import com.google.common.collect.HashMultimap;
 
-public class PacketManager implements IDataReceiver, Listener, ConnectionStateNotify
+public class PacketManager implements IDataReceiver, ConnectionStateNotify
 {
 	public static boolean enabledDebug = false;
 	private PacketCodec mCodec;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
-	private Player mSendPlayer;
 	private BukkitComLink mComLink;
 	
 	// Packets that arrived before the schema did
@@ -35,8 +29,6 @@ public class PacketManager implements IDataReceiver, Listener, ConnectionStateNo
 	{
 		mComLink = BungeeChat.getComLink();
 		mComLink.setNotifyHandle(this);
-		
-		Bukkit.getPluginManager().registerEvents(this, plugin);
 		
 		mHandlers = HashMultimap.create();
 		mPendingPackets = new LinkedList<DataInput>();
@@ -251,20 +243,6 @@ public class PacketManager implements IDataReceiver, Listener, ConnectionStateNo
 				debug("Do pending:");
 			handleDataPacket(data);
 		}
-	}
-	
-	@EventHandler
-	private void onPlayerLeave(PlayerQuitEvent event)
-	{
-		if(event.getPlayer().equals(mSendPlayer))
-			mSendPlayer = null;
-	}
-	
-	@EventHandler
-	private void onPlayerLeave(PlayerKickEvent event)
-	{
-		if(event.getPlayer().equals(mSendPlayer))
-			mSendPlayer = null;
 	}
 	
 	private void debug(String text)

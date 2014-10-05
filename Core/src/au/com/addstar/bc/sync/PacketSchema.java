@@ -301,6 +301,12 @@ public class PacketSchema
 	}
 	
 	@Override
+	public int hashCode()
+	{
+		return mFields.hashCode();
+	}
+	
+	@Override
 	public String toString()
 	{
 		StringBuilder builder = new StringBuilder();

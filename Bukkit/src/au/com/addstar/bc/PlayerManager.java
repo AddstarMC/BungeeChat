@@ -280,7 +280,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onPlayerLeaveServer(PlayerQuitEvent event)
 	{
 		Player player = event.getPlayer();
-		mPlayerSettings.remove(player.getUniqueId());
+		mPlayerSettings.remove(player);
 		
 		// Prevent re-adding the player when they leave the proxy
 		if (mAllProxied.containsKey(player.getUniqueId()))
@@ -294,7 +294,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onPlayerLeaveServer(PlayerKickEvent event)
 	{
 		Player player = event.getPlayer();
-		mPlayerSettings.remove(player.getUniqueId());
+		mPlayerSettings.remove(player);
 		RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
 		mAllProxied.put(player.getUniqueId(), current);
 	}

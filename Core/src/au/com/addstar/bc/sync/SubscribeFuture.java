@@ -48,7 +48,8 @@ public class SubscribeFuture implements Future<Void>
 	@Override
 	public Void get( long timeout, TimeUnit unit ) throws InterruptedException, ExecutionException, TimeoutException
 	{
-		mLatch.await(timeout, unit);
+		if (!mLatch.await(timeout, unit))
+			throw new TimeoutException();
 		return null;
 	}
 	
