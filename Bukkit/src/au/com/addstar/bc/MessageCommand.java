@@ -1,12 +1,15 @@
 package au.com.addstar.bc;
 
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+
 import au.com.addstar.bc.sync.IMethodCallback;
 
 public class MessageCommand implements CommandExecutor, TabCompleter
@@ -21,19 +24,6 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 		}
 		
 		return null;
-	}
-
-	private String concat(String[] args, int start)
-	{
-		String str = "";
-		for(int i = start; i < args.length; ++i)
-		{
-			if(!str.isEmpty())
-				str += " ";
-			str += args[i];
-		}
-		
-		return str;
 	}
 
 	private void doSendMessage(CommandSender to, CommandSender from, String message)
@@ -81,7 +71,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 				return true;
 			}
 			
-			final String message = BungeeChat.colorize(concat(args, 1), sender);
+			final String message = BungeeChat.colorize(StringUtils.join(args, ' ', 1, args.length), sender);
 			
 			if(ChatColor.stripColor(message).trim().isEmpty())
 				return false;
@@ -142,7 +132,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 				return true;
 			}
 			
-			String message = concat(args, 0);
+			String message = StringUtils.join(args, ' ', 1, args.length);
 			message = BungeeChat.colorize(message, sender);
 			
 			if(ChatColor.stripColor(message).trim().isEmpty())

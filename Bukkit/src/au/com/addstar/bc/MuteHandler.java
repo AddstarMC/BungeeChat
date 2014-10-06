@@ -73,7 +73,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPa
 								builder.append(", ");
 							
 							String[] parts = entry.split(":");
-							long time = Long.valueOf(parts[1]);
+							long time = Long.parseLong(parts[1]);
 							time = time - System.currentTimeMillis();
 							
 							builder.append(parts[0]);

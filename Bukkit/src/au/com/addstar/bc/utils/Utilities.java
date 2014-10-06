@@ -223,7 +223,6 @@ public class Utilities
 				builder.append(" ");
 			
 			int number = (int)(time / 1000L);
-			time -= number * 1000L;
 			
 			builder.append(number);
 			builder.append(" ");
@@ -314,7 +313,6 @@ public class Utilities
 				builder.append(" ");
 			
 			int number = (int)(time / 1000L);
-			time -= number * 1000L;
 			
 			builder.append(number);
 			builder.append("s");

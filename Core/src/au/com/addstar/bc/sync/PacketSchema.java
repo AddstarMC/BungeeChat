@@ -378,7 +378,7 @@ public class PacketSchema
 		return schema;
 	}
 	
-	private class FieldDefinition
+	private static class FieldDefinition
 	{
 		public String name;
 		public FieldType type;

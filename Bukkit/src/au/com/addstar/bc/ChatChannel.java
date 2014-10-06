@@ -57,6 +57,9 @@ public class ChatChannel
 		PermissionSetting level = Formatter.getPermissionLevel(sender);
 		
 		message = BungeeChat.colorize(message, sender);
+		if (ChatColor.stripColor(message).trim().isEmpty())
+			return;
+		
 		String newFormat = Formatter.replaceKeywordsPartial(format, sender, level);
 		String finalMessage = String.format(newFormat, message);
 		

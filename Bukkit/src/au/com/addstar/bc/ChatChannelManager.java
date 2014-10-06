@@ -2,6 +2,7 @@ package au.com.addstar.bc;
 
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -102,14 +103,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		
 		String channelCmd = args[0];
 		
-		String message = "";
-		for(int i = 1; i < args.length; ++i)
-		{
-			if(!message.isEmpty())
-				message += " ";
-			
-			message += args[i];
-		}
+		String message = StringUtils.join(args, ' ', 1, args.length);
 		
 		for(ChatChannel channel : mChannels.values())
 		{
@@ -118,9 +112,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 				if(channel.permission != null && !sender.hasPermission(channel.permission))
 					break;
 				
-				if(message != null)
-					channel.say(sender, message);
-				
+				channel.say(sender, message);
 				return true;
 			}
 		}

@@ -212,10 +212,11 @@ public class BungeeChat extends Plugin implements Listener
 		File onDisk = new File(getDataFolder(), file);
 			
 		InputStream input = new FileInputStream(onDisk);
-		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 		
 		try
 		{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			
 			int lineNo = 0;
 			while(reader.ready())
 			{
@@ -256,7 +257,7 @@ public class BungeeChat extends Plugin implements Listener
 					
 					if(col == null)
 					{
-						getLogger().warning("[" + file + "] Invalid colour code: \'" + col + "\' at line " + lineNo);
+						getLogger().warning("[" + file + "] Invalid colour code: \'" + c + "\' at line " + lineNo);
 						continue;
 					}
 					
@@ -265,6 +266,7 @@ public class BungeeChat extends Plugin implements Listener
 				
 				mKeywordSettings.put(regex, colour.toString());
 			}
+			reader.close();
 		}
 		finally
 		{
@@ -288,9 +290,10 @@ public class BungeeChat extends Plugin implements Listener
 			return;
 		}
 		
+		FileOutputStream output = null;
 		try
 		{
-			FileOutputStream output = new FileOutputStream(destination);
+			output = new FileOutputStream(destination);
 			byte[] buffer = new byte[1024];
 			int read = 0;
 			
@@ -298,13 +301,22 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				output.write(buffer, 0, read);
 			}
-			
-			output.close();
 		}
 		catch(IOException e)
 		{
 			getLogger().severe("Could not save resource " + resource + ". An IOException occured:");
 			e.printStackTrace();
+		}
+		finally
+		{
+			try
+			{
+				if (output != null)
+					output.close();
+			}
+			catch ( IOException e )
+			{
+			}
 		}
 	}
 	

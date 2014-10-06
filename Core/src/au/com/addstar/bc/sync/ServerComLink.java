@@ -47,7 +47,10 @@ public abstract class ServerComLink
 	
 	public void setNotifyHandle(ConnectionStateNotify handler)
 	{
-		mNotifyHandler = handler;
+		synchronized(this)
+		{
+			mNotifyHandler = handler;
+		}
 	}
 	
 	public abstract Future<Void> listenToChannel(String channel, IDataReceiver receiver);

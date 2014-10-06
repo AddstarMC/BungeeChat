@@ -69,7 +69,7 @@ public class BukkitComLink extends ServerComLink
 		super.sendMessage(channel, data, null);
 	}
 	
-	private class RemoteServer implements MessageSender
+	private static class RemoteServer implements MessageSender
 	{
 		private int mId;
 		
