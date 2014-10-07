@@ -57,6 +57,8 @@ permissions:
     default: op
   bungeechat.afk.kick.exempt:
     default: op
+  bungeechat.afk.kick.notify:
+    default: op
     
   bungeechat.globalmute:
     default: op

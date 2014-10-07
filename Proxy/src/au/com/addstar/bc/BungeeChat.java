@@ -134,6 +134,7 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:setMute", methods);
 		mSyncManager.addMethod("bchat:setMsgTarget", methods);
 		mSyncManager.addMethod("bchat:getMuteList", methods);
+		mSyncManager.addMethod("bchat:kick", methods);
 		
 		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);

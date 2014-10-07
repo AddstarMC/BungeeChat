@@ -91,6 +91,9 @@ public class ChatHandler implements Listener
 		case Broadcast:
 			Utilities.broadcast(event.getMessage(), null, null);
 			break;
+		case AFKKick:
+			Bukkit.broadcast(event.getMessage(), "bungeechat.afk.kick.notify");
+			break;
 		default:
 			break;
 		}

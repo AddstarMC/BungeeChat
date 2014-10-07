@@ -164,8 +164,16 @@ public class SyncConfig
 	
 	public boolean getBoolean(String key, boolean def)
 	{
-		byte b = getByte(key, (byte)(def ? 1 : 0));
-		return (b != 0);
+		Object o = get(key, def);
+		if(o == null)
+			return def;
+		
+		if(o instanceof Number)
+			return ((Number) o).byteValue() != 0;
+		if(o instanceof Boolean)
+			return (Boolean)o;
+		
+		return def;
 	}
 	
 	public List<?> getList(String key, List<?> def)

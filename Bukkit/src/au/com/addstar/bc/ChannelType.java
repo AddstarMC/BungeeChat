@@ -6,6 +6,7 @@ public enum ChannelType
 	KeywordHighlight("~"),
 	SocialSpy("~SS"),
 	Broadcast("~BC"),
+	AFKKick("~AK"),
 	Reserved(null),
 	Custom(null);
 	

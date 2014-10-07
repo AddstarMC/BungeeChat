@@ -32,7 +32,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 	public int delay = 30;
 	public int kickTime = 30;
 	public boolean kickEnabled = false;
-	public String kickMessage = "You have been kicked for idling %d minutes.";
+	public String kickMessage = "You have been kicked for idling more than %d minutes.";
 	
 	@SuppressWarnings( "unchecked" )
 	public AFKHandler(Plugin plugin)
@@ -285,8 +285,10 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 				{
 					if(time - settings.afkStartTime >= kickTime * 60000)
 					{
-						player.kickPlayer(String.format(kickMessage, kickTime));
-						// TODO: Broadcast if needed
+						BungeeChat.getSyncManager().callSyncMethod("bchat:kick", null, player.getUniqueId(), String.format(kickMessage, kickTime));
+						String consoleKickMessage = ChatColor.AQUA + player.getDisplayName() + " has been kicked for AFKing more than " + kickTime + " minutes";
+						BungeeChat.mirrorChat(consoleKickMessage, ChannelType.AFKKick.getName());
+						Bukkit.broadcast(consoleKickMessage, "bungeechat.afk.kick.notify");
 					}
 				}
 				else if(!settings.isAFK)
