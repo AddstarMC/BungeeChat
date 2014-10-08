@@ -398,7 +398,7 @@ public class PlayerManager implements Listener, IPacketHandler
 		BungeeChat.getPacketManager().sendNoQueue(settings.toPacket(getUniqueId(player)));
 	}
 	
-	private void onPlayerNameChange(UUID uuid, String newName)
+	protected void onPlayerNameChange(UUID uuid, String newName)
 	{
 		String oldName = mReverseNickMapping.remove(uuid);
 		if(oldName != null)

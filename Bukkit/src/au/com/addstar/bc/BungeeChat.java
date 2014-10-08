@@ -26,6 +26,7 @@ import au.com.addstar.bc.sync.SyncUtil;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
+import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 import au.com.addstar.bc.utils.Utilities;
 
 public class BungeeChat extends JavaPlugin implements Listener
@@ -75,7 +76,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		SyncUtil.addSerializer(KeywordHighlighterConfig.class, "KHSettings");
 		SyncUtil.addSerializer(PermissionSettingConfig.class, "PermSetting");
 		
-		mPacketManager.addHandler(new PacketHandler(), MirrorPacket.class, SendPacket.class);
+		mPacketManager.addHandler(new PacketHandler(), MirrorPacket.class, SendPacket.class, UpdateNamePacket.class);
 		mPacketManager.addHandler(mPlayerManager, (Class<? extends Packet>[])null);
 		
 		Bukkit.getScheduler().runTask(this, new Runnable()

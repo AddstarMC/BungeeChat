@@ -8,6 +8,7 @@ import au.com.addstar.bc.sync.IPacketHandler;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
+import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
 public class PacketHandler implements IPacketHandler
 {
@@ -19,6 +20,8 @@ public class PacketHandler implements IPacketHandler
 			handleMirror((MirrorPacket)packet);
 		else if(packet instanceof SendPacket)
 			handleSend((SendPacket)packet);
+		else if(packet instanceof UpdateNamePacket)
+			handleUpdateName((UpdateNamePacket)packet);
 	}
 	
 	private void handleMirror(MirrorPacket packet)
@@ -32,6 +35,11 @@ public class PacketHandler implements IPacketHandler
 		Player player = Bukkit.getPlayer(packet.getUUID());
 		if(player != null)
 			player.sendMessage(packet.getMessage());
+	}
+	
+	private void handleUpdateName(UpdateNamePacket packet)
+	{
+		BungeeChat.getPlayerManager().onPlayerNameChange(packet.getID(), packet.getName());
 	}
 	
 	
