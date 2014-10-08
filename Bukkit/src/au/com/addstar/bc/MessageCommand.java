@@ -132,7 +132,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 				return true;
 			}
 			
-			String message = StringUtils.join(args, ' ', 1, args.length);
+			String message = StringUtils.join(args, ' ', 0, args.length);
 			message = BungeeChat.colorize(message, sender);
 			
 			if(ChatColor.stripColor(message).trim().isEmpty())
