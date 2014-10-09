@@ -1,6 +1,7 @@
 package au.com.addstar.bc;
 
-import java.util.Collections;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -10,31 +11,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.sync.IMethodCallback;
-import au.com.addstar.bc.sync.IPacketHandler;
-import au.com.addstar.bc.sync.Packet;
-import au.com.addstar.bc.sync.SyncConfig;
-import au.com.addstar.bc.sync.packet.GlobalMutePacket;
 import au.com.addstar.bc.utils.Utilities;
 
-public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPacketHandler
+public class MuteHandler implements CommandExecutor, TabCompleter
 {
-	private long mGMuteTime = 0;
-	
-	private List<String> mMutedCommands = Collections.emptyList();
-	
-	@SuppressWarnings( "unchecked" )
 	public MuteHandler(Plugin plugin)
 	{
-		Bukkit.getPluginManager().registerEvents(this, plugin);
-		BungeeChat.getPacketManager().addHandler(this, GlobalMutePacket.class);
 	}
 	
 	@Override
@@ -101,8 +86,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPa
 				return false;
 			
 			long time = -1;
-			String timeString = null;
-			
+
 			if(args.length == 1)
 			{
 				time = Utilities.parseDateDiff(args[0]);
@@ -112,31 +96,13 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPa
 					return true;
 				}
 				
-				timeString = Utilities.timeDiffToString(time);
 				time = System.currentTimeMillis() + time;
-			}
-			else if(mGMuteTime != 0)
-			{
-				mGMuteTime = 0;
-				BungeeChat.getPacketManager().send(new GlobalMutePacket(0));
 				
-				String message = ChatColor.AQUA + "The global mute has ended";
-				BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
-				Utilities.broadcast(message, null, null);
-				return true;
+				BungeeChat.getSyncManager().callSyncMethod("bchat:setGMute", null, time);
 			}
+			else
+				BungeeChat.getSyncManager().callSyncMethod("bchat:toggleGMute", null);
 
-			mGMuteTime = time;
-			BungeeChat.getPacketManager().send(new GlobalMutePacket(time));
-			
-			String message = ChatColor.AQUA + "A " + ChatColor.RED + "global" + ChatColor.AQUA + " mute has been started";
-			
-			if(time != -1)
-				message += " for " + timeString;
-			
-			BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
-			Utilities.broadcast(message, null, null);
-			
 			return true;
 		}
 		else
@@ -145,16 +111,39 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPa
 				return false;
 			
 			CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
+			InetAddress address = null;
 			
 			if(!(player instanceof Player) && !(player instanceof RemotePlayer))
 			{
-				sender.sendMessage(ChatColor.RED + "Unknown player");
-				return true;
+				if (command.getName().equals("ipmute") || command.getName().equals("ipunmute"))
+				{
+					try
+					{
+						address = InetAddress.getByName(args[0]);
+					}
+					catch ( UnknownHostException e )
+					{
+						sender.sendMessage(ChatColor.RED + "Unknown player or ip address");
+						return true;
+					}
+				}
+				else
+				{
+					sender.sendMessage(ChatColor.RED + "Unknown player");
+					return true;
+				}
 			}
 			
-			String name = player.getName();
-			if(player instanceof Player)
-				name = ((Player)player).getDisplayName();
+			String name = null;
+			if (player != null)
+			{
+				if(player instanceof Player)
+					name = ((Player)player).getDisplayName();
+				else
+					name = player.getName();
+			}
+			else
+				name = address.getHostAddress();
 			
 			if(command.getName().equals("mute"))
 			{
@@ -190,65 +179,38 @@ public class MuteHandler implements CommandExecutor, TabCompleter, Listener, IPa
 				player.sendMessage(ChatColor.AQUA + "You are no longer muted. You may talk again.");
 				return true;
 			}
+			else if(command.getName().equals("ipmute"))
+			{
+				if(args.length != 2)
+					return false;
+				
+				long time = Utilities.parseDateDiff(args[1]);
+				if(time <= 0)
+				{
+					sender.sendMessage(ChatColor.RED + "Bad time format. Expected 5m, 2h or 30m2h");
+					return true;
+				}
+				
+				if (player != null)
+					BungeeChat.getSyncManager().callSyncMethod("bchat:setMuteIP", null, PlayerManager.getUniqueId(player), time);
+				else
+					BungeeChat.getSyncManager().callSyncMethod("bchat:setMuteIP", null, address.getHostAddress(), time);
+				return true;
+			}
+			else if(command.getName().equals("ipunmute"))
+			{
+				if(args.length != 1)
+					return false;
+				
+				if (player != null)
+					BungeeChat.getSyncManager().callSyncMethod("bchat:setMuteIP", null, PlayerManager.getUniqueId(player), 0L);
+				else
+					BungeeChat.getSyncManager().callSyncMethod("bchat:setMuteIP", null, address.getHostAddress(), 0L);
+				sender.sendMessage(ChatColor.AQUA + name + " has been unmuted");
+				return true;
+			}
 		}
 		
 		return false;
-	}
-
-	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
-	private void onPlayerChat(AsyncPlayerChatEvent event)
-	{
-		PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(event.getPlayer());
-		
-		if(settings.muteTime == -1 || System.currentTimeMillis() < settings.muteTime)
-		{
-			event.getPlayer().sendMessage(ChatColor.AQUA + "You are muted. You may not talk.");
-			event.setCancelled(true);
-		}
-		else if((mGMuteTime == -1 || System.currentTimeMillis() < mGMuteTime) && !event.getPlayer().hasPermission("bungeechat.globalmute.exempt"))
-		{
-			event.getPlayer().sendMessage(ChatColor.AQUA + "Everyone is muted. You may not talk.");
-			event.setCancelled(true);
-		}
-	}
-	
-	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
-	private void onPlayerCommand(PlayerCommandPreprocessEvent event)
-	{
-		PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(event.getPlayer());
-		
-		String command = event.getMessage().split(" ")[0].substring(1);
-		
-		if(!mMutedCommands.contains(command.toLowerCase()))
-			return;
-		
-		if(settings.muteTime == -1 || System.currentTimeMillis() < settings.muteTime)
-		{
-			event.getPlayer().sendMessage(ChatColor.AQUA + "You are muted. You may not use this command.");
-			event.setCancelled(true);
-		}
-		else if((mGMuteTime == -1 || System.currentTimeMillis() < mGMuteTime) && !event.getPlayer().hasPermission("bungeechat.globalmute.exempt"))
-		{
-			event.getPlayer().sendMessage(ChatColor.AQUA + "Everyone is muted. You may not use this command.");
-			event.setCancelled(true);
-		}
-	}
-	
-	@Override
-	public void handle( Packet raw )
-	{
-		GlobalMutePacket packet = (GlobalMutePacket)raw;
-		mGMuteTime = packet.getTime();
-	}
-	
-	@SuppressWarnings( "unchecked" )
-	public void load(SyncConfig config)
-	{
-		mMutedCommands = (List<String>)config.getList("mutedcommands", Collections.emptyList());
-	}
-	
-	public void setGlobalMute(long endTime)
-	{
-		mGMuteTime = endTime;
 	}
 }

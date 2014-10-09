@@ -83,8 +83,7 @@ public class PacketHandler implements IPacketHandler
 	
 	private void handleGMute(GlobalMutePacket packet)
 	{
-		BungeeChat.instance.setGlobalMute(packet.getTime());
-		getPacketManager().broadcast(packet);
+		BungeeChat.instance.getMuteHandler().setGMute(packet.getTime());
 	}
 	
 	private void handlePlayerListRequest( PlayerListRequestPacket packet, ServerInfo sender )

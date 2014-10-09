@@ -107,6 +107,10 @@ public class BungeeChat extends JavaPlugin implements Listener
 		getCommand("mute").setTabCompleter(mMuteHandler);
 		getCommand("unmute").setExecutor(mMuteHandler);
 		getCommand("unmute").setTabCompleter(mMuteHandler);
+		getCommand("ipmute").setExecutor(mMuteHandler);
+		getCommand("ipmute").setTabCompleter(mMuteHandler);
+		getCommand("ipunmute").setExecutor(mMuteHandler);
+		getCommand("ipunmute").setTabCompleter(mMuteHandler);
 		getCommand("mutelist").setExecutor(mMuteHandler);
 		getCommand("globalmute").setExecutor(mMuteHandler);
 		
@@ -170,7 +174,6 @@ public class BungeeChat extends JavaPlugin implements Listener
 			mChatChannels.load(config);
 			mSocialSpyHandler.load(config);
 			mAfkHandler.load(config);
-			mMuteHandler.load(config);
 		}
 	}
 

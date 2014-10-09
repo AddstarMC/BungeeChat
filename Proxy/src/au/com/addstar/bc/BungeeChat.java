@@ -32,7 +32,6 @@ import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
 import au.com.addstar.bc.sync.packet.FireEventPacket;
-import au.com.addstar.bc.sync.packet.GlobalMutePacket;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
@@ -40,11 +39,9 @@ import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
@@ -66,7 +63,7 @@ public class BungeeChat extends Plugin implements Listener
 	
 	private SyncManager mSyncManager;
 	private PacketManager mPacketManager;
-	private long mGMuteTime;
+	private MuteHandler mMuteHandler;
 	
 	private ProxyComLink mComLink;
 	
@@ -132,6 +129,9 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:toggleAFK", methods);
 		mSyncManager.addMethod("bchat:setTabColor", methods);
 		mSyncManager.addMethod("bchat:setMute", methods);
+		mSyncManager.addMethod("bchat:setMuteIP", methods);
+		mSyncManager.addMethod("bchat:setGMute", methods);
+		mSyncManager.addMethod("bchat:toggleGMute", methods);
 		mSyncManager.addMethod("bchat:setMsgTarget", methods);
 		mSyncManager.addMethod("bchat:getMuteList", methods);
 		mSyncManager.addMethod("bchat:kick", methods);
@@ -140,7 +140,8 @@ public class BungeeChat extends Plugin implements Listener
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 
-		getProxy().getScheduler().schedule(this, new UnmuteTimer(), 5, 5, TimeUnit.SECONDS);
+		mMuteHandler = new MuteHandler(this);
+		mMuteHandler.updateSettings(mConfig);
 		
 		ColourTabList.initialize(this);
 		
@@ -168,6 +169,8 @@ public class BungeeChat extends Plugin implements Listener
 			}
 			
 			ColourTabList.updateAll();
+			if(mMuteHandler != null)
+				mMuteHandler.updateSettings(mConfig);
 			return true;
 		}
 		catch ( InvalidConfigurationException e )
@@ -472,25 +475,7 @@ public class BungeeChat extends Plugin implements Listener
 		}
 	}
 	
-	@EventHandler
-	public void onPlayerChat(ChatEvent event)
-	{
-		if(event.getSender() instanceof ProxiedPlayer && !event.isCommand())
-		{
-			PlayerSettings settings = mSettings.getSettings((ProxiedPlayer)event.getSender());
-			if(settings.muteTime > System.currentTimeMillis())
-			{
-				event.setCancelled(true);
-				((ProxiedPlayer)event.getSender()).sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are muted. You may not talk."));
-			}
-			else if(settings.muteTime != 0)
-			{
-				settings.muteTime = 0;
-				mSettings.savePlayer((ProxiedPlayer)event.getSender());
-				mSettings.updateSettings((ProxiedPlayer)event.getSender());
-			}
-		}
-	}
+	
 	
 	public String getTabHeaderString(ProxiedPlayer player)
 	{
@@ -570,35 +555,9 @@ public class BungeeChat extends Plugin implements Listener
 		return mComLink;
 	}
 	
-	private class UnmuteTimer implements Runnable
+	public MuteHandler getMuteHandler()
 	{
-		@Override
-		public void run()
-		{
-			if(mGMuteTime > 0 && System.currentTimeMillis() >= mGMuteTime)
-			{
-				getProxy().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
-				mGMuteTime = 0;
-				mPacketManager.broadcast(new GlobalMutePacket(0));
-			}
-			
-			for(ProxiedPlayer player : getProxy().getPlayers())
-			{
-				PlayerSettings settings = mSettings.getSettings(player);
-				if(settings.muteTime > 0 && System.currentTimeMillis() >= settings.muteTime)
-				{
-					settings.muteTime = 0;
-					mSettings.updateSettings(player);
-					mSettings.savePlayer(player);
-					
-					player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are no longer muted. You may talk again."));
-				}
-			}
-		}
+		return mMuteHandler;
 	}
-
-	public void setGlobalMute( long time )
-	{
-		mGMuteTime = time;
-	}
+	
 }

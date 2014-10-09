@@ -1,14 +1,19 @@
 package au.com.addstar.bc;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import au.com.addstar.bc.sync.SyncMethod;
+import au.com.addstar.bc.sync.packet.MirrorPacket;
+import au.com.addstar.bc.util.Utilities;
 
 public class StandardServMethods implements SyncMethod
 {
@@ -29,6 +34,12 @@ public class StandardServMethods implements SyncMethod
 			return setTabColor((UUID)arguments[0], (String)arguments[1]);
 		else if(name.equals("bchat:setMute"))
 			return setMute((UUID)arguments[0], (Long)arguments[1]);
+		else if(name.equals("bchat:setMuteIP"))
+			return setMuteIP((Object)arguments[0], (Long)arguments[1]);
+		else if(name.equals("bchat:setGMute"))
+			return setGMute((Long)arguments[0]);
+		else if(name.equals("bchat:toggleGMute"))
+			return toggleGMute();
 		else if(name.equals("bchat:setMsgTarget"))
 			return setMsgTarget((UUID)arguments[0], (UUID)arguments[1]);
 		else if(name.equals("bchat:getMuteList"))
@@ -110,6 +121,71 @@ public class StandardServMethods implements SyncMethod
 		BungeeChat.instance.getManager().savePlayer(player);
 		BungeeChat.instance.getManager().updateSettings(player);
 		
+		return null;
+	}
+	
+	public boolean setMuteIP(Object who, long muteLength)
+	{
+		InetAddress address;
+		ProxiedPlayer player = null;
+		if (who instanceof UUID)
+		{
+			player = ProxyServer.getInstance().getPlayer((UUID)who);
+			if(player == null)
+				throw new IllegalArgumentException("That player is not online");
+			
+			address = player.getAddress().getAddress();
+		}
+		else
+		{
+			try
+			{
+				address = InetAddress.getByName((String)who);
+			}
+			catch ( UnknownHostException e )
+			{
+				throw new IllegalArgumentException("Invalid ip address");
+			}
+		}
+		
+		if (muteLength != 0)
+		{
+			String timeString = Utilities.timeDiffToString(muteLength);
+			
+			String message;
+			if (player == null)
+			{
+				for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
+				{
+					if (p.getAddress().getAddress().equals(address))
+					{
+						player = p;
+						break;
+					}
+				}
+				if (player == null)
+					return false;
+			}
+			
+			message = ChatColor.AQUA + player.getDisplayName() + " and alternate accounts have been muted for " + timeString;
+			BungeeChat.instance.getPacketManager().broadcast(new MirrorPacket("~BC", message));
+			BungeeChat.instance.getMuteHandler().setIPMute(address, System.currentTimeMillis() + muteLength);
+		}
+		else
+			BungeeChat.instance.getMuteHandler().setIPMute(address, 0);
+		
+		return true;
+	}
+	
+	public Void setGMute(long time)
+	{
+		BungeeChat.instance.getMuteHandler().setGMute(time);
+		return null;
+	}
+	
+	public Void toggleGMute()
+	{
+		BungeeChat.instance.getMuteHandler().toggleGMute();
 		return null;
 	}
 	

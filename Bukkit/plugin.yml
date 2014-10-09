@@ -114,6 +114,16 @@ commands:
     description: Unmutes a player
     permission: bungeechat.mute
   
+  ipmute:
+    usage: /<command> <player|ip> <time>
+    description: Mutes all players on the specified ip, or ip or specified player for time. Time IS required
+    permission: bungeechat.ipmute
+    
+  ipunmute:
+    usage: /<command> <player|ip>
+    description: Unmutes all players on the specified ip, or ip or specified player
+    permission: bungeechat.ipmute
+    
   mutelist:
     usage: /<command>
     description: Shows all muted players
