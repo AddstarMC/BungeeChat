@@ -286,7 +286,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 					if(time - settings.afkStartTime >= kickTime * 60000)
 					{
 						BungeeChat.getSyncManager().callSyncMethod("bchat:kick", null, player.getUniqueId(), String.format(kickMessage, kickTime));
-						String consoleKickMessage = ChatColor.AQUA + player.getDisplayName() + " has been kicked for AFKing more than " + kickTime + " minutes";
+						String consoleKickMessage = ChatColor.GOLD + player.getDisplayName() + " has been kicked for idling more than " + kickTime + " minutes";
 						BungeeChat.mirrorChat(consoleKickMessage, ChannelType.AFKKick.getName());
 						Bukkit.broadcast(consoleKickMessage, "bungeechat.afk.kick.notify");
 					}
