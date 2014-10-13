@@ -213,6 +213,9 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onPlayerLeave(PlayerLeavePacket packet)
 	{
 		CommandSender original = mAllProxied.remove(packet.getID());
+		if (original == null)
+			return;
+		
 		mNameMap.remove(original.getName().toLowerCase());
 		
 		// Remove nickname registration
