@@ -46,6 +46,7 @@ import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
+import net.md_5.bungee.api.event.ServerDisconnectEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -57,6 +58,7 @@ public class BungeeChat extends Plugin implements Listener
 	private SyncConfig mConfigSync;
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
+	private HashMap<UUID, ServerInfo> mLastServers = new HashMap<UUID, ServerInfo>();
 	private PlayerSettingsManager mSettings;
 	
 	public static BungeeChat instance;
@@ -417,26 +419,37 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onPlayerDC(final PlayerDisconnectEvent event)
 	{
-		if(event.getPlayer().getServer() == null)
-			return;
-		
-		boolean showQuitMessage = mSyncManager.getPropertyBoolean(event.getPlayer(), "hasQuitMessage", true); 
-		String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
-		if(!showQuitMessage)
-			quitMessage = "";
-		
-		mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, event.getPlayer().getUniqueId(), quitMessage), event.getPlayer().getServer().getInfo());
+		final UUID id = event.getPlayer().getUniqueId();
+		ServerInfo lastServer = mLastServers.remove(id);
 		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
 			public void run()
 			{
-				mPacketManager.broadcast(new PlayerLeavePacket(event.getPlayer().getUniqueId()));
+				System.out.println("Removing " + event.getPlayer().getName());
+				mPacketManager.broadcast(new PlayerLeavePacket(id));
 				ColourTabList.updateAll();
 			}
 			
 		}, 10, TimeUnit.MILLISECONDS);
+		
+		if(event.getPlayer().getServer() != null)
+			lastServer = event.getPlayer().getServer().getInfo();
+		
+		boolean showQuitMessage = mSyncManager.getPropertyBoolean(event.getPlayer(), "hasQuitMessage", true); 
+		String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
+		if(!showQuitMessage)
+			quitMessage = "";
+		
+		mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, id, quitMessage), lastServer);
+		mSettings.unloadPlayer(id);
+	}
+	
+	@EventHandler
+	public void onPlayerServerDC(ServerDisconnectEvent event)
+	{
+		mLastServers.put(event.getPlayer().getUniqueId(), event.getTarget());
 	}
 	
 	@EventHandler
@@ -474,8 +487,6 @@ public class BungeeChat extends Plugin implements Listener
 			}, 1, TimeUnit.SECONDS);
 		}
 	}
-	
-	
 	
 	public String getTabHeaderString(ProxiedPlayer player)
 	{

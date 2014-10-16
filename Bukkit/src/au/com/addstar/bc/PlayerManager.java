@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -19,6 +20,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.util.StringUtil;
 
 import au.com.addstar.bc.event.ProxyJoinEvent;
 import au.com.addstar.bc.event.ProxyLeaveEvent;
@@ -31,14 +33,12 @@ import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
-import com.google.common.collect.HashBiMap;
-
 public class PlayerManager implements Listener, IPacketHandler
 {
-	private HashBiMap<UUID, CommandSender> mAllProxied = HashBiMap.create();
-	private HashMap<String, UUID> mNameMap = new HashMap<String, UUID>();
-	private HashMap<UUID, String> mReverseNickMapping = new HashMap<UUID, String>();
-	private HashMap<CommandSender, PlayerSettings> mPlayerSettings = new HashMap<CommandSender, PlayerSettings>();
+	private HashMap<UUID, CommandSender> mAllProxied = new HashMap<UUID, CommandSender>();
+	private HashSet<UUID> mProxied = new HashSet<UUID>();
+	private HashMap<UUID, String> mNicknames = new HashMap<UUID, String>();
+	private HashMap<UUID, PlayerSettings> mPlayerSettings = new HashMap<UUID, PlayerSettings>();
 	
 	public PlayerManager(BungeeChat plugin)
 	{
@@ -62,20 +62,33 @@ public class PlayerManager implements Listener, IPacketHandler
 		
 		name = name.toLowerCase();
 		
-		for(Entry<String, UUID> entry : mNameMap.entrySet())
+		for(CommandSender player : mAllProxied.values())
 		{
-			String nick = mReverseNickMapping.get(entry.getValue());
-			
-			if(!includeAliases && nick != null && nick.equalsIgnoreCase(entry.getKey()))
-				continue;
-			
-			if(entry.getKey().contains(name))
+			if(StringUtils.containsIgnoreCase(player.getName(), name))
 			{
-				int diff = entry.getKey().length() - name.length();
+				int diff = player.getName().length() - name.length();
 				if(diff < best)
 				{
 					best = diff;
-					bestId = entry.getValue();
+					bestId = getUniqueId(player);
+				}
+			}
+			
+			if (!includeAliases)
+				continue;
+			
+			String nick = mNicknames.get(getUniqueId(player));
+			
+			if (StringUtils.isNotBlank(nick))
+			{
+				if(StringUtils.containsIgnoreCase(nick, name))
+				{
+					int diff = nick.length() - name.length();
+					if(diff < best)
+					{
+						best = diff;
+						bestId = getUniqueId(player);
+					}
 				}
 			}
 		}
@@ -93,14 +106,24 @@ public class PlayerManager implements Listener, IPacketHandler
 		if(name.equalsIgnoreCase("console"))
 			return Bukkit.getConsoleSender();
 
-		UUID id = mNameMap.get(name.toLowerCase());
-		if(id == null)
-			return null;
+		for(CommandSender player : mAllProxied.values())
+		{
+			if (player.getName().equalsIgnoreCase(name))
+				return player;
+			
+			if (!includeAliases)
+				continue;
+			
+			String nick = mNicknames.get(getUniqueId(player));
+			
+			if (StringUtils.isNotBlank(nick))
+			{
+				if (nick.equalsIgnoreCase(name))
+					return player;
+			}
+		}
 		
-		CommandSender sender = mAllProxied.get(id);
-		if(!includeAliases && sender != null && !name.equalsIgnoreCase(sender.getName()))
-			return null;
-		return sender;
+		return null;
 	}
 	
 	public Collection<CommandSender> getPlayers()
@@ -117,19 +140,21 @@ public class PlayerManager implements Listener, IPacketHandler
 	{
 		name = name.toLowerCase();
 		ArrayList<String> matches = new ArrayList<String>();
-		for(Entry<String, UUID> entry : mNameMap.entrySet())
+		
+		for(CommandSender player : mAllProxied.values())
 		{
-			String nick = mReverseNickMapping.get(entry.getValue());
+			if(StringUtil.startsWithIgnoreCase(player.getName(), name))
+				matches.add(player.getName());
 			
-			if(!includeAliases && nick != null && nick.equalsIgnoreCase(entry.getKey()))
+			if (!includeAliases)
 				continue;
 			
-			if(entry.getKey().startsWith(name))
+			String nick = mNicknames.get(getUniqueId(player));
+			
+			if (StringUtils.isNotBlank(nick))
 			{
-				if(entry.getKey().equalsIgnoreCase(nick))
+				if(StringUtil.startsWithIgnoreCase(nick, name))
 					matches.add(nick);
-				else
-					matches.add(mAllProxied.get(entry.getValue()).getName());
 			}
 		}
 		
@@ -138,7 +163,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	public String getPlayerNickname(CommandSender player)
 	{
-		return mReverseNickMapping.get(getUniqueId(player));
+		return mNicknames.get(getUniqueId(player));
 	}
 	
 	public void setPlayerNickname(CommandSender player, String name)
@@ -167,11 +192,12 @@ public class PlayerManager implements Listener, IPacketHandler
 	{
 		Validate.isTrue(player instanceof Player, "Cannot get player settins of non local player");
 		
-		PlayerSettings settings = mPlayerSettings.get(player);
+		UUID id = getUniqueId(player);
+		PlayerSettings settings = mPlayerSettings.get(id);
 		if(settings == null)
 		{
 			settings = new PlayerSettings();
-			mPlayerSettings.put(player, settings);
+			mPlayerSettings.put(id, settings);
 		}
 		
 		return settings;
@@ -201,27 +227,17 @@ public class PlayerManager implements Listener, IPacketHandler
 	{
 		RemotePlayer current = new RemotePlayer(packet.getID(), packet.getName());
 		mAllProxied.put(packet.getID(), current);
-		mNameMap.put(packet.getName().toLowerCase(), packet.getID());
+		mProxied.add(packet.getID());
 		
 		if(!packet.getNickname().isEmpty())
-		{
-			mNameMap.put(packet.getNickname().toLowerCase(), packet.getID());
-			mReverseNickMapping.put(packet.getID(), packet.getNickname());
-		}
+			mNicknames.put(packet.getID(), packet.getNickname());
 	}
 	
 	private void onPlayerLeave(PlayerLeavePacket packet)
 	{
-		CommandSender original = mAllProxied.remove(packet.getID());
-		if (original == null)
-			return;
-		
-		mNameMap.remove(original.getName().toLowerCase());
-		
-		// Remove nickname registration
-		String nickname = mReverseNickMapping.remove(packet.getID());
-		if(nickname != null)
-			mNameMap.remove(nickname.toLowerCase());
+		mAllProxied.remove(packet.getID());
+		mProxied.remove(packet.getID());
+		mNicknames.remove(packet.getID());
 	}
 	
 	private void onFireEvent(FireEventPacket packet)
@@ -264,11 +280,6 @@ public class PlayerManager implements Listener, IPacketHandler
 		final Player current = event.getPlayer();
 		mAllProxied.put(current.getUniqueId(), current);
 		
-		// Update nickname registration
-		String nickname = mReverseNickMapping.get(current.getUniqueId());
-		if(nickname != null)
-			current.setDisplayName(nickname);
-		
 		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
 		{
 			@Override
@@ -286,11 +297,13 @@ public class PlayerManager implements Listener, IPacketHandler
 		mPlayerSettings.remove(player);
 		
 		// Prevent re-adding the player when they leave the proxy
-		if (mAllProxied.containsKey(player.getUniqueId()))
+		if (mProxied.contains(player.getUniqueId()))
 		{
 			RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
 			mAllProxied.put(player.getUniqueId(), current);
 		}
+		else
+			mAllProxied.remove(player.getUniqueId());
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -298,8 +311,15 @@ public class PlayerManager implements Listener, IPacketHandler
 	{
 		Player player = event.getPlayer();
 		mPlayerSettings.remove(player);
-		RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
-		mAllProxied.put(player.getUniqueId(), current);
+		
+		// Prevent re-adding the player when they leave the proxy
+		if (mProxied.contains(player.getUniqueId()))
+		{
+			RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
+			mAllProxied.put(player.getUniqueId(), current);
+		}
+		else
+			mAllProxied.remove(player.getUniqueId());
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -327,8 +347,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onUpdatePlayers(PlayerListPacket packet)
 	{
 		mAllProxied.clear();
-		mNameMap.clear();
-		mReverseNickMapping.clear();
+		mNicknames.clear();
 		
 		List<UUID> ids = packet.getIDs();
 		List<String> names = packet.getNames();
@@ -337,13 +356,11 @@ public class PlayerManager implements Listener, IPacketHandler
 		for(Player player : Bukkit.getOnlinePlayers())
 		{
 			mAllProxied.put(player.getUniqueId(), player);
-			mNameMap.put(player.getName().toLowerCase(), player.getUniqueId());
 			
 			PlayerSettings settings = getPlayerSettings(player);
 			if(!settings.nickname.isEmpty())
 			{
-				mNameMap.put(settings.nickname.toLowerCase(), player.getUniqueId());
-				mReverseNickMapping.put(player.getUniqueId(), settings.nickname);
+				mNicknames.put(player.getUniqueId(), settings.nickname);
 				player.setDisplayName(settings.nickname);
 			}
 			else
@@ -361,13 +378,9 @@ public class PlayerManager implements Listener, IPacketHandler
 			
 			RemotePlayer player = new RemotePlayer(id, name);
 			mAllProxied.put(id, player);
-			mNameMap.put(name.toLowerCase(), id);
 			
 			if(!nickname.isEmpty())
-			{
-				mNameMap.put(nickname.toLowerCase(), id);
-				mReverseNickMapping.put(id, nickname);
-			}
+				mNicknames.put(id, nickname);
 		}
 	}
 	
@@ -403,15 +416,10 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	protected void onPlayerNameChange(UUID uuid, String newName)
 	{
-		String oldName = mReverseNickMapping.remove(uuid);
-		if(oldName != null)
-			mNameMap.remove(oldName.toLowerCase());
-		
-		if(!newName.isEmpty())
-		{
-			mNameMap.put(newName.toLowerCase(), uuid);
-			mReverseNickMapping.put(uuid, newName);
-		}
+		if (newName.isEmpty())
+			mNicknames.remove(uuid);
+		else
+			mNicknames.put(uuid, newName);
 	}
 	
 	@Override

@@ -71,4 +71,10 @@ public class PlayerSettingsManager
 		PlayerSettings settings = getSettings(player);
 		BungeeChat.instance.getPacketManager().send(settings.getUpdatePacket(player.getUniqueId()), player.getServer().getInfo());
 	}
+
+	public void unloadPlayer( UUID id )
+	{
+		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(id);
+		mLoadedSettings.remove(player);
+	}
 }
