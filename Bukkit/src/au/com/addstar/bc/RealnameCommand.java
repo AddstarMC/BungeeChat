@@ -33,6 +33,8 @@ public class RealnameCommand implements CommandExecutor, TabCompleter
 		}
 		
 		String nick = BungeeChat.getPlayerManager().getPlayerNickname(player);
+		if (nick == null)
+			nick = player.getName();
 		sender.sendMessage(ChatColor.GOLD + nick + ChatColor.GRAY + " is actually " + ChatColor.GOLD + player.getName());
 		
 		return true;

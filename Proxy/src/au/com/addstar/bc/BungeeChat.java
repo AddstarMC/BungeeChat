@@ -427,7 +427,6 @@ public class BungeeChat extends Plugin implements Listener
 			@Override
 			public void run()
 			{
-				System.out.println("Removing " + event.getPlayer().getName());
 				mPacketManager.broadcast(new PlayerLeavePacket(id));
 				ColourTabList.updateAll();
 			}
@@ -437,12 +436,15 @@ public class BungeeChat extends Plugin implements Listener
 		if(event.getPlayer().getServer() != null)
 			lastServer = event.getPlayer().getServer().getInfo();
 		
-		boolean showQuitMessage = mSyncManager.getPropertyBoolean(event.getPlayer(), "hasQuitMessage", true); 
-		String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
-		if(!showQuitMessage)
-			quitMessage = "";
-		
-		mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, id, quitMessage), lastServer);
+		if (lastServer != null)
+		{
+			boolean showQuitMessage = mSyncManager.getPropertyBoolean(event.getPlayer(), "hasQuitMessage", true); 
+			String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
+			if(!showQuitMessage)
+				quitMessage = "";
+			
+			mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, id, quitMessage), lastServer);
+		}
 		mSettings.unloadPlayer(id);
 	}
 	

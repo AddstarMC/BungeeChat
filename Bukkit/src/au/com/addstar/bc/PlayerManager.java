@@ -280,6 +280,10 @@ public class PlayerManager implements Listener, IPacketHandler
 		final Player current = event.getPlayer();
 		mAllProxied.put(current.getUniqueId(), current);
 		
+		String nickname = mNicknames.get(current.getUniqueId());
+		if (nickname != null)
+			current.setDisplayName(nickname);
+		
 		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
 		{
 			@Override
@@ -294,7 +298,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onPlayerLeaveServer(PlayerQuitEvent event)
 	{
 		Player player = event.getPlayer();
-		mPlayerSettings.remove(player);
+		mPlayerSettings.remove(player.getUniqueId());
 		
 		// Prevent re-adding the player when they leave the proxy
 		if (mProxied.contains(player.getUniqueId()))
@@ -310,7 +314,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onPlayerLeaveServer(PlayerKickEvent event)
 	{
 		Player player = event.getPlayer();
-		mPlayerSettings.remove(player);
+		mPlayerSettings.remove(player.getUniqueId());
 		
 		// Prevent re-adding the player when they leave the proxy
 		if (mProxied.contains(player.getUniqueId()))
