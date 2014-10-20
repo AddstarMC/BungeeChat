@@ -428,7 +428,6 @@ public class BungeeChat extends Plugin implements Listener
 			public void run()
 			{
 				mPacketManager.broadcast(new PlayerLeavePacket(id));
-				System.out.println("PD: " + event.getPlayer().getName());
 				ColourTabList.updateAll();
 			}
 			
@@ -458,11 +457,17 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onServerSwitch(final ServerSwitchEvent event)
 	{
+		if (!isOnline(event.getPlayer()))
+			return;
+		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
 			@Override
 			public void run()
 			{
+				if (!isOnline(event.getPlayer()))
+					return;
+				
 				mSettings.updateSettings(event.getPlayer());
 			}
 		}, 10, TimeUnit.MILLISECONDS);
@@ -473,6 +478,9 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onServerFirstJoin(ServerConnectedEvent event)
 	{
+		if (!isOnline(event.getPlayer()))
+			return;
+		
 		final ProxiedPlayer player = event.getPlayer();
 		if(player.getServer() == null)
 		{
@@ -484,11 +492,19 @@ public class BungeeChat extends Plugin implements Listener
 				@Override
 				public void run()
 				{
+					if (!isOnline(player))
+						return;
+					
 					if(player.getTabListHandler() instanceof ColourTabList)
 						((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
 				}
 			}, 1, TimeUnit.SECONDS);
 		}
+	}
+	
+	public boolean isOnline(ProxiedPlayer player)
+	{
+		return getProxy().getPlayer(player.getUniqueId()) != null;
 	}
 	
 	public String getTabHeaderString(ProxiedPlayer player)
