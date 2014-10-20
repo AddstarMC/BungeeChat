@@ -428,6 +428,7 @@ public class BungeeChat extends Plugin implements Listener
 			public void run()
 			{
 				mPacketManager.broadcast(new PlayerLeavePacket(id));
+				System.out.println("PD: " + event.getPlayer().getName());
 				ColourTabList.updateAll();
 			}
 			

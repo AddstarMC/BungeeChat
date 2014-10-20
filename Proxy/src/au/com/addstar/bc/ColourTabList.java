@@ -100,7 +100,13 @@ public class ColourTabList extends TabListAdapter
 	@Override
 	public void onDisconnect()
 	{
-		PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer()));
+		Item item;
+		if (getPlayer().getPendingConnection().getVersion() < 47)
+			item = createItem(getPlayer(), mLastName);
+		else
+			item = createItem(getPlayer());
+		
+		PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, item);
 		
 		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 		{
