@@ -49,6 +49,7 @@ public class PacketHandler implements IPacketHandler
 	private void handlePlayerSettings(PlayerSettingsPacket packet)
 	{
 		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(packet.getID());
+		Debugger.log("Updating player settings %s", player.getName());
 		PlayerSettings settings = getManager().getSettings(player);
 		settings.read(packet);
 		getManager().savePlayer(player);
@@ -60,7 +61,10 @@ public class PacketHandler implements IPacketHandler
 			player.setDisplayName(settings.nickname);
 		
 		if(!oldName.equals(settings.nickname))
+		{
+			Debugger.log("Updating player name %s to '%s'", player.getName(), settings.nickname);
 			getPacketManager().broadcast(new UpdateNamePacket(packet.getID(), settings.nickname));
+		}
 	}
 	
 	private void handleUpdateName(UpdateNamePacket packet)
@@ -78,7 +82,10 @@ public class PacketHandler implements IPacketHandler
 			player.setDisplayName(settings.nickname);
 		
 		if(!oldName.equals(settings.nickname))
+		{
+			Debugger.log("Updating player name %s to '%s'", player.getName(), settings.nickname);
 			getPacketManager().broadcast(new UpdateNamePacket(packet.getID(), settings.nickname));
+		}
 	}
 	
 	private void handleGMute(GlobalMutePacket packet)
@@ -88,6 +95,7 @@ public class PacketHandler implements IPacketHandler
 	
 	private void handlePlayerListRequest( PlayerListRequestPacket packet, ServerInfo sender )
 	{
+		Debugger.log("Server %s requested player list", sender.getName());
 		BungeeChat.instance.sendPlayerUpdates(sender);
 	}
 }

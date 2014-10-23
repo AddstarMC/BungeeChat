@@ -123,6 +123,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		getCommand("afk").setTabCompleter(mAfkHandler);
 		
 		getCommand("runchat").setExecutor(mChatChannels);
+		getCommand("bchatdebug").setExecutor(new Debugger());
 	}
 	
 	@Override

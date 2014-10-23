@@ -42,6 +42,7 @@ public class PlayerSettingsManager
 		}
 		
 		mLoadedSettings.put(player, settings);
+		Debugger.log("Loaded player settings %s", player.getName());
 		return settings;
 	}
 	
@@ -55,6 +56,7 @@ public class PlayerSettingsManager
 		try
 		{
 			getSettings(player).save();
+			Debugger.log("Saved player settings %s", player.getName());
 		}
 		catch(InvalidConfigurationException e)
 		{
@@ -70,11 +72,13 @@ public class PlayerSettingsManager
 	{
 		PlayerSettings settings = getSettings(player);
 		BungeeChat.instance.getPacketManager().send(settings.getUpdatePacket(player.getUniqueId()), player.getServer().getInfo());
+		Debugger.log("Sending player settings update %s", player.getName());
 	}
 
 	public void unloadPlayer( UUID id )
 	{
 		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(id);
 		mLoadedSettings.remove(player);
+		Debugger.log("Unloaded player settings %s", player.getName());
 	}
 }

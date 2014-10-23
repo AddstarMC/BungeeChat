@@ -11,13 +11,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.Debugger;
 import au.com.addstar.bc.sync.ServerComLink.ConnectionStateNotify;
 
 import com.google.common.collect.HashMultimap;
 
 public class PacketManager implements IDataReceiver, ConnectionStateNotify
 {
-	public static boolean enabledDebug = false;
 	private PacketCodec mCodec;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
 	private BukkitComLink mComLink;
@@ -68,8 +68,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 	
 	public boolean sendNoQueue(Packet packet)
 	{
-		if(enabledDebug)
-			debug("Sending " + packet);
+		Debugger.logp("Sending %s", packet);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
 		try
@@ -89,8 +88,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 	
 	public void broadcast( Packet packet )
 	{
-		if(enabledDebug)
-			debug("Broadcast " + packet);
+		Debugger.logp("Broadcast %s", packet);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
 		try
@@ -114,8 +112,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 		
 		try
 		{
-			if(enabledDebug)
-				debug("Sending online message");
+			Debugger.logp("Sending online message");
 			out.writeUTF("Online");
 			
 			byte[] data = stream.toByteArray();
@@ -132,8 +129,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 		
 		try
 		{
-			if(enabledDebug)
-				debug("Sending schema to proxy");
+			Debugger.logp("Sending schema to proxy");
 			PacketRegistry.writeSchemaPacket(out);
 			
 			byte[] data = stream.toByteArray();
@@ -153,8 +149,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 			if(packet == null)
 				return;
 			
-			if(enabledDebug)
-				debug("Received packet " + packet.toString());
+			Debugger.logp("Received packet %s", packet.toString());
 			
 			// Handler spec handlers
 			for(IPacketHandler handler : mHandlers.get(packet.getClass()))
@@ -181,8 +176,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 		{
 			if(mCodec == null)
 			{
-				if(enabledDebug)
-					debug("Received packet. Pending codec.");
+				Debugger.logp("Received packet. Pending codec.");
 				mPendingPackets.add(in);
 			}
 			else
@@ -204,15 +198,13 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 				String type = in.readUTF();
 				if(type.equals("Schema"))
 				{
-					if (enabledDebug)
-						debug("Received Schema.");
+					Debugger.logp("Received Schema.");
 					mCodec = PacketCodec.fromSchemaData(in);
 					doPending();
 				}
 				else if (type.equals("SchemaRequest"))
 				{
-					if (enabledDebug)
-						debug("Received Schema Request.");
+					Debugger.logp("Received Schema Request.");
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					DataOutputStream out = new DataOutputStream(ostream);
 					PacketRegistry.writeSchemaPacket(out);
@@ -239,17 +231,11 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 		{
 			DataInput data = it.next();
 			it.remove();
-			if(enabledDebug)
-				debug("Do pending:");
+			Debugger.logp("Do pending:");
 			handleDataPacket(data);
 		}
 	}
 	
-	private void debug(String text)
-	{
-		System.out.println("[BungeeChatDebug] " + text);
-	}
-
 	@Override
 	public void onConnectionLost( Throwable e )
 	{

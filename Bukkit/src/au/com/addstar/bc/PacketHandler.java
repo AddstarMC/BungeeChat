@@ -34,12 +34,16 @@ public class PacketHandler implements IPacketHandler
 	{
 		Player player = Bukkit.getPlayer(packet.getUUID());
 		if(player != null)
+		{
+			Debugger.log("Sending message to %s: '%s'", player.getName(), packet.getMessage());
 			player.sendMessage(packet.getMessage());
+		}
 	}
 	
 	private void handleUpdateName(UpdateNamePacket packet)
 	{
 		BungeeChat.getPlayerManager().onPlayerNameChange(packet.getID(), packet.getName());
+		Debugger.log("Received nickname %s to '%s'", BungeeChat.getPlayerManager().getPlayer(packet.getID()), packet.getName());
 	}
 	
 	

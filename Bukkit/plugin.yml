@@ -67,6 +67,9 @@ permissions:
     
   bungeechat.runchat:
     default: op
+    
+  bungeechat.debug:
+    default: op
   
 commands:
   /nullcmd:
@@ -143,4 +146,13 @@ commands:
   runchat:
     usage: /<command> <channelcmd> <message>
     description: Runs a chat channel command
-    permission: bungeechat.runchat 
+    permission: bungeechat.runchat
+  
+  bchatdebug:
+    usage: 
+     - "/<command> general <true|false>"
+     - "/<command> packet <true|false>"
+     - "/<command> player <name>"
+     - "/<command> allplayers"
+    description: Allows you to debug aspects of bungeechat
+    permission: bungeechat.debug

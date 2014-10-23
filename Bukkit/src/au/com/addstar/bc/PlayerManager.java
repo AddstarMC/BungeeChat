@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -47,7 +48,10 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	public CommandSender getPlayer(UUID id)
 	{
-		return mAllProxied.get(id);
+		CommandSender player = mAllProxied.get(id);
+		if (player != null)
+			Debugger.logCorrect(player);
+		return player;
 	}
 	
 	public CommandSender getPlayer(String name)
@@ -93,7 +97,10 @@ public class PlayerManager implements Listener, IPacketHandler
 			}
 		}
 		
-		return mAllProxied.get(bestId);
+		CommandSender player = mAllProxied.get(bestId);
+		if (player != null)
+			Debugger.logCorrect(player);
+		return player;
 	}
 	
 	public CommandSender getPlayerExact(String name)
@@ -109,7 +116,10 @@ public class PlayerManager implements Listener, IPacketHandler
 		for(CommandSender player : mAllProxied.values())
 		{
 			if (player.getName().equalsIgnoreCase(name))
+			{
+				Debugger.logCorrect(player);
 				return player;
+			}
 			
 			if (!includeAliases)
 				continue;
@@ -119,7 +129,10 @@ public class PlayerManager implements Listener, IPacketHandler
 			if (StringUtils.isNotBlank(nick))
 			{
 				if (nick.equalsIgnoreCase(name))
+				{
+					Debugger.logCorrect(player);
 					return player;
+				}
 			}
 		}
 		
@@ -179,10 +192,12 @@ public class PlayerManager implements Listener, IPacketHandler
 				((Player)player).setDisplayName(name);
 			
 			updatePlayerSettings(player);
+			Debugger.log("Setting nickname local %s to '%s'", player.getName(), name);
 		}
 		else
 		{
 			BungeeChat.getPacketManager().send(new UpdateNamePacket(getUniqueId(player), name));
+			Debugger.log("Setting nickname remote %s to '%s'", player.getName(), name);
 		}
 		
 		onPlayerNameChange(getUniqueId(player), name);
@@ -226,6 +241,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onPlayerJoin(PlayerJoinPacket packet)
 	{
 		RemotePlayer current = new RemotePlayer(packet.getID(), packet.getName());
+		Debugger.log("Proxy join %s. Add as remote player", packet.getName());
 		mAllProxied.put(packet.getID(), current);
 		mProxied.add(packet.getID());
 		
@@ -235,9 +251,11 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	private void onPlayerLeave(PlayerLeavePacket packet)
 	{
-		mAllProxied.remove(packet.getID());
+		CommandSender player = mAllProxied.remove(packet.getID());
 		mProxied.remove(packet.getID());
 		mNicknames.remove(packet.getID());
+		
+		Debugger.log("Proxy leave %s. Remove as local/remote", (player != null ? player.getName() : packet.getID()));
 	}
 	
 	private void onFireEvent(FireEventPacket packet)
@@ -278,6 +296,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	private void onPlayerJoinServer(PlayerLoginEvent event)
 	{
 		final Player current = event.getPlayer();
+		Debugger.log("Server join %s. Add as local", event.getPlayer().getName());
 		mAllProxied.put(current.getUniqueId(), current);
 		
 		String nickname = mNicknames.get(current.getUniqueId());
@@ -305,9 +324,13 @@ public class PlayerManager implements Listener, IPacketHandler
 		{
 			RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
 			mAllProxied.put(player.getUniqueId(), current);
+			Debugger.log("Server leave %s. Add as remote", event.getPlayer().getName());
 		}
 		else
+		{
 			mAllProxied.remove(player.getUniqueId());
+			Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
+		}
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -321,9 +344,13 @@ public class PlayerManager implements Listener, IPacketHandler
 		{
 			RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
 			mAllProxied.put(player.getUniqueId(), current);
+			Debugger.log("Server leave %s. Add as remote", event.getPlayer().getName());
 		}
 		else
+		{
 			mAllProxied.remove(player.getUniqueId());
+			Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
+		}
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -343,6 +370,7 @@ public class PlayerManager implements Listener, IPacketHandler
 		
 		if(!settings.tabFormat.equals(colour))
 		{
+			Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat.replace(ChatColor.COLOR_CHAR, '&'), colour.replace(ChatColor.COLOR_CHAR, '&'));
 			settings.tabFormat = colour;
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setTabColor", null, player.getUniqueId(), settings.tabFormat);
 		}
@@ -353,6 +381,8 @@ public class PlayerManager implements Listener, IPacketHandler
 		mAllProxied.clear();
 		mNicknames.clear();
 		
+		Debugger.log("Resetting online players:");
+		
 		List<UUID> ids = packet.getIDs();
 		List<String> names = packet.getNames();
 		List<String> nicknames = packet.getNicknames();
@@ -360,6 +390,7 @@ public class PlayerManager implements Listener, IPacketHandler
 		for(Player player : Bukkit.getOnlinePlayers())
 		{
 			mAllProxied.put(player.getUniqueId(), player);
+			Debugger.log("Add %s as local", player.getName());
 			
 			PlayerSettings settings = getPlayerSettings(player);
 			if(!settings.nickname.isEmpty())
@@ -383,6 +414,8 @@ public class PlayerManager implements Listener, IPacketHandler
 			RemotePlayer player = new RemotePlayer(id, name);
 			mAllProxied.put(id, player);
 			
+			Debugger.log("Add %s as remote", player.getName());
+			
 			if(!nickname.isEmpty())
 				mNicknames.put(id, nickname);
 		}
@@ -393,6 +426,7 @@ public class PlayerManager implements Listener, IPacketHandler
 		Player player = Bukkit.getPlayer(packet.getID());
 		if(player != null)
 		{
+			Debugger.log("Updating settings for %s", player.getName());
 			PlayerSettings settings = getPlayerSettings(player);
 			settings.read(packet);
 			

@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.AbstractMap.SimpleEntry;
 
 import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.Debugger;
 import au.com.addstar.bc.sync.ServerComLink.ConnectionStateNotify;
 
 import com.google.common.collect.HashMultimap;
@@ -21,7 +22,6 @@ import net.md_5.bungee.api.plugin.Plugin;
 
 public class PacketManager implements Listener, IDataReceiver, ConnectionStateNotify
 {
-	public static boolean enableDebug = false;
 	private HashMap<ServerInfo, PacketCodec> mCodecs;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
 	private ProxyComLink mComLink;
@@ -70,8 +70,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 	
 	public void send(Packet packet, ServerInfo server)
 	{
-		if(enableDebug)
-			debug("Sending to " + server.getName() + ": " + packet);
+		Debugger.logp("Sending to %s: %s", server.getName(), packet);
 		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
@@ -88,8 +87,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 	
 	public void broadcast(Packet packet)
 	{
-		if(enableDebug)
-			debug("Broadcast: " + packet);
+		Debugger.logp("Broadcast: %s");
 		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
@@ -117,13 +115,11 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 			Packet packet = codec.read(in);
 			if(packet == null)
 			{
-				if(enableDebug)
-					debug("Received packet but decoded to null. " + server.getName());
+				Debugger.logp("Received packet but decoded to null. %s", server.getName());
 				return;
 			}
 			
-			if(enableDebug)
-				debug("Received packet from " + server.getName() + ": " + packet);
+			Debugger.logp("Received packet from %s: %s", server.getName(), packet);
 			
 			// Handler spec handlers
 			for(IPacketHandler handler : mHandlers.get(packet.getClass()))
@@ -153,8 +149,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 			
 			if(codec == null)
 			{
-				if(enableDebug)
-					debug("Received packet. Pending codec. " + server.getName());
+				Debugger.logp("Received packet. Pending codec. %s");
 				mPendingPackets.add(new SimpleEntry<ServerInfo, DataInput>(server, in));
 				return;
 			}
@@ -170,16 +165,14 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 				String type = in.readUTF();
 				if(type.equals("Schema"))
 				{
-					if(enableDebug)
-						debug("Received schema from " + server.getName());
+					Debugger.logp("Received schema from %s", server.getName());
 					PacketCodec codec = PacketCodec.fromSchemaData(in);
 					mCodecs.put(server, codec);
 					doPending(server);
 				}
 				else if(type.equals("Online"))
 				{
-					if(enableDebug)
-						debug("Received online message from " + server.getName());
+					Debugger.logp("Received online message from %s", server.getName());
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					DataOutputStream out = new DataOutputStream(ostream);
 					PacketRegistry.writeSchemaPacket(out);
@@ -235,18 +228,12 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 			if(entry.getKey().equals(server))
 			{
 				it.remove();
-				if(enableDebug)
-					debug("Do pending:");
+				Debugger.logp("Do pending:");
 				handleDataPacket(server, codec, entry.getValue());
 			}
 		}
 	}
 	
-	private void debug(String message)
-	{
-		System.out.println("[BungeeChatDebug] " + message);
-	}
-
 	@Override
 	public void onConnectionLost( Throwable e )
 	{

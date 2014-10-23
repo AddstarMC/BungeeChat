@@ -141,6 +141,7 @@ public class BungeeChat extends Plugin implements Listener
 		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
+		getProxy().getPluginManager().registerCommand(this, new Debugger());
 
 		mMuteHandler = new MuteHandler(this);
 		mMuteHandler.updateSettings(mConfig);
@@ -366,6 +367,9 @@ public class BungeeChat extends Plugin implements Listener
 				else
 					event.getPlayer().setDisplayName(settings.nickname);
 				
+				Debugger.log("PP join %s", event.getPlayer().getName());
+				Debugger.log("Applying nickname to PP %s: '%s'", settings.nickname);
+				
 				mPacketManager.broadcast(new PlayerJoinPacket(event.getPlayer().getUniqueId(), event.getPlayer().getName(), settings.nickname));
 			}
 			
@@ -436,6 +440,8 @@ public class BungeeChat extends Plugin implements Listener
 		if(event.getPlayer().getServer() != null)
 			lastServer = event.getPlayer().getServer().getInfo();
 		
+		Debugger.log("PP disconnect %s", event.getPlayer().getName());
+		
 		if (lastServer != null)
 		{
 			boolean showQuitMessage = mSyncManager.getPropertyBoolean(event.getPlayer(), "hasQuitMessage", true); 
@@ -445,6 +451,8 @@ public class BungeeChat extends Plugin implements Listener
 			
 			mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, id, quitMessage), lastServer);
 		}
+		else
+			Debugger.log("Player %s never joined a server", event.getPlayer().getName());
 		mSettings.unloadPlayer(id);
 	}
 	
@@ -458,7 +466,10 @@ public class BungeeChat extends Plugin implements Listener
 	public void onServerSwitch(final ServerSwitchEvent event)
 	{
 		if (!isOnline(event.getPlayer()))
+		{
+			Debugger.log("ServerSwitch player not online %s", event.getPlayer().getName());
 			return;
+		}
 		
 		getProxy().getScheduler().schedule(this, new Runnable()
 		{
@@ -479,7 +490,10 @@ public class BungeeChat extends Plugin implements Listener
 	public void onServerFirstJoin(ServerConnectedEvent event)
 	{
 		if (!isOnline(event.getPlayer()))
+		{
+			Debugger.log("ServerConnected player not online %s", event.getPlayer().getName());
 			return;
+		}
 		
 		final ProxiedPlayer player = event.getPlayer();
 		if(player.getServer() == null)
@@ -493,7 +507,10 @@ public class BungeeChat extends Plugin implements Listener
 				public void run()
 				{
 					if (!isOnline(player))
+					{
+						Debugger.log("ServerConnected-task player not online %s", player.getName());
 						return;
+					}
 					
 					if(player.getTabListHandler() instanceof ColourTabList)
 						((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();

@@ -31,6 +31,8 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 		String fullMessageOut = String.format(Formatter.getPMFormat(to, false), message);
 		String fullMessageIn = String.format(Formatter.getPMFormat(from, true), message);
 		
+		Debugger.logCorrect(to);
+		
 		if(to instanceof RemotePlayer)
 		{
 			// Remote
