@@ -368,7 +368,7 @@ public class BungeeChat extends Plugin implements Listener
 					event.getPlayer().setDisplayName(settings.nickname);
 				
 				Debugger.log("PP join %s", event.getPlayer().getName());
-				Debugger.log("Applying nickname to PP %s: '%s'", settings.nickname);
+				Debugger.log("Applying nickname to PP %s: '%s'", event.getPlayer().getName(), settings.nickname);
 				
 				mPacketManager.broadcast(new PlayerJoinPacket(event.getPlayer().getUniqueId(), event.getPlayer().getName(), settings.nickname));
 			}
