@@ -263,33 +263,34 @@ public class PlayerManager implements Listener, IPacketHandler
 		Player player = Bukkit.getPlayer(packet.getID());
 		String message = packet.getMessage();
 		
-		if(player == null)
-			return;
-		
 		if(message.isEmpty())
 			message = null;
 		
-		switch(packet.getEvent())
+		if(player != null)
 		{
-		case FireEventPacket.EVENT_JOIN:
-		{
-			ProxyJoinEvent event = new ProxyJoinEvent(player, message);
-			Bukkit.getPluginManager().callEvent(event);
-			
-			if(event.getJoinMessage() != null)
-				BungeeChat.broadcast(event.getJoinMessage());
-			break;
+			switch(packet.getEvent())
+			{
+			case FireEventPacket.EVENT_JOIN:
+			{
+				ProxyJoinEvent event = new ProxyJoinEvent(player, message);
+				Bukkit.getPluginManager().callEvent(event);
+				
+				message = event.getJoinMessage();
+				break;
+			}
+			case FireEventPacket.EVENT_QUIT:
+			{
+				ProxyLeaveEvent event = new ProxyLeaveEvent(player, message);
+				Bukkit.getPluginManager().callEvent(event);
+				
+				message = event.getQuitMessage();
+				break;
+			}
+			}
 		}
-		case FireEventPacket.EVENT_QUIT:
-		{
-			ProxyLeaveEvent event = new ProxyLeaveEvent(player, message);
-			Bukkit.getPluginManager().callEvent(event);
-			
-			if(event.getQuitMessage() != null)
-				BungeeChat.broadcast(event.getQuitMessage());
-			break;
-		}
-		}
+		
+		if (message != null)
+			BungeeChat.broadcast(message);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
