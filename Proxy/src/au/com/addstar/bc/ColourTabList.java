@@ -63,26 +63,28 @@ public class ColourTabList extends TabListAdapter
 		return TextComponent.fromLegacyText(getName(player));
 	}
 	
-	private static boolean isNewTab(ProxiedPlayer player)
+	public static boolean isNewTab(ProxiedPlayer player)
 	{
 		return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_SNAPSHOT;
 	}
 	
 	@Override
-	public void onConnect()
+	public synchronized void onConnect()
 	{
 		mLastName = getName(getPlayer());
+		Debugger.logt("Connect %s with %s", getPlayer().getName(), mLastName);
 		updateAll();
 	}
 	
-	public void onJoinPeriodComplete()
+	public synchronized void onJoinPeriodComplete()
 	{
+		Debugger.logt("Join over %s", getPlayer().getName());
 		mHasInited = true;
 		updateAll();
 	}
 	
 	@Override
-	public void onPingChange( int ping )
+	public synchronized void onPingChange( int ping )
 	{
 		if ( ping - PING_THRESHOLD > lastPing && ping + PING_THRESHOLD < lastPing )
 		{
@@ -98,13 +100,10 @@ public class ColourTabList extends TabListAdapter
 	}
 
 	@Override
-	public void onDisconnect()
+	public synchronized void onDisconnect()
 	{
-		Item item;
-		if (getPlayer().getPendingConnection().getVersion() < 47)
-			item = createItem(getPlayer(), mLastName);
-		else
-			item = createItem(getPlayer());
+		Debugger.logt("Disconnect %s", getPlayer().getName());
+		Item item = createItem(getPlayer(), mLastName);
 		
 		PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, item);
 		
@@ -116,10 +115,10 @@ public class ColourTabList extends TabListAdapter
 	}
 
 	@Override
-	public void onUpdate( PlayerListItem packet )
+	public synchronized void onUpdate( PlayerListItem packet )
 	{
 		// Fake players do not need to be handled pre 1.8
-		if (getPlayer().getPendingConnection().getVersion() < 47)
+		if (!isNewTab(getPlayer()))
 			return;
 		
 		ArrayList<Item> items = null;
@@ -159,7 +158,7 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
-	public void updateTabHeaders()
+	public synchronized void updateTabHeaders()
 	{
 		if (!isNewTab(getPlayer()))
 			return;
@@ -175,7 +174,7 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
-	public void updateList()
+	public synchronized void updateList()
 	{
 		ArrayList<Item> toAdd = new ArrayList<Item>();
 		ArrayList<Item> toRemove = new ArrayList<Item>();
@@ -278,16 +277,24 @@ public class ColourTabList extends TabListAdapter
 	}
 	
 	@Override
-	public void onUpdateName()
+	public synchronized void onUpdateName()
 	{
+		Debugger.logt("UpdateName %s from %s to %s", getPlayer().getName(), mLastName, getName(getPlayer()));
+		if (mLastName == null)
+		{
+			Debugger.logt("Update name cancelled %s", getPlayer().getName());
+			return;
+		}
+		
 		PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, createItem(getPlayer()));
 		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), mLastName));
 		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
 		mLastName = getName(getPlayer());
-		
+	
 		for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
-			if(isVisible(p, getPlayer()))
+			// Can only update for other players if the init period is over, and the other player can see me
+			if((mHasInited && isVisible(p, getPlayer())) || p == getPlayer())
 			{
 				if (isNewTab(p))
 					sendPacket(packetUpdate, p);
@@ -302,7 +309,7 @@ public class ColourTabList extends TabListAdapter
 	
 	private void sendPacket(PlayerListItem packet, ProxiedPlayer player)
 	{
-		//printPacket(packet, player.getName());
+		Debugger.logTabItem(packet, player);
 		player.unsafe().sendPacket(packet);
 	}
 	
@@ -354,41 +361,6 @@ public class ColourTabList extends TabListAdapter
 		packet.setAction(action);
 		packet.setItems(items);
 		return packet;
-	}
-	
-	public static void printPacket(PlayerListItem packet, String to)
-	{
-		for (Item item : packet.getItems())
-		{
-			String message = null;
-			switch(packet.getAction())
-			{
-			case ADD_PLAYER:
-				message = String.format("%d,%d,%s", item.getPing(), item.getGamemode(), BaseComponent.toLegacyText(item.getDisplayName()));
-				break;
-			case REMOVE_PLAYER:
-				message = item.getUuid().toString();
-				break;
-			case UPDATE_DISPLAY_NAME:
-				message = BaseComponent.toLegacyText(item.getDisplayName());
-				break;
-			case UPDATE_GAMEMODE:
-				message = String.valueOf(item.getGamemode());
-				break;
-			case UPDATE_LATENCY:
-				message = String.valueOf(item.getPing());
-				break;
-			}
-			
-			if (packet.getAction() == Action.ADD_PLAYER)
-				message = String.format("%s %s-%s: %s", packet.getAction().name(), item.getUsername(), item.getUuid().toString(), message);
-			else if (item.getUsername() == null)
-				message = String.format("%s %s: %s", packet.getAction().name(), item.getUuid().toString(), message);
-			else
-				message = String.format("%s %s: %s", packet.getAction().name(), item.getUsername(), message);
-			
-			System.out.println(String.format("PL to %s: %s", to, message));
-		}
 	}
 
 	public static class ListUpdater implements Listener

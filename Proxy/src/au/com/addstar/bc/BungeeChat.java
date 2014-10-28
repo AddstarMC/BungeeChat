@@ -142,6 +142,7 @@ public class BungeeChat extends Plugin implements Listener
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 		getProxy().getPluginManager().registerCommand(this, new Debugger());
+		getProxy().getPluginManager().registerListener(this, new PlayerHandler());
 
 		mMuteHandler = new MuteHandler(this);
 		mMuteHandler.updateSettings(mConfig);
@@ -348,34 +349,7 @@ public class BungeeChat extends Plugin implements Listener
 		else
 			mPacketManager.broadcast(packet);
 	}
-	
-	@EventHandler
-	public void onPlayerJoin(final PostLoginEvent event)
-	{
-		event.getPlayer().setTabListHandler(new ColourTabList());
-		
-		getProxy().getScheduler().schedule(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				// Load this players settings
-				PlayerSettings settings = mSettings.getSettings(event.getPlayer());
-				
-				if(settings.nickname.isEmpty())
-					event.getPlayer().setDisplayName(event.getPlayer().getName());
-				else
-					event.getPlayer().setDisplayName(settings.nickname);
-				
-				Debugger.log("PP join %s", event.getPlayer().getName());
-				Debugger.log("Applying nickname to PP %s: '%s'", event.getPlayer().getName(), settings.nickname);
-				
-				mPacketManager.broadcast(new PlayerJoinPacket(event.getPlayer().getUniqueId(), event.getPlayer().getName(), settings.nickname));
-			}
-			
-		}, 50, TimeUnit.MILLISECONDS);
-	}
-	
+
 	@EventHandler
 	public void onOldMessage(PluginMessageEvent event)
 	{
@@ -418,110 +392,6 @@ public class BungeeChat extends Plugin implements Listener
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	@EventHandler
-	public void onPlayerDC(final PlayerDisconnectEvent event)
-	{
-		final UUID id = event.getPlayer().getUniqueId();
-		ServerInfo lastServer = mLastServers.remove(id);
-		
-		getProxy().getScheduler().schedule(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				mPacketManager.broadcast(new PlayerLeavePacket(id));
-				ColourTabList.updateAll();
-			}
-			
-		}, 10, TimeUnit.MILLISECONDS);
-		
-		if(event.getPlayer().getServer() != null)
-			lastServer = event.getPlayer().getServer().getInfo();
-		
-		Debugger.log("PP disconnect %s", event.getPlayer().getName());
-		
-		if (lastServer != null)
-		{
-			boolean showQuitMessage = mSyncManager.getPropertyBoolean(event.getPlayer(), "hasQuitMessage", true); 
-			String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " left the game."; 
-			if(!showQuitMessage)
-				quitMessage = "";
-			
-			mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, id, quitMessage), lastServer);
-		}
-		else
-			Debugger.log("Player %s never joined a server", event.getPlayer().getName());
-		mSettings.unloadPlayer(id);
-	}
-	
-	@EventHandler
-	public void onPlayerServerDC(ServerDisconnectEvent event)
-	{
-		mLastServers.put(event.getPlayer().getUniqueId(), event.getTarget());
-	}
-	
-	@EventHandler
-	public void onServerSwitch(final ServerSwitchEvent event)
-	{
-		if (!isOnline(event.getPlayer()))
-		{
-			Debugger.log("ServerSwitch player not online %s", event.getPlayer().getName());
-			return;
-		}
-		
-		getProxy().getScheduler().schedule(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (!isOnline(event.getPlayer()))
-					return;
-				
-				mSettings.updateSettings(event.getPlayer());
-			}
-		}, 10, TimeUnit.MILLISECONDS);
-		
-		ColourTabList.updateAll();
-	}
-	
-	@EventHandler
-	public void onServerFirstJoin(ServerConnectedEvent event)
-	{
-		if (!isOnline(event.getPlayer()))
-		{
-			Debugger.log("ServerConnected player not online %s", event.getPlayer().getName());
-			return;
-		}
-		
-		final ProxiedPlayer player = event.getPlayer();
-		if(player.getServer() == null)
-		{
-			String message = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " joined the game.";
-			mPacketManager.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
-			
-			getProxy().getScheduler().schedule(this, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					if (!isOnline(player))
-					{
-						Debugger.log("ServerConnected-task player not online %s", player.getName());
-						return;
-					}
-					
-					if(player.getTabListHandler() instanceof ColourTabList)
-						((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
-				}
-			}, 1, TimeUnit.SECONDS);
-		}
-	}
-	
-	public boolean isOnline(ProxiedPlayer player)
-	{
-		return getProxy().getPlayer(player.getUniqueId()) != null;
 	}
 	
 	public String getTabHeaderString(ProxiedPlayer player)

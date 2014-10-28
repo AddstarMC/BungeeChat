@@ -2,13 +2,19 @@ package au.com.addstar.bc;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
+import net.md_5.bungee.protocol.packet.PlayerListItem;
+import net.md_5.bungee.protocol.packet.PlayerListItem.Action;
+import net.md_5.bungee.protocol.packet.PlayerListItem.Item;
 
 public class Debugger extends Command
 {
 	private static boolean mDebugEnabled = false;
 	private static boolean mPacketDebugEnabled = false;
+	private static boolean mTabDebugEnabled = false;
 	
 	public static void setGeneralDebugState(boolean on)
 	{
@@ -18,6 +24,11 @@ public class Debugger extends Command
 	public static void setPacketDebugState(boolean on)
 	{
 		mPacketDebugEnabled = on;
+	}
+	
+	public static void setTabDebugState(boolean on)
+	{
+		mTabDebugEnabled = on;
 	}
 	
 	private static void log0(String category, String message)
@@ -46,6 +57,58 @@ public class Debugger extends Command
 			log0("Packet", String.format(message, params));
 	}
 	
+	/**
+	 * TabList logging
+	 */
+	public static void logt(String message, Object... params)
+	{
+		if (mTabDebugEnabled)
+			log0("TabList", String.format(message, params).replace(ChatColor.COLOR_CHAR, '&'));
+	}
+	
+	public static void logTabItem(PlayerListItem packet, ProxiedPlayer to)
+	{
+		if (!mTabDebugEnabled)
+			return;
+		
+		boolean newTab = ColourTabList.isNewTab(to);
+		for (Item item : packet.getItems())
+		{
+			String name = item.getUsername();
+			if (!newTab)
+				name = BaseComponent.toLegacyText(item.getDisplayName());
+			
+			String message = null;
+			switch(packet.getAction())
+			{
+			case ADD_PLAYER:
+				message = String.format("%d,%d,%s", item.getPing(), item.getGamemode(), BaseComponent.toLegacyText(item.getDisplayName()));
+				break;
+			case REMOVE_PLAYER:
+				message = item.getUuid().toString();
+				break;
+			case UPDATE_DISPLAY_NAME:
+				message = BaseComponent.toLegacyText(item.getDisplayName());
+				break;
+			case UPDATE_GAMEMODE:
+				message = String.valueOf(item.getGamemode());
+				break;
+			case UPDATE_LATENCY:
+				message = String.valueOf(item.getPing());
+				break;
+			}
+			
+			if (packet.getAction() == Action.ADD_PLAYER)
+				message = String.format("%s %s-%s: %s", packet.getAction().name(), name, item.getUuid().toString(), message);
+			else if (name == null)
+				message = String.format("%s %s: %s", packet.getAction().name(), item.getUuid().toString(), message);
+			else
+				message = String.format("%s %s: %s", packet.getAction().name(), name, message);
+			
+			log0("TabList", String.format("to %s: %s", to.getName(), message).replace(ChatColor.COLOR_CHAR, '&'));
+		}
+	}
+	
 	public static void logTrue(boolean expression, String message, Object... params)
 	{
 		if (!expression)
@@ -64,6 +127,7 @@ public class Debugger extends Command
 		{
 			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug general <true|false>"));
 			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug packet <true|false>"));
+			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug tab <true|false>"));
 			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug player <name>"));
 			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug allplayers"));
 		}
@@ -93,6 +157,16 @@ public class Debugger extends Command
 			setPacketDebugState(on);
 			
 			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Packet debug is now " + (on ? "on" : "off")));
+		}
+		else if (args[0].equalsIgnoreCase("tab"))
+		{
+			if (args.length != 2)
+				return false;
+			
+			boolean on = Boolean.valueOf(args[1]);
+			setTabDebugState(on);
+			
+			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "TabList debug is now " + (on ? "on" : "off")));
 		}
 		else
 			return false;
