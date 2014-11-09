@@ -2,9 +2,8 @@ package au.com.addstar.bc;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
 
 import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
@@ -40,7 +39,6 @@ public class ColourTabList extends TabListAdapter
 	private String mHeaderContents;
 	private String mFooterContents;
 	private boolean mHasInited;
-	private HashSet<UUID> mFakePlayers = new HashSet<UUID>();
 	// ==== 1.7 compat ====
 	private String mLastName;
 
@@ -121,30 +119,15 @@ public class ColourTabList extends TabListAdapter
 		if (!isNewTab(getPlayer()))
 			return;
 		
+		if (packet.getAction() != Action.ADD_PLAYER)
+			return;
+		
 		ArrayList<Item> items = null;
 		for(Item item : packet.getItems())
 		{
 			// Only fake players will be allowed to pass through. This should allow citizens to work
 			if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null)
 			{
-				boolean known = false;
-				switch(packet.getAction())
-				{
-				case ADD_PLAYER:
-					mFakePlayers.add(item.getUuid());
-					known = true;
-					break;
-				case REMOVE_PLAYER:
-					known = mFakePlayers.remove(item.getUuid());
-					break;
-				default:
-					known = mFakePlayers.contains(item.getUuid());
-					break;
-				}
-				
-				if (!known)
-					continue;
-				
 				if (items == null)
 					items = new ArrayList<Item>(packet.getItems().length);
 				items.add(item);
@@ -153,8 +136,21 @@ public class ColourTabList extends TabListAdapter
 		
 		if (items != null)
 		{
-			packet.setItems(items.toArray(new Item[items.size()]));
+			final Item[] array = items.toArray(new Item[items.size()]);
+			packet.setItems(array);
 			getPlayer().unsafe().sendPacket(packet);
+			// Remove them so they dont really show in tab
+			ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					PlayerListItem packetRemove = new PlayerListItem();
+					packetRemove.setAction(Action.REMOVE_PLAYER);
+					packetRemove.setItems(array);
+					getPlayer().unsafe().sendPacket(packetRemove);
+				}
+			}, 50, TimeUnit.MILLISECONDS);
 		}
 	}
 	
