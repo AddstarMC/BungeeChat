@@ -18,7 +18,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.StringUtil;
@@ -48,7 +47,12 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	public CommandSender getPlayer(UUID id)
 	{
-		CommandSender player = mAllProxied.get(id);
+		CommandSender player;
+		player = Bukkit.getPlayer(id);
+		if (player != null)
+			return player;
+		
+		player = mAllProxied.get(id);
 		if (player != null)
 			Debugger.logCorrect(player);
 		return player;
@@ -240,13 +244,26 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	private void onPlayerJoin(PlayerJoinPacket packet)
 	{
-		RemotePlayer current = new RemotePlayer(packet.getID(), packet.getName());
-		Debugger.log("Proxy join %s. Add as remote player", packet.getName());
-		mAllProxied.put(packet.getID(), current);
 		mProxied.add(packet.getID());
 		
 		if(!packet.getNickname().isEmpty())
 			mNicknames.put(packet.getID(), packet.getNickname());
+		
+		Player local = Bukkit.getPlayer(packet.getID());
+		if (local == null)
+		{
+			RemotePlayer current = new RemotePlayer(packet.getID(), packet.getName());
+			Debugger.log("Proxy join %s. Add as remote player", packet.getName());
+			mAllProxied.put(packet.getID(), current);
+		}
+		else
+		{
+			Debugger.log("Proxy join %s. Add as local player", packet.getName());
+			mAllProxied.put(packet.getID(), local);
+			
+			if (!packet.getNickname().isEmpty())
+				local.setDisplayName(packet.getNickname());
+		}
 	}
 	
 	private void onPlayerLeave(PlayerLeavePacket packet)
@@ -316,26 +333,6 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerLeaveServer(PlayerQuitEvent event)
-	{
-		Player player = event.getPlayer();
-		mPlayerSettings.remove(player.getUniqueId());
-		
-		// Prevent re-adding the player when they leave the proxy
-		if (mProxied.contains(player.getUniqueId()))
-		{
-			RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
-			mAllProxied.put(player.getUniqueId(), current);
-			Debugger.log("Server leave %s. Add as remote", event.getPlayer().getName());
-		}
-		else
-		{
-			mAllProxied.remove(player.getUniqueId());
-			Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
-		}
-	}
-	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerLeaveServer(PlayerKickEvent event)
 	{
 		Player player = event.getPlayer();
 		mPlayerSettings.remove(player.getUniqueId());

@@ -3,6 +3,7 @@ package au.com.addstar.bc;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -33,18 +34,18 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 		
 		Debugger.logCorrect(to);
 		
-		if(to instanceof RemotePlayer)
+		if (to instanceof RemotePlayer)
 		{
-			// Remote
-			from.sendMessage(fullMessageOut);
-			BungeeChat.sendMessage((RemotePlayer)to, fullMessageIn);
+			Player player = Bukkit.getPlayer(((RemotePlayer) to).getUniqueId());
+			if (player != null)
+			{
+				BungeeChat.getInstance().getLogger().severe("Attempted to message wrong remote player object for local player. " + to.getName());
+				to = player;
+			}
 		}
-		else
-		{
-			// Local
-			to.sendMessage(fullMessageIn);
-			from.sendMessage(fullMessageOut);
-		}
+		
+		to.sendMessage(fullMessageIn);
+		from.sendMessage(fullMessageOut);
 		
 		BungeeChat.setLastMsgTarget(from, to);
 		BungeeChat.setLastMsgTarget(to, from);
