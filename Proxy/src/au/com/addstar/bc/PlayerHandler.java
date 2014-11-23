@@ -3,6 +3,8 @@ package au.com.addstar.bc;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import au.com.addstar.bc.event.BCPlayerJoinEvent;
+import au.com.addstar.bc.event.BCPlayerQuitEvent;
 import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
@@ -70,8 +72,16 @@ public class PlayerHandler implements Listener
 		if (player.getServer() != null)
 		{
 			boolean showQuitMessage = BungeeChat.instance.getSyncManager().getPropertyBoolean(player, "hasQuitMessage", true); 
-			String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(player.getDisplayName()) + " left the game."; 
+			String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(player.getDisplayName()) + " left the game.";
+			
 			if(!showQuitMessage)
+				quitMessage = null;
+			
+			BCPlayerQuitEvent qevent = new BCPlayerQuitEvent(player, quitMessage);
+			mProxy.getPluginManager().callEvent(qevent);
+			quitMessage = qevent.getQuitMessage();
+			
+			if (quitMessage == null)
 				quitMessage = "";
 			
 			mPackets.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, id, quitMessage), player.getServer().getInfo());
@@ -101,7 +111,12 @@ public class PlayerHandler implements Listener
 		
 		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(), player.getName(), mSettings.getSettings(player).nickname));
 		
-		String message = ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " joined the game.";
+		BCPlayerJoinEvent jevent = new BCPlayerJoinEvent(player, ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " joined the game.");
+		mProxy.getPluginManager().callEvent(jevent);
+		
+		String message = jevent.getJoinMessage();
+		if (message == null)
+			message = "";
 		mPackets.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
 		
 		// Give 1 second for plugins on the server to apply tab groups to this player
