@@ -67,14 +67,14 @@ public class ColourTabList extends TabListAdapter
 	}
 	
 	@Override
-	public synchronized void onConnect()
+	public void onConnect()
 	{
 		mLastName = getName(getPlayer());
 		Debugger.logt("Connect %s with %s", getPlayer().getName(), mLastName);
 		updateAll();
 	}
 	
-	public synchronized void onJoinPeriodComplete()
+	public void onJoinPeriodComplete()
 	{
 		Debugger.logt("Join over %s", getPlayer().getName());
 		mHasInited = true;
@@ -82,7 +82,7 @@ public class ColourTabList extends TabListAdapter
 	}
 	
 	@Override
-	public synchronized void onPingChange( int ping )
+	public void onPingChange( int ping )
 	{
 		if ( ping - PING_THRESHOLD > lastPing && ping + PING_THRESHOLD < lastPing )
 		{
@@ -98,7 +98,7 @@ public class ColourTabList extends TabListAdapter
 	}
 
 	@Override
-	public synchronized void onDisconnect()
+	public void onDisconnect()
 	{
 		Debugger.logt("Disconnect %s", getPlayer().getName());
 		Item item = createItem(getPlayer(), mLastName);
@@ -110,10 +110,19 @@ public class ColourTabList extends TabListAdapter
 			if(isVisible(player, getPlayer()))
 				sendPacket(packet, player);
 		}
+		
+		ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				updateAllHeaders();
+			}
+		}, 50, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
-	public synchronized void onUpdate( PlayerListItem packet )
+	public void onUpdate( PlayerListItem packet )
 	{
 		// Fake players do not need to be handled pre 1.8
 		if (!isNewTab(getPlayer()))
@@ -154,7 +163,7 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
-	public synchronized void updateTabHeaders()
+	public void updateTabHeaders()
 	{
 		if (!isNewTab(getPlayer()))
 			return;
@@ -170,7 +179,7 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
-	public synchronized void updateList()
+	public void updateList()
 	{
 		ArrayList<Item> toAdd = new ArrayList<Item>();
 		ArrayList<Item> toRemove = new ArrayList<Item>();
@@ -272,8 +281,17 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
+	public static void updateAllHeaders()
+	{
+		synchronized(mTabLists)
+		{
+			for(ColourTabList list : mTabLists.keySet())
+				list.updateTabHeaders();
+		}
+	}
+	
 	@Override
-	public synchronized void onUpdateName()
+	public void onUpdateName()
 	{
 		Debugger.logt("UpdateName %s from %s to %s", getPlayer().getName(), mLastName, getName(getPlayer()));
 		if (mLastName == null)
