@@ -144,7 +144,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		return link;
 	}
 	
-	private void requestUpdate()
+	public void requestUpdate()
 	{
 		mSyncManager.requestConfigUpdate("bungeechat");
 		mSyncManager.callSyncMethod("bungee:getServerName", new IMethodCallback<String>()

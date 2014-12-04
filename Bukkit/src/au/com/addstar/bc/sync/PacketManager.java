@@ -199,6 +199,9 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 					Debugger.logp("Received Schema.");
 					mCodec = PacketCodec.fromSchemaData(in);
 					doPending();
+					
+					// We may be out of date, request the update to resync
+					BungeeChat.getInstance().requestUpdate();
 				}
 				else if (type.equals("SchemaRequest"))
 				{
@@ -249,6 +252,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 			{
 				System.out.println("[BungeeChat] Redis connection restored");
 				sendInitPackets();
+				BungeeChat.getInstance().requestUpdate();
 			}
 		});
 	}
