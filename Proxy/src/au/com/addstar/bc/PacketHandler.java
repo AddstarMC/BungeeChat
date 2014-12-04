@@ -49,6 +49,12 @@ public class PacketHandler implements IPacketHandler
 	private void handlePlayerSettings(PlayerSettingsPacket packet)
 	{
 		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(packet.getID());
+		if (player == null)
+		{
+			BungeeChat.instance.getLogger().severe("!!!!! A request to update settings for offline player " + packet.getID() + " was made. This is an error !!!!");
+			return;
+		}
+		
 		Debugger.log("Updating player settings %s", player.getName());
 		PlayerSettings settings = getManager().getSettings(player);
 		settings.read(packet);
