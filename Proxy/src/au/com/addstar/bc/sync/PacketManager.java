@@ -110,9 +110,10 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 	
 	private void handleDataPacket(ServerInfo server, PacketCodec codec, DataInput in)
 	{
+		Packet packet = null;
 		try
 		{
-			Packet packet = codec.read(in);
+			packet = codec.read(in);
 			if(packet == null)
 			{
 				Debugger.logp("Received packet but decoded to null. %s", server.getName());
@@ -129,12 +130,9 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 			for(IPacketHandler handler : mHandlers.get(null))
 				handler.handle(packet, server);
 		}
-		catch(IOException e)
+		catch(Throwable e)
 		{
-			e.printStackTrace();
-		}
-		catch(IllegalArgumentException e)
-		{
+			BungeeChat.instance.getLogger().severe("An error occured handling packet: " + packet + ":");
 			e.printStackTrace();
 		}
 	}

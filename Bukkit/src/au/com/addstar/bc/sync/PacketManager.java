@@ -143,9 +143,10 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 	
 	private void handleDataPacket(DataInput in)
 	{
+		Packet packet = null;
 		try
 		{
-			Packet packet = mCodec.read(in);
+			packet = mCodec.read(in);
 			if(packet == null)
 				return;
 			
@@ -159,12 +160,9 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 			for(IPacketHandler handler : mHandlers.get(null))
 				handler.handle(packet);
 		}
-		catch(IOException e)
+		catch(Throwable e)
 		{
-			e.printStackTrace();
-		}
-		catch(IllegalArgumentException e)
-		{
+			BungeeChat.getInstance().getLogger().severe("An error occured while handling packet " + packet + ":");
 			e.printStackTrace();
 		}
 	}
