@@ -61,6 +61,12 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 				return true;
 			}
 			
+			if (name.length() > 16)
+			{
+				sender.sendMessage(ChatColor.RED + "Nickname cannot be longer than 16 characters");
+				return true;
+			}
+			
 			if(manager.getPlayerExact(name) != null)
 			{
 				sender.sendMessage(ChatColor.RED + "You cannot nickname someone to an existing name");
