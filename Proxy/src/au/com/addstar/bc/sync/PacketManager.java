@@ -87,7 +87,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 	
 	public void broadcast(Packet packet)
 	{
-		Debugger.logp("Broadcast: %s");
+		Debugger.logp("Broadcast: %s", packet);
 		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(stream);
@@ -149,7 +149,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 			
 			if(codec == null)
 			{
-				Debugger.logp("Received packet. Pending codec. %s");
+				Debugger.logp("Received packet. Pending codec from %s", server.getName());
 				mPendingPackets.add(new SimpleEntry<ServerInfo, DataInput>(server, in));
 				return;
 			}
