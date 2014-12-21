@@ -456,6 +456,34 @@ public class PlayerManager implements Listener, IPacketHandler
 			mNicknames.remove(uuid);
 		else
 			mNicknames.put(uuid, newName);
+		
+		// Force the player to spawn again so that the name will update
+		final Player player = Bukkit.getPlayer(uuid);
+		if (player != null)
+		{
+			Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					for (final Player other : player.getWorld().getPlayers())
+					{
+						if (other.canSee(player))
+						{
+							other.hidePlayer(player);
+							Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									other.showPlayer(player);
+								}
+							}, 1);
+						}
+					}
+				}
+			}, 10);
+		}
 	}
 	
 	@Override

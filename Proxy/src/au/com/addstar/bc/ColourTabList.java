@@ -300,7 +300,6 @@ public class ColourTabList extends TabListAdapter
 			return;
 		}
 		
-		PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, createItem(getPlayer()));
 		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), mLastName));
 		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
 		mLastName = getName(getPlayer());
@@ -311,7 +310,7 @@ public class ColourTabList extends TabListAdapter
 			if((mHasInited && isVisible(p, getPlayer())) || p == getPlayer())
 			{
 				if (isNewTab(p))
-					sendPacket(packetUpdate, p);
+					sendPacket(packetAdd, p);
 				else
 				{
 					sendPacket(packetRemove, p);
@@ -327,9 +326,10 @@ public class ColourTabList extends TabListAdapter
 		player.unsafe().sendPacket(packet);
 	}
 	
-	private static void setProfile(Item item, GameProfile profile)
+	private static void setProfile(Item item, ProxiedPlayer player)
 	{
-		item.setUsername(profile.getUsername());
+		GameProfile profile = player.getProfile();
+		item.setUsername(ChatColor.stripColor(player.getDisplayName()));
 		item.setUuid(profile.getUniqueId());
 		
 		String[][] properties = new String[profile.getProperties().length][];
@@ -348,7 +348,7 @@ public class ColourTabList extends TabListAdapter
 	private static Item createItem(ProxiedPlayer player)
 	{
 		Item item = new Item();
-		setProfile(item, player.getProfile());
+		setProfile(item, player);
 		
 		item.setDisplayName(getDispName(player));
 		item.setGamemode(0);
@@ -360,7 +360,7 @@ public class ColourTabList extends TabListAdapter
 	private static Item createItem(ProxiedPlayer player, String name)
 	{
 		Item item = new Item();
-		setProfile(item, player.getProfile());
+		setProfile(item, player);
 		
 		item.setDisplayName(TextComponent.fromLegacyText(name));
 		item.setGamemode(0);
