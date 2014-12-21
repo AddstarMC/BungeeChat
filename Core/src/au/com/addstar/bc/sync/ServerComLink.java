@@ -145,7 +145,7 @@ public abstract class ServerComLink
 			mPool.returnBrokenResource(jedis);
 			jedis = null;
 		}
-		catch(JedisException e)
+		catch(Throwable e)
 		{
 			e.printStackTrace();
 		}

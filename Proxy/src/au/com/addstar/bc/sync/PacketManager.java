@@ -148,7 +148,10 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 			if(codec == null)
 			{
 				Debugger.logp("Received packet. Pending codec from %s", server.getName());
-				mPendingPackets.add(new SimpleEntry<ServerInfo, DataInput>(server, in));
+				synchronized(mPendingPackets)
+				{
+					mPendingPackets.add(new SimpleEntry<ServerInfo, DataInput>(server, in));
+				}
 				return;
 			}
 			
@@ -217,17 +220,20 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 		if(codec == null)
 			return;
 		
-		Iterator<SimpleEntry<ServerInfo, DataInput>> it = mPendingPackets.iterator();
-		
-		while(it.hasNext())
+		synchronized(mPendingPackets)
 		{
-			SimpleEntry<ServerInfo, DataInput> entry = it.next();
+			Iterator<SimpleEntry<ServerInfo, DataInput>> it = mPendingPackets.iterator();
 			
-			if(entry.getKey().equals(server))
+			while(it.hasNext())
 			{
-				it.remove();
-				Debugger.logp("Do pending:");
-				handleDataPacket(server, codec, entry.getValue());
+				SimpleEntry<ServerInfo, DataInput> entry = it.next();
+				
+				if(entry.getKey().equals(server))
+				{
+					it.remove();
+					Debugger.logp("Do pending:");
+					handleDataPacket(server, codec, entry.getValue());
+				}
 			}
 		}
 	}
