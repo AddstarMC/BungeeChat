@@ -19,6 +19,7 @@ public class PlayerSettings extends Config
 	
 	public String nickname = "";
 	
+	
 	@NoSave
 	public UUID lastMsgTarget = null;
 	

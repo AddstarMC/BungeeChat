@@ -39,6 +39,7 @@ public class ColourTabList extends TabListAdapter
 	private String mHeaderContents;
 	private String mFooterContents;
 	private boolean mHasInited;
+	private SkinData mForcedSkinData;
 	// ==== 1.7 compat ====
 	private String mLastName;
 
@@ -64,6 +65,18 @@ public class ColourTabList extends TabListAdapter
 	public static boolean isNewTab(ProxiedPlayer player)
 	{
 		return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_SNAPSHOT;
+	}
+	
+	public void setOverrideSkin(SkinData skin)
+	{
+		mForcedSkinData = skin;
+		PlayerListItem packet = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
+		
+		for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
+		{
+			if(isVisible(p, getPlayer()) && isNewTab(p))
+				p.unsafe().sendPacket(packet);
+		}
 	}
 	
 	@Override
@@ -332,10 +345,18 @@ public class ColourTabList extends TabListAdapter
 		item.setUsername(ChatColor.stripColor(player.getDisplayName()));
 		item.setUuid(profile.getUniqueId());
 		
+		ColourTabList tab = (ColourTabList)player.getTabListHandler();
+		
 		String[][] properties = new String[profile.getProperties().length][];
 		for(int i = 0; i < properties.length; ++i)
 		{
 			Property prop = profile.getProperties()[i];
+			if (prop.getName().equals("textures"))
+			{
+				if (tab.mForcedSkinData != null)
+					prop = new Property("textures", tab.mForcedSkinData.value, tab.mForcedSkinData.signature);
+			}
+			
 			if (prop.getSignature() != null)
 				properties[i] = new String[] { prop.getName(), prop.getValue(), prop.getSignature() };
 			else

@@ -47,6 +47,8 @@ permissions:
     default: op
   bungeechat.mute:
     default: op
+  bungeechat.skin:
+    default: op
     
   bungeechat.afk:
     default: true
@@ -101,6 +103,12 @@ commands:
     description: Changes your nickname, or another players nickname. Setting the name "Off" will remove the nickname. Leaving the name blank will show their current name
     permission: bungeechat.nickname
     aliases: [nick]
+    
+  skin:
+    usage: /<command> [player] <skinplayer|off>
+    description: Changes your skin, or another players skin. Setting the name "Off" will restore the skin.
+    permission: bungeechat.skin
+    aliases: [setskin]
   
   realname:
     usage: /<command> <player>

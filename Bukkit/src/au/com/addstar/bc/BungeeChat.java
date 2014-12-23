@@ -102,6 +102,10 @@ public class BungeeChat extends JavaPlugin implements Listener
 		getCommand("nickname").setExecutor(nickname);
 		getCommand("nickname").setTabCompleter(nickname);
 		
+		SkinCommand skinCommand = new SkinCommand();
+		getCommand("skin").setExecutor(skinCommand);
+		getCommand("skin").setTabCompleter(skinCommand);
+		
 		mMuteHandler = new MuteHandler(this);
 		getCommand("mute").setExecutor(mMuteHandler);
 		getCommand("mute").setTabCompleter(mMuteHandler);

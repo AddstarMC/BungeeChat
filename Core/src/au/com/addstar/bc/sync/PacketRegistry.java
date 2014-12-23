@@ -19,6 +19,7 @@ import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
+import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
@@ -88,6 +89,7 @@ public class PacketRegistry
 		registerPacket("Pl", PlayerSettingsPacket.class, PlayerSettingsPacket.schema);
 		registerPacket("Name", UpdateNamePacket.class, UpdateNamePacket.schema);
 		registerPacket("AFK", AFKPacket.class, AFKPacket.schema);
+		registerPacket("R", PlayerRefreshPacket.class, PlayerRefreshPacket.schema);
 		
 		// Remote method related
 		registerPacket("CR-", CallFailedResponsePacket.class, CallFailedResponsePacket.schema);

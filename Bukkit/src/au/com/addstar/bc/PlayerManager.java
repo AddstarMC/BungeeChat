@@ -30,6 +30,7 @@ import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
+import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
@@ -242,6 +243,32 @@ public class PlayerManager implements Listener, IPacketHandler
 		return false;
 	}
 	
+	public void refreshPlayer(final Player player)
+	{
+		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				for (final Player other : player.getWorld().getPlayers())
+				{
+					if (other.canSee(player))
+					{
+						other.hidePlayer(player);
+						Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
+						{
+							@Override
+							public void run()
+							{
+								other.showPlayer(player);
+							}
+						}, 1);
+					}
+				}
+			}
+		}, 10);
+	}
+	
 	private void onPlayerJoin(PlayerJoinPacket packet)
 	{
 		mProxied.add(packet.getID());
@@ -308,6 +335,13 @@ public class PlayerManager implements Listener, IPacketHandler
 		
 		if (message != null)
 			BungeeChat.broadcast(message);
+	}
+	
+	private void onRefresh(PlayerRefreshPacket packet)
+	{
+		Player player = Bukkit.getPlayer(packet.getID());
+		if (player != null)
+			refreshPlayer(player);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -458,32 +492,9 @@ public class PlayerManager implements Listener, IPacketHandler
 			mNicknames.put(uuid, newName);
 		
 		// Force the player to spawn again so that the name will update
-		final Player player = Bukkit.getPlayer(uuid);
+		Player player = Bukkit.getPlayer(uuid);
 		if (player != null)
-		{
-			Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					for (final Player other : player.getWorld().getPlayers())
-					{
-						if (other.canSee(player))
-						{
-							other.hidePlayer(player);
-							Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
-							{
-								@Override
-								public void run()
-								{
-									other.showPlayer(player);
-								}
-							}, 1);
-						}
-					}
-				}
-			}, 10);
-		}
+			refreshPlayer(player);
 	}
 	
 	@Override
@@ -501,6 +512,8 @@ public class PlayerManager implements Listener, IPacketHandler
 			onPlayerSettings((PlayerSettingsPacket)packet);
 		else if(packet instanceof FireEventPacket)
 			onFireEvent((FireEventPacket)packet);
+		else if(packet instanceof PlayerRefreshPacket)
+			onRefresh((PlayerRefreshPacket)packet);
 	}
 	
 	public static UUID getUniqueId(CommandSender sender)

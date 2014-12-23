@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -31,10 +30,7 @@ import au.com.addstar.bc.sync.ProxyComLink;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
-import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
-import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
-import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
@@ -42,12 +38,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
-import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PluginMessageEvent;
-import net.md_5.bungee.api.event.PostLoginEvent;
-import net.md_5.bungee.api.event.ServerConnectedEvent;
-import net.md_5.bungee.api.event.ServerDisconnectEvent;
-import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
@@ -58,7 +49,6 @@ public class BungeeChat extends Plugin implements Listener
 	private SyncConfig mConfigSync;
 	
 	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
-	private HashMap<UUID, ServerInfo> mLastServers = new HashMap<UUID, ServerInfo>();
 	private PlayerSettingsManager mSettings;
 	
 	public static BungeeChat instance;
@@ -66,6 +56,7 @@ public class BungeeChat extends Plugin implements Listener
 	private SyncManager mSyncManager;
 	private PacketManager mPacketManager;
 	private MuteHandler mMuteHandler;
+	private SkinLibrary mSkins;
 	
 	private ProxyComLink mComLink;
 	
@@ -137,6 +128,7 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:setMsgTarget", methods);
 		mSyncManager.addMethod("bchat:getMuteList", methods);
 		mSyncManager.addMethod("bchat:kick", methods);
+		mSyncManager.addMethod("bchat:setSkin", methods);
 		
 		getProxy().registerChannel("BungeeChat");
 		getProxy().getPluginManager().registerListener(this, this);
@@ -146,6 +138,8 @@ public class BungeeChat extends Plugin implements Listener
 
 		mMuteHandler = new MuteHandler(this);
 		mMuteHandler.updateSettings(mConfig);
+		
+		mSkins = new SkinLibrary();
 		
 		ColourTabList.initialize(this);
 		
@@ -475,6 +469,11 @@ public class BungeeChat extends Plugin implements Listener
 	public MuteHandler getMuteHandler()
 	{
 		return mMuteHandler;
+	}
+	
+	public SkinLibrary getSkinLibrary()
+	{
+		return mSkins;
 	}
 	
 }
