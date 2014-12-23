@@ -238,6 +238,8 @@ public class StandardServMethods implements SyncMethod
 		{
 			((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(null);
 			BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
+			BungeeChat.instance.getManager().getSettings(pplayer).skin = null;
+			BungeeChat.instance.getManager().savePlayer(pplayer);
 			return null;
 		}
 		
@@ -246,6 +248,8 @@ public class StandardServMethods implements SyncMethod
 		{
 			((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(data);
 			BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
+			BungeeChat.instance.getManager().getSettings(pplayer).skin = skin.toString();
+			BungeeChat.instance.getManager().savePlayer(pplayer);
 		}
 		else
 			throw new IllegalStateException("Unable to find skin");

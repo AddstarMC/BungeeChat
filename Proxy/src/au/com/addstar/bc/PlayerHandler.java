@@ -9,6 +9,7 @@ import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
+import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -48,6 +49,15 @@ public class PlayerHandler implements Listener
 					player.setDisplayName(settings.nickname);
 				
 				Debugger.log("Applying nickname to PP %s: '%s'", player.getName(), settings.nickname);
+				
+				if (settings.skin != null && !settings.skin.isEmpty())
+				{
+					ColourTabList tablist = ((ColourTabList)player.getTabListHandler()); 
+					tablist.setOverrideSkin(BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(UUID.fromString(settings.skin)));
+					
+					if (tablist.hasInited())
+						BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
+				}
 			}
 		});
 	}
@@ -132,7 +142,10 @@ public class PlayerHandler implements Listener
 				}
 				
 				if(player.getTabListHandler() instanceof ColourTabList)
+				{
 					((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
+					BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
+				}
 			}
 		}, 1, TimeUnit.SECONDS);
 	}

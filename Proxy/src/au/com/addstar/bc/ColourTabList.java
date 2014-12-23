@@ -333,6 +333,11 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
+	public boolean hasInited()
+	{
+		return mHasInited;
+	}
+	
 	private void sendPacket(PlayerListItem packet, ProxiedPlayer player)
 	{
 		Debugger.logTabItem(packet, player);

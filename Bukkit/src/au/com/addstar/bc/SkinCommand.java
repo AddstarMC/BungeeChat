@@ -57,6 +57,7 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 		}
 		else
 		{
+			sender.sendMessage(ChatColor.GREEN + "Looking up skin for " + name);
 			final String playerName = player.getName();
 			@SuppressWarnings( "deprecation" )
 			final OfflinePlayer oplayer = Bukkit.getOfflinePlayer(name);
