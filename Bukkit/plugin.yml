@@ -162,5 +162,6 @@ commands:
      - "/<command> packet <true|false>"
      - "/<command> player <name>"
      - "/<command> allplayers"
+     - "/<command> resync"
     description: Allows you to debug aspects of bungeechat
     permission: bungeechat.debug

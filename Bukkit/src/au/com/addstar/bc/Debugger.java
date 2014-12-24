@@ -128,6 +128,11 @@ public class Debugger implements CommandExecutor
 					sender.sendMessage(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player)));
 			}
 		}
+		else if (args[0].equalsIgnoreCase("resync"))
+		{
+			sender.sendMessage("Resynching BungeeChat");
+			BungeeChat.getInstance().requestUpdate();
+		}
 		else
 			return false;
 		
