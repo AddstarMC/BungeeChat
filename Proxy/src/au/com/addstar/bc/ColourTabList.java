@@ -134,12 +134,44 @@ public class ColourTabList extends TabListAdapter
 		}, 50, TimeUnit.MILLISECONDS);
 	}
 
+	private void onUpdateGamemode( PlayerListItem packet )
+	{
+		ArrayList<Item> items = null;
+		for(Item item : packet.getItems())
+		{
+			ProxiedPlayer other = ProxyServer.getInstance().getPlayer(item.getUuid());
+			if (other == null)
+				continue;
+			
+			if (isVisible(getPlayer(), other))
+			{
+				if (items == null)
+					items = new ArrayList<Item>(packet.getItems().length);
+				items.add(item);
+			}
+		}
+		
+		if (items != null)
+		{
+			final Item[] array = items.toArray(new Item[items.size()]);
+			packet.setItems(array);
+			getPlayer().unsafe().sendPacket(packet);
+		}
+	}
+	
 	@Override
 	public void onUpdate( PlayerListItem packet )
 	{
 		// Fake players do not need to be handled pre 1.8
 		if (!isNewTab(getPlayer()))
 			return;
+		
+		// Allow gamemode changes to be sent correctly through the proxy
+		if (packet.getAction() == Action.UPDATE_GAMEMODE)
+		{
+			onUpdateGamemode(packet);
+			return;
+		}
 		
 		if (packet.getAction() != Action.ADD_PLAYER)
 			return;
