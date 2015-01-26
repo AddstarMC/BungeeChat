@@ -194,7 +194,8 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, PlayerManager.getUniqueId(player), false);
 			
-			onAFKChange(player, false);
+			if (!event.isSilent())
+				onAFKChange(player, false);
 		}
 		else
 			settings.lastActiveTime = System.currentTimeMillis();
@@ -303,7 +304,8 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 							settings.afkStartTime = time;
 							BungeeChat.getSyncManager().callSyncMethod("bchat:setAFK", null, player.getUniqueId(), true);
 	
-							onAFKChange(player, true);
+							if (!event.isSilent())
+								onAFKChange(player, true);
 						}
 						else
 							settings.lastActiveTime = time;

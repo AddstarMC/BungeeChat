@@ -11,6 +11,7 @@ public class AFKChangeEvent extends Event implements Cancellable
 	
 	private Player mPlayer;
 	private boolean mAFK;
+	private boolean mSilent;
 	
 	private boolean mCancelled;
 	
@@ -18,6 +19,7 @@ public class AFKChangeEvent extends Event implements Cancellable
 	{
 		mPlayer = player;
 		mAFK = toAFK;
+		mSilent = false;
 		
 		mCancelled = false;
 	}
@@ -42,6 +44,16 @@ public class AFKChangeEvent extends Event implements Cancellable
 	public boolean toAFK()
 	{
 		return mAFK;
+	}
+	
+	public boolean isSilent()
+	{
+		return mSilent;
+	}
+	
+	public void setSilent(boolean silent)
+	{
+		mSilent = silent;
 	}
 
 	@Override
