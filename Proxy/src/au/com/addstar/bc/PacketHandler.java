@@ -4,6 +4,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import au.com.addstar.bc.event.BCChatEvent;
 import au.com.addstar.bc.sync.IPacketHandler;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketManager;
@@ -42,6 +43,7 @@ public class PacketHandler implements IPacketHandler
 	
 	private void handleMirror(MirrorPacket packet, ServerInfo sender)
 	{
+		ProxyServer.getInstance().getPluginManager().callEvent(new BCChatEvent(packet.getChannel(), packet.getMessage()));
 		if(!packet.getChannel().startsWith("~"))
 			ProxyServer.getInstance().getConsole().sendMessage(TextComponent.fromLegacyText(packet.getMessage()));
 	}

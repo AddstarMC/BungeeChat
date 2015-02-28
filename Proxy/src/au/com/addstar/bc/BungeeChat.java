@@ -446,6 +446,11 @@ public class BungeeChat extends Plugin implements Listener
 		return count;
 	}
 	
+	public ChatChannel getChannel(String name)
+	{
+		return mConfig.channels.get(name);
+	}
+	
 	public PacketManager getPacketManager()
 	{
 		return mPacketManager;
