@@ -67,7 +67,9 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 				return true;
 			}
 			
-			if(manager.getPlayerExact(name) != null)
+			CommandSender other = manager.getPlayerExact(name);
+			// Allow them to change the case of their name, but not to any other existing name
+			if(other != null && other != player)
 			{
 				sender.sendMessage(ChatColor.RED + "You cannot nickname someone to an existing name");
 				return true;

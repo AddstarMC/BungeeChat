@@ -1,6 +1,7 @@
 package au.com.addstar.bc;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import au.com.addstar.bc.event.ChatChannelEvent;
@@ -42,7 +43,11 @@ public class PacketHandler implements IPacketHandler
 	
 	private void handleUpdateName(UpdateNamePacket packet)
 	{
-		BungeeChat.getPlayerManager().onPlayerNameChange(packet.getID(), packet.getName());
+		CommandSender player = BungeeChat.getPlayerManager().getPlayer(packet.getID());
+		if (player == null)
+			return;
+		
+		BungeeChat.getPlayerManager().setPlayerNickname(player, packet.getName(), false);
 		Debugger.log("Received nickname %s to '%s'", BungeeChat.getPlayerManager().getPlayer(packet.getID()), packet.getName());
 	}
 	
