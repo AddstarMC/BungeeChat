@@ -186,30 +186,35 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	public void setPlayerNickname(CommandSender player, String name)
 	{
-		setPlayerNickname(player, name, true);
-	}
-	
-	public void setPlayerNickname(CommandSender player, String name, boolean save)
-	{
 		if(player instanceof Player)
 		{
-			PlayerSettings settings = getPlayerSettings(player);
-			settings.nickname = name;
+			setPlayerNickname0(player, name);
 			
-			if(name.isEmpty())
-				((Player)player).setDisplayName(player.getName());
-			else
-				((Player)player).setDisplayName(name);
-			
-			if (save)
-				updatePlayerSettings(player);
-			Debugger.log("Setting nickname local %s to '%s'", player.getName(), name);
+			updatePlayerSettings(player);
 		}
 		else
 		{
 			BungeeChat.getPacketManager().broadcast(new UpdateNamePacket(getUniqueId(player), name));
 			Debugger.log("Setting nickname remote %s to '%s'", player.getName(), name);
+			
+			onPlayerNameChange(getUniqueId(player), name);
 		}
+	}
+	
+	public void setPlayerNickname0(CommandSender player, String name)
+	{
+		if (!(player instanceof Player))
+			return;
+		
+		PlayerSettings settings = getPlayerSettings(player);
+		settings.nickname = name;
+		
+		if(name.isEmpty())
+			((Player)player).setDisplayName(player.getName());
+		else
+			((Player)player).setDisplayName(name);
+		
+		Debugger.log("Setting nickname local %s to '%s'", player.getName(), name);
 		
 		onPlayerNameChange(getUniqueId(player), name);
 	}
