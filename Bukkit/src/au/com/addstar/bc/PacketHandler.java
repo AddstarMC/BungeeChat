@@ -44,7 +44,7 @@ public class PacketHandler implements IPacketHandler
 	private void handleUpdateName(UpdateNamePacket packet)
 	{
 		CommandSender player = BungeeChat.getPlayerManager().getPlayer(packet.getID());
-		if (player == null)
+		if (player instanceof Player)
 			return;
 		
 		BungeeChat.getPlayerManager().setPlayerNickname(player, packet.getName(), false);

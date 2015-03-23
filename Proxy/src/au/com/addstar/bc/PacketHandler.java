@@ -78,6 +78,9 @@ public class PacketHandler implements IPacketHandler
 	private void handleUpdateName(UpdateNamePacket packet)
 	{
 		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(packet.getID());
+		if (player == null)
+			return;
+		
 		PlayerSettings settings = getManager().getSettings(player);
 		settings.nickname = packet.getName();
 		
