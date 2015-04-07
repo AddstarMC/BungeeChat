@@ -64,7 +64,7 @@ public class ColourTabList extends TabListAdapter
 	
 	public static boolean isNewTab(ProxiedPlayer player)
 	{
-		return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_SNAPSHOT;
+		return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_8;
 	}
 	
 	public void setOverrideSkin(SkinData skin)
