@@ -48,7 +48,7 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 			return true;
 		}
 
-		String name = args[args.length-1];
+		final String name = args[args.length-1];
 		if(name.equalsIgnoreCase("off"))
 		{
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setSkin", null, PlayerManager.getUniqueId(player), null);
@@ -60,13 +60,20 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 			sender.sendMessage(ChatColor.GREEN + "Looking up skin for " + name);
 			final String playerName = player.getName();
 			@SuppressWarnings( "deprecation" )
-			final OfflinePlayer oplayer = Bukkit.getOfflinePlayer(name);
+			OfflinePlayer oplayer = Bukkit.getOfflinePlayer(name);
+			Object target;
+			// Online mode UUIDs are version 4 and so represent actual players
+			if (oplayer.getUniqueId().version() == 4)
+				target = oplayer.getUniqueId();
+			else
+				target = name;
+			
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setSkin", new IMethodCallback<Void>()
 			{
 				@Override
 				public void onFinished( Void data )
 				{
-					sender.sendMessage(ChatColor.GREEN + "Setting " + playerName + "'s skin to be " + oplayer.getName() + "'s skin.");
+					sender.sendMessage(ChatColor.GREEN + "Setting " + playerName + "'s skin to be " + name + "'s skin.");
 				}
 				
 				@Override
@@ -74,7 +81,7 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 				{
 					sender.sendMessage(ChatColor.RED + message);
 				}
-			}, PlayerManager.getUniqueId(player), oplayer.getUniqueId());
+			}, PlayerManager.getUniqueId(player), target);
 		}
 		
 		return true;

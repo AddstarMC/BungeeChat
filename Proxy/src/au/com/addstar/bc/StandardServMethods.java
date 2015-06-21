@@ -47,7 +47,7 @@ public class StandardServMethods implements SyncMethod
 		else if(name.equals("bchat:kick"))
 			return kickPlayer((UUID)arguments[0], (String)arguments[1]);
 		else if(name.equals("bchat:setSkin"))
-			return setSkin((UUID)arguments[0], (UUID)arguments[1]);
+			return setSkin((UUID)arguments[0], arguments[1]);
 		return null;
 	}
 	
@@ -228,7 +228,7 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void setSkin(UUID player, UUID skin)
+	public Void setSkin(UUID player, Object skin)
 	{
 		final ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
@@ -243,12 +243,17 @@ public class StandardServMethods implements SyncMethod
 			return null;
 		}
 		
-		SkinData data = BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(skin);
+		SkinData data;
+		if (skin instanceof UUID)
+			data = BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync((UUID)skin);
+		else
+			data = BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync((String)skin);
+		
 		if (data != null)
 		{
 			((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(data);
 			BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
-			BungeeChat.instance.getManager().getSettings(pplayer).skin = skin.toString();
+			BungeeChat.instance.getManager().getSettings(pplayer).skin = data.id.toString();
 			BungeeChat.instance.getManager().savePlayer(pplayer);
 		}
 		else

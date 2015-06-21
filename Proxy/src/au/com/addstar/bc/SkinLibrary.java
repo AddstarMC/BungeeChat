@@ -29,10 +29,12 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 public class SkinLibrary
 {
 	private Map<UUID, SkinData> mSkins;
+	private Map<String, UUID> mNames;
 	
 	public SkinLibrary()
 	{
 		mSkins = Collections.synchronizedMap(Maps.<UUID, SkinData>newHashMap());
+		mNames = Collections.synchronizedMap(Maps.<String, UUID>newHashMap());
 	}
 	
 	public SkinData getSkin(ProxiedPlayer player)
@@ -75,6 +77,52 @@ public class SkinLibrary
 		}
 		
 		return skin;
+	}
+	
+	public Future<SkinData> getSkinWithLookup(final String name)
+	{
+		final Future<UUID> uuidFuture = getUUIDWithLookup(name);
+		
+		Callable<SkinData> lookup = new Callable<SkinData>()
+		{
+			@Override
+			public SkinData call() throws Exception
+			{
+				try
+				{
+					UUID id = uuidFuture.get();
+					// No user, no skin
+					if (id == null)
+						return null;
+					
+					return getSkinWithLookupSync(id);
+				}
+				catch (InterruptedException e)
+				{
+					return null;
+				}
+			}
+		};
+		
+		return ProxyServer.getInstance().getScheduler().unsafe().getExecutorService(BungeeChat.instance).submit(lookup);
+	}
+	
+	public SkinData getSkinWithLookupSync(String name)
+	{
+		Future<SkinData> data = getSkinWithLookup(name);
+		try
+		{
+			return data.get();
+		}
+		catch(ExecutionException e)
+		{
+			e.getCause().printStackTrace();
+		}
+		catch(InterruptedException e)
+		{
+		}
+		
+		return null;
 	}
 	
 	public Future<SkinData> getSkinWithLookup(final UUID id)
@@ -156,6 +204,65 @@ public class SkinLibrary
 		}
 		
 		return null;
+	}
+	
+	public Future<UUID> getUUIDWithLookup(final String name)
+	{
+		UUID id = mNames.get(name.toLowerCase());
+		if (id != null)
+			return new SucceededFuture<UUID>(null, id);
+		
+		ProxiedPlayer onlinePlayer = ProxyServer.getInstance().getPlayer(name);
+		if (onlinePlayer != null)
+		{
+			mNames.put(name.toLowerCase(), onlinePlayer.getUniqueId());
+			return new SucceededFuture<UUID>(null, onlinePlayer.getUniqueId());
+		}
+		
+		Callable<UUID> lookup = new Callable<UUID>()
+		{
+			@Override
+			public UUID call() throws Exception
+			{
+				URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + name);
+				
+				HttpURLConnection con = (HttpURLConnection)url.openConnection();
+				try
+				{
+					con.setConnectTimeout(30000);
+					con.connect();
+				}
+				catch(FileNotFoundException e)
+				{
+					// User does not exist
+					return null;
+				}
+				
+				if (con.getResponseCode() != HttpURLConnection.HTTP_OK)
+					return null;
+				
+				Reader reader = null;
+				try
+				{
+					reader = new InputStreamReader(con.getInputStream(), CharsetUtil.UTF_8);
+					
+					// Parse the response
+					JsonParser parser = new JsonParser();
+					JsonObject root = parser.parse(reader).getAsJsonObject();
+					
+					String uuid = root.get("id").getAsString();
+					UUID id = UUID.fromString(String.format("%s-%s-%s-%s-%s", uuid.substring(0, 8), uuid.substring(8, 12), uuid.substring(12, 16), uuid.substring(16, 20), uuid.substring(20)));
+					mNames.put(name.toLowerCase(), id);
+					return id;
+				}
+				finally
+				{
+					Closeables.closeQuietly(reader);
+				}
+			}
+		};
+		
+		return ProxyServer.getInstance().getScheduler().unsafe().getExecutorService(BungeeChat.instance).submit(lookup);
 	}
 	
 }
