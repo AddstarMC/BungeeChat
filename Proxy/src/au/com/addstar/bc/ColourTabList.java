@@ -2,8 +2,10 @@ package au.com.addstar.bc;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.WeakHashMap;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import com.google.common.collect.Sets;
 
 import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
@@ -27,7 +29,7 @@ public class ColourTabList extends TabListAdapter
 {
 	private static final int PING_THRESHOLD = 20;
 	private static ListUpdater mUpdater = new ListUpdater();
-	private static WeakHashMap<ColourTabList, Void> mTabLists = new WeakHashMap<ColourTabList, Void>();
+	private static Set<ColourTabList> mTabLists = Sets.newConcurrentHashSet();
 	
 	public static void initialize(Plugin plugin)
 	{
@@ -35,7 +37,7 @@ public class ColourTabList extends TabListAdapter
 	}
 	
 	private int lastPing;
-	private WeakHashMap<ProxiedPlayer, Void> mVisiblePlayers = new WeakHashMap<ProxiedPlayer, Void>();
+	private Set<ProxiedPlayer> mVisiblePlayers = Sets.newConcurrentHashSet();
 	private String mHeaderContents;
 	private String mFooterContents;
 	private boolean mHasInited;
@@ -47,7 +49,7 @@ public class ColourTabList extends TabListAdapter
 	{
 		synchronized(mTabLists)
 		{
-			mTabLists.put(this, null);
+			mTabLists.add(this);
 		}
 	}
 	
@@ -132,6 +134,9 @@ public class ColourTabList extends TabListAdapter
 				updateAllHeaders();
 			}
 		}, 50, TimeUnit.MILLISECONDS);
+		
+		mVisiblePlayers.clear();
+		mTabLists.remove(this);
 	}
 
 	private void onUpdateGamemode( PlayerListItem packet )
@@ -233,13 +238,13 @@ public class ColourTabList extends TabListAdapter
 		{
 			if(isVisible(getPlayer(), p))
 			{
-				if(!mVisiblePlayers.containsKey(p))
+				if(!mVisiblePlayers.contains(p))
 				{
 					toAdd.add(createItem(p));
-					mVisiblePlayers.put(p, null);
+					mVisiblePlayers.add(p);
 				}
 			}
-			else if(mVisiblePlayers.containsKey(p))
+			else if(mVisiblePlayers.contains(p))
 			{
 				mVisiblePlayers.remove(p);
 				toRemove.add(createItem(p));
@@ -321,7 +326,7 @@ public class ColourTabList extends TabListAdapter
 	{
 		synchronized(mTabLists)
 		{
-			for(ColourTabList list : mTabLists.keySet())
+			for(ColourTabList list : mTabLists)
 				list.updateList();
 		}
 	}
@@ -330,7 +335,7 @@ public class ColourTabList extends TabListAdapter
 	{
 		synchronized(mTabLists)
 		{
-			for(ColourTabList list : mTabLists.keySet())
+			for(ColourTabList list : mTabLists)
 				list.updateTabHeaders();
 		}
 	}

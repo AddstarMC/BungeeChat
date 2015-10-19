@@ -101,6 +101,8 @@ public class PlayerHandler implements Listener
 		
 		mPackets.broadcast(new PlayerLeavePacket(id));
 		mSettings.unloadPlayer(id);
+		
+		player.setTabListHandler(null);
 	}
 	
 	// Post connection established, pre login to server
