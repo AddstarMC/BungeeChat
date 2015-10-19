@@ -137,6 +137,12 @@ public class ColourTabList extends TabListAdapter
 		
 		mVisiblePlayers.clear();
 		mTabLists.remove(this);
+		
+		synchronized(mTabLists) {
+			for (ColourTabList tablist : mTabLists) {
+				tablist.mVisiblePlayers.remove(getPlayer());
+			}
+		}
 	}
 
 	private void onUpdateGamemode( PlayerListItem packet )
