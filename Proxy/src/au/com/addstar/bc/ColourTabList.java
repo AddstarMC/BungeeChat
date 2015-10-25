@@ -431,7 +431,11 @@ public class ColourTabList extends TabListAdapter
 		Item item = new Item();
 		setProfile(item, player);
 		
-		item.setDisplayName(TextComponent.fromLegacyText(name));
+		if (name != null)
+			item.setDisplayName(TextComponent.fromLegacyText(name));
+		else
+			item.setDisplayName(TextComponent.fromLegacyText(player.getName()));
+
 		item.setGamemode(0);
 		item.setPing(player.getPing());
 		
