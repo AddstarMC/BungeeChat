@@ -1,6 +1,5 @@
 package au.com.addstar.bc.utils;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +19,7 @@ public class Utilities
 		if(permission != null)
 			targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
 		else
-			targets = Arrays.asList(Bukkit.getOnlinePlayers());
+			targets = Bukkit.getOnlinePlayers();
 
 		for(Permissible perm : targets)
 		{
@@ -35,7 +34,7 @@ public class Utilities
 		if(permission != null)
 			targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
 		else
-			targets = Arrays.asList(Bukkit.getOnlinePlayers());
+			targets = Bukkit.getOnlinePlayers();
 		
 		for(Permissible perm : targets)
 		{

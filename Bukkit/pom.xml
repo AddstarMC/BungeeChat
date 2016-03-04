@@ -11,12 +11,19 @@
   <name>BungeeChat-Bukkit</name>
 
   <repositories>
-    <!-- Repository for Bukkit -->
+    <!-- Addstar repos -->
     <repository>
-      <id>bukkit-repo</id>
-      <url>http://repo.bukkit.org/content/groups/public/</url>
+      <id>addstar-repo</id>
+      <url>http://maven.addstar.com.au/artifactory/ext-release-local</url>
+      <snapshots><enabled>false</enabled></snapshots>
     </repository>
-	
+    <repository>
+      <id>addstar-snapshot-repo</id>
+      <url>http://maven.addstar.com.au/artifactory/ext-snapshot-local</url>
+      <snapshots><enabled>true</enabled></snapshots>
+      <releases><enabled>false</enabled></releases>
+    </repository>
+
     <!-- For Vault -->
     <repository>
       <id>theyeticave</id>
@@ -34,7 +41,7 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>1.7.9-R0.1-SNAPSHOT</version>
+      <version>1.8.8-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>

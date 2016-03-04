@@ -115,7 +115,7 @@ public class Debugger implements CommandExecutor
 		}
 		else if (args[0].equalsIgnoreCase("allplayers"))
 		{
-			sender.sendMessage("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size() + " Bukkit players: " + Bukkit.getOnlinePlayers().length);
+			sender.sendMessage("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size() + " Bukkit players: " + Bukkit.getOnlinePlayers().size());
 			// Check all tracked players
 			for (CommandSender player : BungeeChat.getPlayerManager().getPlayers())
 				sender.sendMessage(String.format(" %s: %s", player.getName(), buildPlayerDebug(player, Bukkit.getPlayer(PlayerManager.getUniqueId(player)))));

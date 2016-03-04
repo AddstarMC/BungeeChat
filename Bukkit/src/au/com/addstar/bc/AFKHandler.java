@@ -282,7 +282,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		public void run()
 		{
 			long time = System.currentTimeMillis();
-			for(Player player : Bukkit.getOnlinePlayers())
+			for(Player player : Bukkit.getServer().getOnlinePlayers())
 			{
 				if(player.hasPermission("bungeechat.afk.exempt"))
 					continue;
