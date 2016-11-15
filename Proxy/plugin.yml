@@ -1,6 +1,6 @@
 name: BungeeChat
 main: au.com.addstar.bc.BungeeChat
-version: ${version.build}
+version: ${plugin.version}
 
 author: Schmoller
 

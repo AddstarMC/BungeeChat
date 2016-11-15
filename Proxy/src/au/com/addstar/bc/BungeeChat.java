@@ -315,6 +315,7 @@ public class BungeeChat extends Plugin implements Listener
 			{
 				if (output != null)
 					output.close();
+				input.close();
 			}
 			catch ( IOException e )
 			{

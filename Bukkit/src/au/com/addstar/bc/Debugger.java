@@ -109,7 +109,7 @@ public class Debugger implements CommandExecutor
 				return false;
 			
 			CommandSender player = BungeeChat.getPlayerManager().getPlayerExact(args[1]);
-			Player bplayer = Bukkit.getPlayerExact(args[1]);
+			Player bplayer = Bukkit.getPlayer(PlayerManager.getUniqueId(player));
 			
 			sender.sendMessage(String.format("State %s: %s", args[1], buildPlayerDebug(player, bplayer)));
 		}
