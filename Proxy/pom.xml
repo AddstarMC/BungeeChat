@@ -11,7 +11,7 @@
   <name>BungeeChat-Proxy</name>
 
   <repositories>
-    <!-- Addstar Snapshot repo (has Yamler) -->
+    <!-- Addstar Snapshot repo (has Yamler, Bungeecord) -->
     <repository>
       <id>addstar-snapshot-repo</id>
       <url>http://maven.addstar.com.au/artifactory/ext-snapshot-local</url>
@@ -25,27 +25,11 @@
       <id>maven-central</id>
       <url>http://repo1.maven.org/maven2/</url>
     </repository>
-
-    <!-- BungeeCord repo -->
-    <repository>
-      <id>md_5-releases</id>
-      <url>http://repo.md-5.net/content/repositories/releases/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>md_5-snapshots</id>
-      <url>http://repo.md-5.net/content/repositories/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
   </repositories>
 
   <dependencies>
     <dependency>
-        <groupId>net.md-5</groupId>
+        <groupId>au.com.addstar</groupId>
         <artifactId>bungeecord-api</artifactId>
         <version>1.11-SNAPSHOT</version>
         <scope>provided</scope>
