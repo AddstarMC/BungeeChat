@@ -26,8 +26,9 @@
 
     <!-- For Vault -->
     <repository>
-      <id>theyeticave</id>
-      <url>http://nexus.theyeticave.net/content/repositories/pub_releases/</url>
+      <id>vault-repo</id>
+      <name>Public Releases</name>
+      <url>http://nexus.hc.to/content/repositories/pub_releases/</url>
     </repository>
     
     <!-- Maven Central -->
@@ -39,17 +40,17 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.11-R0.1-SNAPSHOT</version>
+      <groupId>org.spigotmc</groupId>
+      <artifactId>spigot-api</artifactId>
+      <version>1.12-R0.1-SNAPSHOT</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>net.milkbowl.vault</groupId>
-      <artifactId>Vault</artifactId>
-      <version>1.4.1</version>
+      <artifactId>VaultAPI</artifactId>
+      <version>1.6</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
