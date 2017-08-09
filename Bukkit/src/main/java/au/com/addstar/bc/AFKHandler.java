@@ -2,6 +2,8 @@ package au.com.addstar.bc;
 
 import java.util.List;
 
+import au.com.addstar.bc.objects.ChannelType;
+import au.com.addstar.bc.objects.PlayerSettings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;

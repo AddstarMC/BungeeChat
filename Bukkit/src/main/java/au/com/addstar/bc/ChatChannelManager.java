@@ -2,6 +2,8 @@ package au.com.addstar.bc;
 
 import java.util.HashMap;
 
+import au.com.addstar.bc.objects.ChannelType;
+import au.com.addstar.bc.objects.ChatChannel;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -22,10 +24,11 @@ import au.com.addstar.bc.sync.SyncConfig;
 public class ChatChannelManager implements Listener, CommandExecutor
 {
 	private HashMap<String, ChatChannel> mChannels = new HashMap<>();
-	
-	public ChatChannelManager(Plugin plugin)
+	private static BungeeChat instance;
+	public ChatChannelManager(BungeeChat plugin)
 	{
-		Bukkit.getPluginManager().registerEvents(this, plugin);
+		instance = plugin;
+	    Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -86,6 +89,10 @@ public class ChatChannelManager implements Listener, CommandExecutor
 					break;
 				
 				if(message != null)
+					if(channel.isRP){
+				        String prefix = instance.getPlayerManager().getPlayerRPPrefix(sender);
+						channel.say(sender, "{"+prefix+"} " + message);
+					}
 					channel.say(sender, message);
 				
 				return true;
@@ -154,5 +161,13 @@ public class ChatChannelManager implements Listener, CommandExecutor
 			register(key, setting.command, setting.format, setting.permission, setting.listenPermission);
 		}
 	}
+
+	public boolean isSubscribable(String channel){
+	    return mChannels.get(channel).subscribe;
+    }
+
+    public String getChannelSpeakPerm(String channel){
+        return mChannels.get(channel).permission;
+    }
 	
 }

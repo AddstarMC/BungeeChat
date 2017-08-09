@@ -1,5 +1,11 @@
 package au.com.addstar.bc;
 
+import au.com.addstar.bc.commands.*;
+import au.com.addstar.bc.listeners.ChatHandler;
+import au.com.addstar.bc.listeners.SystemMessagesHandler;
+import au.com.addstar.bc.objects.ChannelType;
+import au.com.addstar.bc.objects.Formatter;
+import au.com.addstar.bc.objects.RemotePlayer;
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
@@ -35,7 +41,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 	
 	public static String serverName = "ERROR";
 	private static BungeeChat mInstance;
-	
+
 	private ChatChannelManager mChatChannels;
 	private SocialSpyHandler mSocialSpyHandler;
 	
@@ -128,6 +134,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		
 		getCommand("runchat").setExecutor(mChatChannels);
 		getCommand("bchatdebug").setExecutor(new Debugger());
+		getCommand("rpsubscribe").setExecutor(new RolePlaySubscribeCommand(this));
 	}
 	
 	@Override
@@ -307,5 +314,9 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public static BungeeChat getInstance()
 	{
 		return mInstance;
+	}
+
+	public  ChatChannelManager getChatChannelsManager() {
+		return mChatChannels;
 	}
 }

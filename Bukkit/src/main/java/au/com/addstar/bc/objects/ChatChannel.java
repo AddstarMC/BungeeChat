@@ -1,5 +1,7 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.objects;
 
+import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.PermissionSetting;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -13,6 +15,8 @@ public class ChatChannel
 	public String command;
 	public String permission;
 	public String listenPermission;
+	public boolean subscribe;
+	public boolean isRP;
 	
 	public ChatChannel(String name, String command, String format, String permission, String listenPerm)
 	{

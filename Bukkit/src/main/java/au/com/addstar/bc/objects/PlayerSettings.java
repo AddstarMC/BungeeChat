@@ -1,7 +1,8 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.objects;
 
 import java.util.UUID;
 
+import au.com.addstar.bc.BungeeChat;
 import org.bukkit.command.CommandSender;
 
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
@@ -22,6 +23,8 @@ public class PlayerSettings
 	public long afkStartTime = 0;
 	
 	public boolean isAFK = false;
+
+	public String rolePlayPrefix;
 	
 	public CommandSender getLastMsgTarget()
 	{
@@ -36,10 +39,11 @@ public class PlayerSettings
 		msgEnabled = packet.getMsgToggle();
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
+		rolePlayPrefix = packet.getRPprefix();
 	}
 	
 	public PlayerSettingsPacket toPacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, rolePlayPrefix);
 	}
 }

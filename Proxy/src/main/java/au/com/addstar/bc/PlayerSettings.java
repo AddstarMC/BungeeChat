@@ -30,6 +30,9 @@ public class PlayerSettings extends Config
 	public String tabColor = "";
 	@NoSave
 	public boolean isAFK = false;
+
+	@NoSave
+	public String rolePlayPrefix = "";
 	
 	@Override
 	protected boolean doSkip( Field field )
@@ -45,10 +48,11 @@ public class PlayerSettings extends Config
 		msgEnabled = packet.getMsgToggle();
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
+		rolePlayPrefix = packet.getRPprefix();
 	}
 	
 	public PlayerSettingsPacket getUpdatePacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, rolePlayPrefix);
 	}
 }

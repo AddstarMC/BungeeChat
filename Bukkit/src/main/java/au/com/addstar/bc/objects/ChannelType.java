@@ -1,4 +1,4 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.objects;
 
 public enum ChannelType
 {
@@ -12,7 +12,7 @@ public enum ChannelType
 	
 	private String mChannelName;
 	
-	private ChannelType(String name)
+	ChannelType(String name)
 	{
 		mChannelName = name;
 	}

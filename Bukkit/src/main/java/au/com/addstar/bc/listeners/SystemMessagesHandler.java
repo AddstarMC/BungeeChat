@@ -1,4 +1,4 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.listeners;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

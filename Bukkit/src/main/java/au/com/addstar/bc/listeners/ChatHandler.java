@@ -1,5 +1,9 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.listeners;
 
+import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.objects.ChannelType;
+import au.com.addstar.bc.objects.Formatter;
+import au.com.addstar.bc.PermissionSetting;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

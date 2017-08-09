@@ -10,6 +10,8 @@ public class ChatChannelConfig implements SyncSerializable
 	public String format;
 	public String permission;
 	public String listenPermission;
+	public boolean subscribe;
+	public boolean isRP;
 	
 	@Override
 	public Map<String, Object> toMap()
@@ -25,6 +27,8 @@ public class ChatChannelConfig implements SyncSerializable
 		conf.format = (String)map.get("fmt");
 		conf.permission = (String)map.get("perm");
 		conf.listenPermission = (String)map.get("lperm");
+		conf.subscribe = (map.containsKey("sub"))?(Boolean)map.get("sub"):false;
+		conf.isRP =(map.containsKey("rp"))?(Boolean)map.get("rp"):false;
 		
 		return conf;
 	}

@@ -1,5 +1,8 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.commands;
 
+import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.PlayerManager;
+import au.com.addstar.bc.objects.RemotePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;

@@ -11,14 +11,21 @@ public class ChatChannel extends net.cubespace.Yamler.Config.Config implements S
 	public String format;
 	public String permission;
 	public String listenPermission;
+	public boolean subscribe = false;
+	public boolean isRp = false;
 	
 	public ChatChannel() {}
-	public ChatChannel(String cmd, String prefix, String perm, String listenPerm)
+	public ChatChannel(String cmd, String prefix, String perm, String listenPerm){
+		this(cmd,prefix, perm, listenPerm, false, false);
+	}
+	public ChatChannel(String cmd, String prefix, String perm, String listenPerm,Boolean subscribe, boolean isRP)
 	{
 		this.command = cmd;
 		this.format = prefix;
 		this.permission = perm;
 		this.listenPermission = listenPerm;
+		this.subscribe = subscribe;
+		this.isRp = isRP;
 	}
 	
 	@Override
@@ -30,6 +37,8 @@ public class ChatChannel extends net.cubespace.Yamler.Config.Config implements S
 		map.put("fmt", format);
 		map.put("perm", permission);
 		map.put("lperm", listenPermission);
+		map.put("sub", subscribe);
+		map.put("rp",isRp);
 		
 		return map;
 	}

@@ -8,6 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import au.com.addstar.bc.commands.Debugger;
+import au.com.addstar.bc.objects.Formatter;
+import au.com.addstar.bc.objects.PlayerSettings;
+import au.com.addstar.bc.objects.RemotePlayer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -177,6 +181,31 @@ public class PlayerManager implements Listener, IPacketHandler
 		}
 		
 		return matches;
+	}
+
+	public String getPlayerRPPrefix(CommandSender player){
+		if(player instanceof Player)
+		{
+			PlayerSettings settings = getPlayerSettings(player);
+			return settings.rolePlayPrefix;
+		}
+		else {
+			return null;
+		}
+	}
+
+	public void setPlayerRPPrefix(CommandSender player, String prefix){
+		if(player instanceof Player)
+		{
+			PlayerSettings settings = getPlayerSettings(player);
+			settings.rolePlayPrefix = prefix;
+			updatePlayerSettings(player);
+			Debugger.log("Setting RpPrefix local %s to '%s'", player.getName(), prefix);
+
+		}else {
+			Debugger.log("Cannot set RpPrefix local %s to '%s' as player is not local", player.getName(), prefix);
+		}
+
 	}
 	
 	public String getPlayerNickname(CommandSender player)

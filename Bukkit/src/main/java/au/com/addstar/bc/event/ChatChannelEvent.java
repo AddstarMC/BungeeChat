@@ -3,7 +3,7 @@ package au.com.addstar.bc.event;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import au.com.addstar.bc.ChannelType;
+import au.com.addstar.bc.objects.ChannelType;
 
 public class ChatChannelEvent extends Event
 {

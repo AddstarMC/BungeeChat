@@ -1,7 +1,11 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.commands;
 
 import java.util.List;
 
+import au.com.addstar.bc.*;
+import au.com.addstar.bc.objects.Formatter;
+import au.com.addstar.bc.objects.PlayerSettings;
+import au.com.addstar.bc.objects.RemotePlayer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

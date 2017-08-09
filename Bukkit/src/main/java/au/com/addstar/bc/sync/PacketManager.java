@@ -11,7 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.BungeeChat;
-import au.com.addstar.bc.Debugger;
+import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.sync.ServerComLink.ConnectionStateNotify;
 
 import com.google.common.collect.HashMultimap;

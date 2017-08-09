@@ -1,8 +1,9 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.objects;
 
 import java.util.Set;
 import java.util.UUID;
 
+import au.com.addstar.bc.BungeeChat;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;

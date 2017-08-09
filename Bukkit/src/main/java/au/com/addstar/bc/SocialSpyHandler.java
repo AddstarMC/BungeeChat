@@ -3,6 +3,7 @@ package au.com.addstar.bc;
 import java.util.HashSet;
 import java.util.List;
 
+import au.com.addstar.bc.objects.ChannelType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;

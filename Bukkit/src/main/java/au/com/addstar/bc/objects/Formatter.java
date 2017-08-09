@@ -1,4 +1,4 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.objects;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.PermissionSetting;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -23,18 +25,18 @@ import au.com.addstar.bc.utils.Utilities;
 
 public class Formatter
 {
-	static ArrayList<PermissionSetting> permissionLevels = new ArrayList<>();
-	static String consoleOverride = null;
+	public static ArrayList<PermissionSetting> permissionLevels = new ArrayList<>();
+	public static String consoleOverride = null;
 	
 	private static String mDefaultFormat = "<{DISPLAYNAME}> {MESSAGE}";
 	
-	static boolean keywordsEnabled;
-	static ArrayList<String> keywordEnabledChannels = new ArrayList<>();
-	static String keywordPerm;
-	static HashMap<Pattern, String> keywordPatterns = new HashMap<>();
+	public static boolean keywordsEnabled;
+	public static ArrayList<String> keywordEnabledChannels = new ArrayList<>();
+	public static String keywordPerm;
+	public static HashMap<Pattern, String> keywordPatterns = new HashMap<>();
 	
-	static String mPMFormatInbound = "[{DISPLAYNAME} -> Me]: {MESSAGE}";
-	static String mPMFormatOutbound = "[Me -> {DISPLAYNAME}]: {MESSAGE}";
+	public static String mPMFormatInbound = "[{DISPLAYNAME} -> Me]: {MESSAGE}";
+	public static String mPMFormatOutbound = "[Me -> {DISPLAYNAME}]: {MESSAGE}";
 	
 	public static void load(SyncConfig config)
 	{
