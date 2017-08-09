@@ -134,7 +134,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		
 		getCommand("runchat").setExecutor(mChatChannels);
 		getCommand("bchatdebug").setExecutor(new Debugger());
-		getCommand("rpsubscribe").setExecutor(new RolePlaySubscribeCommand(this));
+		getCommand("rpsubscribe").setExecutor(new RolePlaySubscribeCommand(mInstance));
 	}
 	
 	@Override

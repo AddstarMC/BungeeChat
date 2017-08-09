@@ -165,3 +165,7 @@ commands:
      - "/<command> resync"
     description: Allows you to debug aspects of bungeechat
     permission: bungeechat.debug
+  rpsubscribe:
+    usage: /<command> <channel> <timeSecs> <roleplayname>
+    description: Subcribes to an rp channel
+    permission: bungeechat.subscribe
