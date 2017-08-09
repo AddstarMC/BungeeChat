@@ -20,35 +20,38 @@ public class StandardServMethods implements SyncMethod
 	@Override
 	public Object run( String name, ServerInfo server, Object... arguments )
 	{
-		if(name.equals("bungee:getServerName"))
-			return getServer(server);
-		else if(name.equals("bchat:isAFK"))
-			return isAFK((UUID)arguments[0]);
-		else if(name.equals("bchat:canMsg"))
-			return canMsg((UUID)arguments[0]);
-		else if(name.equals("bchat:setAFK"))
-			return setAFK((UUID)arguments[0], (Boolean)arguments[1]);
-		else if(name.equals("bchat:toggleAFK"))
-			return toggleAFK((UUID)arguments[0]);
-		else if(name.equals("bchat:setTabColor"))
-			return setTabColor((UUID)arguments[0], (String)arguments[1]);
-		else if(name.equals("bchat:setMute"))
-			return setMute((UUID)arguments[0], (Long)arguments[1]);
-		else if(name.equals("bchat:setMuteIP"))
-			return setMuteIP((Object)arguments[0], (Long)arguments[1]);
-		else if(name.equals("bchat:setGMute"))
-			return setGMute((Long)arguments[0]);
-		else if(name.equals("bchat:toggleGMute"))
-			return toggleGMute();
-		else if(name.equals("bchat:setMsgTarget"))
-			return setMsgTarget((UUID)arguments[0], (UUID)arguments[1]);
-		else if(name.equals("bchat:getMuteList"))
-			return getMuteList();
-		else if(name.equals("bchat:kick"))
-			return kickPlayer((UUID)arguments[0], (String)arguments[1]);
-		else if(name.equals("bchat:setSkin"))
-			return setSkin((UUID)arguments[0], arguments[1]);
-		return null;
+		switch (name) {
+			case "bungee:getServerName":
+				return getServer(server);
+			case "bchat:isAFK":
+				return isAFK((UUID) arguments[0]);
+			case "bchat:canMsg":
+				return canMsg((UUID) arguments[0]);
+			case "bchat:setAFK":
+				return setAFK((UUID) arguments[0], (Boolean) arguments[1]);
+			case "bchat:toggleAFK":
+				return toggleAFK((UUID) arguments[0]);
+			case "bchat:setTabColor":
+				return setTabColor((UUID) arguments[0], (String) arguments[1]);
+			case "bchat:setMute":
+				return setMute((UUID) arguments[0], (Long) arguments[1]);
+			case "bchat:setMuteIP":
+				return setMuteIP((Object) arguments[0], (Long) arguments[1]);
+			case "bchat:setGMute":
+				return setGMute((Long) arguments[0]);
+			case "bchat:toggleGMute":
+				return toggleGMute();
+			case "bchat:setMsgTarget":
+				return setMsgTarget((UUID) arguments[0], (UUID) arguments[1]);
+			case "bchat:getMuteList":
+				return getMuteList();
+			case "bchat:kick":
+				return kickPlayer((UUID) arguments[0], (String) arguments[1]);
+			case "bchat:setSkin":
+				return setSkin((UUID) arguments[0], arguments[1]);
+			default:
+				return null;
+		}
 	}
 	
 	public String getServer(ServerInfo server)
@@ -207,7 +210,7 @@ public class StandardServMethods implements SyncMethod
 	
 	public List<String> getMuteList()
 	{
-		ArrayList<String> muted = new ArrayList<String>();
+		ArrayList<String> muted = new ArrayList<>();
 		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 		{
 			PlayerSettings settings = BungeeChat.instance.getManager().getSettings(player);

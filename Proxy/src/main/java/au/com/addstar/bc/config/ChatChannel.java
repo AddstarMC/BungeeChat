@@ -24,7 +24,7 @@ public class ChatChannel extends net.cubespace.Yamler.Config.Config implements S
 	@Override
 	public Map<String, Object> toMap()
 	{
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<>();
 		
 		map.put("cmd", command);
 		map.put("fmt", format);

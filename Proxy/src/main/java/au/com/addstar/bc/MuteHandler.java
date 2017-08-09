@@ -32,7 +32,7 @@ public class MuteHandler implements Listener
 	public MuteHandler(BungeeChat plugin)
 	{
 		mPlayerManager = plugin.getManager();
-		mIPMuteTime = new HashMap<InetAddress, Long>();
+		mIPMuteTime = new HashMap<>();
 		mMutedCommands = Collections.emptySet();
 		mGMuteTime = 0;
 		
@@ -42,7 +42,7 @@ public class MuteHandler implements Listener
 	
 	public void updateSettings(Config config)
 	{
-		mMutedCommands = new HashSet<String>(config.mutedCommands);
+		mMutedCommands = new HashSet<>(config.mutedCommands);
 	}
 	
 	public void toggleGMute()

@@ -1,4 +1,4 @@
-package au.com.addstar.bc;
+  package au.com.addstar.bc;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,10 +36,10 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
 public class PlayerManager implements Listener, IPacketHandler
 {
-	private HashMap<UUID, CommandSender> mAllProxied = new HashMap<UUID, CommandSender>();
-	private HashSet<UUID> mProxied = new HashSet<UUID>();
-	private HashMap<UUID, String> mNicknames = new HashMap<UUID, String>();
-	private HashMap<UUID, PlayerSettings> mPlayerSettings = new HashMap<UUID, PlayerSettings>();
+	private HashMap<UUID, CommandSender> mAllProxied = new HashMap<>();
+	private HashSet<UUID> mProxied = new HashSet<>();
+	private HashMap<UUID, String> mNicknames = new HashMap<>();
+	private HashMap<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
 	
 	public PlayerManager(BungeeChat plugin)
 	{
@@ -157,7 +157,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	public List<String> matchNames(String name, boolean includeAliases)
 	{
 		name = name.toLowerCase();
-		ArrayList<String> matches = new ArrayList<String>();
+		ArrayList<String> matches = new ArrayList<>();
 		
 		for(CommandSender player : mAllProxied.values())
 		{

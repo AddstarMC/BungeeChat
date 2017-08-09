@@ -26,8 +26,8 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
 public class PacketRegistry
 {
-	private static HashMap<String, PacketDefinition> mDefinitions = new HashMap<String, PacketRegistry.PacketDefinition>();
-	private static HashMap<Class<? extends Packet>, String> mReverseDef = new HashMap<Class<? extends Packet>, String>();
+	private static HashMap<String, PacketDefinition> mDefinitions = new HashMap<>();
+	private static HashMap<Class<? extends Packet>, String> mReverseDef = new HashMap<>();
 	
 	public static void registerPacket(String type, Class<? extends Packet> packetClass, PacketSchema schema)
 	{

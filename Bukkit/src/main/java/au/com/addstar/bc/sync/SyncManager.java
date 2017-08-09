@@ -25,7 +25,7 @@ public class SyncManager implements IPacketHandler
 	@SuppressWarnings( "unchecked" )
 	public SyncManager()
 	{
-		mWaitingCallbacks = new HashMap<Integer, IMethodCallback<Object>>();
+		mWaitingCallbacks = new HashMap<>();
 		BungeeChat.getPacketManager().addHandler(this, ConfigPacket.class, CallFailedResponsePacket.class, CallSuccessResponsePacket.class);
 	}
 	
@@ -93,7 +93,7 @@ public class SyncManager implements IPacketHandler
 	 * Gets all values for the property and who has that value
 	 * @param property The property to check
 	 * @param callback A callback to get the data
-	 * @return through callback, Map< String, Object >: uuid of player as string, value of property 
+	 *  through callback, Map< String, Object >: uuid of player as string, value of property
 	 */
 	public void getPropertiesAsync(String property, IMethodCallback<Map<String, Object>> callback)
 	{

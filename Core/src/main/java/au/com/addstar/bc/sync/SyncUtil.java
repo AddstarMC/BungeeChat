@@ -14,8 +14,8 @@ import java.util.Map.Entry;
 
 public class SyncUtil
 {
-	private static HashMap<Class<?>, String> mClassMappings = new HashMap<Class<?>, String>();
-	private static HashMap<String, Class<?>> mClassMappingsInverse = new HashMap<String, Class<?>>();
+	private static HashMap<Class<?>, String> mClassMappings = new HashMap<>();
+	private static HashMap<String, Class<?>> mClassMappingsInverse = new HashMap<>();
 	
 	public static void addSerializer(Class<? extends SyncSerializable> clazz, String typename)
 	{
@@ -155,7 +155,7 @@ public class SyncUtil
 		case 9:
 		{
 			int count = input.readShort();
-			ArrayList<Object> list = new ArrayList<Object>(count);
+			ArrayList<Object> list = new ArrayList<>(count);
 			for(int i = 0; i < count; ++i)
 				list.add(readObject(input));
 			
@@ -175,7 +175,7 @@ public class SyncUtil
 	public static HashMap<String, Object> readMap(DataInput input) throws IOException
 	{
 		int count = input.readShort();
-		HashMap<String, Object> map = new HashMap<String, Object>(count);
+		HashMap<String, Object> map = new HashMap<>(count);
 		
 		for(int i = 0; i < count; ++i)
 			map.put(input.readUTF(), readObject(input));

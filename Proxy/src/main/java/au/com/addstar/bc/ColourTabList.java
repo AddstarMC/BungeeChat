@@ -157,7 +157,7 @@ public class ColourTabList extends TabListAdapter
 			if (isVisible(getPlayer(), other))
 			{
 				if (items == null)
-					items = new ArrayList<Item>(packet.getItems().length);
+					items = new ArrayList<>(packet.getItems().length);
 				items.add(item);
 			}
 		}
@@ -194,7 +194,7 @@ public class ColourTabList extends TabListAdapter
 			if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null)
 			{
 				if (items == null)
-					items = new ArrayList<Item>(packet.getItems().length);
+					items = new ArrayList<>(packet.getItems().length);
 				items.add(item);
 			}
 		}
@@ -237,8 +237,8 @@ public class ColourTabList extends TabListAdapter
 	
 	public void updateList()
 	{
-		ArrayList<Item> toAdd = new ArrayList<Item>();
-		ArrayList<Item> toRemove = new ArrayList<Item>();
+		ArrayList<Item> toAdd = new ArrayList<>();
+		ArrayList<Item> toRemove = new ArrayList<>();
 		
 		for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{

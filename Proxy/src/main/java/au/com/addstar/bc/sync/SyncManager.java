@@ -36,9 +36,9 @@ public class SyncManager implements Listener, IPacketHandler
 	{
 		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
 		
-		mMethods = new HashMap<String, SyncMethod>();
-		mConfigs = new HashMap<String, SyncConfig>();
-		mPlayerProperties = new WeakHashMap<ProxiedPlayer, HashMap<String,Object>>();
+		mMethods = new HashMap<>();
+		mConfigs = new HashMap<>();
+		mPlayerProperties = new WeakHashMap<>();
 		BungeeChat.instance.getPacketManager().addHandler(this, CallPacket.class, ConfigRequestPacket.class);
 		
 		StorageMethods storage = new StorageMethods();
@@ -124,7 +124,7 @@ public class SyncManager implements Listener, IPacketHandler
 		HashMap<String, Object> values = mPlayerProperties.get(player);
 		if(values == null)
 		{
-			values = new HashMap<String, Object>();
+			values = new HashMap<>();
 			mPlayerProperties.put(player, values);
 		}
 		
@@ -148,7 +148,7 @@ public class SyncManager implements Listener, IPacketHandler
 	
 	public Map<String, Object> getProperties(String property)
 	{
-		HashMap<String, Object> values = new HashMap<String, Object>();
+		HashMap<String, Object> values = new HashMap<>();
 		for(Entry<ProxiedPlayer, HashMap<String, Object>> map : mPlayerProperties.entrySet())
 		{
 			HashMap<String, Object> properties = map.getValue();
@@ -179,7 +179,7 @@ public class SyncManager implements Listener, IPacketHandler
 		if(values == null)
 			return Collections.emptySet();
 		
-		HashSet<String> properties = new HashSet<String>();
+		HashSet<String> properties = new HashSet<>();
 		for(String key : values.keySet())
 		{
 			if(key.startsWith(prefix))
@@ -194,39 +194,37 @@ public class SyncManager implements Listener, IPacketHandler
 		@Override
 		public Object run( String name, ServerInfo server, Object... arguments )
 		{
-			if(name.equals("bungee:setProperty"))
-			{
-				if(arguments.length != 3)
-					throw new IllegalArgumentException("Arguments: <player> <property> <value>");
-				
-				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((UUID)arguments[0]);
-				if(player == null)
-					throw new IllegalArgumentException("Unknown player");
-				
-				setProperty(player, (String)arguments[1], arguments[2]);
-				
-				return null;
+			switch (name) {
+				case "bungee:setProperty": {
+					if (arguments.length != 3)
+						throw new IllegalArgumentException("Arguments: <player> <property> <value>");
+
+					ProxiedPlayer player = ProxyServer.getInstance().getPlayer((UUID) arguments[0]);
+					if (player == null)
+						throw new IllegalArgumentException("Unknown player");
+
+					setProperty(player, (String) arguments[1], arguments[2]);
+
+					return null;
+				}
+				case "bungee:getProperty": {
+					if (arguments.length != 2)
+						throw new IllegalArgumentException("Arguments: <player> <property>");
+
+					ProxiedPlayer player = ProxyServer.getInstance().getPlayer((UUID) arguments[0]);
+					if (player == null)
+						throw new IllegalArgumentException("Unknown player");
+
+					return getProperty(player, (String) arguments[1]);
+				}
+				case "bungee:getProperties":
+					if (arguments.length != 1)
+						throw new IllegalArgumentException("Arguments: <property>");
+
+					return getProperties((String) arguments[0]);
+				default:
+					return null;
 			}
-			else if(name.equals("bungee:getProperty"))
-			{
-				if(arguments.length != 2)
-					throw new IllegalArgumentException("Arguments: <player> <property>");
-				
-				ProxiedPlayer player = ProxyServer.getInstance().getPlayer((UUID)arguments[0]);
-				if(player == null)
-					throw new IllegalArgumentException("Unknown player");
-				
-				return getProperty(player, (String)arguments[1]);
-			}
-			else if(name.equals("bungee:getProperties"))
-			{
-				if(arguments.length != 1)
-					throw new IllegalArgumentException("Arguments: <property>");
-				
-				return getProperties((String)arguments[0]);
-			}
-			
-			return null;
 		}
 	}
 }

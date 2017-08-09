@@ -13,7 +13,7 @@ public class KeywordHighlighterConfig implements SyncSerializable
 	@Override
 	public Map<String, Object> toMap()
 	{
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<>();
 		map.put("perm", permission);
 		map.put("enabled", enabled);
 		

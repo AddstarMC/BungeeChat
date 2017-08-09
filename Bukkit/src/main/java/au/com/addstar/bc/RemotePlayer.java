@@ -109,7 +109,12 @@ public class RemotePlayer implements CommandSender
 	{
 		return mName;
 	}
-	
+
+	@Override
+	public Spigot spigot() {
+		return null;
+	}
+
 	public UUID getUniqueId()
 	{
 		return mId;

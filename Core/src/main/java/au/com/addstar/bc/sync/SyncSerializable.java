@@ -7,5 +7,5 @@ public interface SyncSerializable
 	/**
 	 * Must also implement: public static T fromMap(Map<String, Object>)
 	 */
-	public Map<String, Object> toMap();
+    Map<String, Object> toMap();
 }

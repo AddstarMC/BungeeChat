@@ -31,7 +31,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 		mComLink.setNotifyHandle(this);
 		
 		mHandlers = HashMultimap.create();
-		mPendingPackets = new LinkedList<DataInput>();
+		mPendingPackets = new LinkedList<>();
 	}
 	
 	public void addHandler(IPacketHandler handler, Class<? extends Packet>... packets)

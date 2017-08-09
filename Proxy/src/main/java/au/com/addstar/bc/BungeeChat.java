@@ -48,7 +48,7 @@ public class BungeeChat extends Plugin implements Listener
 	private Config mConfig;
 	private SyncConfig mConfigSync;
 	
-	private HashMap<String, String> mKeywordSettings = new HashMap<String, String>();
+	private HashMap<String, String> mKeywordSettings = new HashMap<>();
 	private PlayerSettingsManager mSettings;
 	
 	public static BungeeChat instance;
@@ -326,9 +326,9 @@ public class BungeeChat extends Plugin implements Listener
 	public void sendPlayerUpdates(ServerInfo server)
 	{
 		Collection<ProxiedPlayer> players = getProxy().getPlayers();
-		ArrayList<UUID> ids = new ArrayList<UUID>(players.size());
-		ArrayList<String> names = new ArrayList<String>(players.size());
-		ArrayList<String> nicknames = new ArrayList<String>(players.size());
+		ArrayList<UUID> ids = new ArrayList<>(players.size());
+		ArrayList<String> names = new ArrayList<>(players.size());
+		ArrayList<String> nicknames = new ArrayList<>(players.size());
 		
 		for(ProxiedPlayer player : players)
 		{

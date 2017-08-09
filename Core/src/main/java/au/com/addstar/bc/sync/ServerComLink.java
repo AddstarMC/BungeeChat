@@ -30,7 +30,7 @@ public abstract class ServerComLink
 	
 	public ServerComLink()
 	{
-		mWaitingData = new LinkedBlockingQueue<Entry<String, byte[]>>();
+		mWaitingData = new LinkedBlockingQueue<>();
 	}
 	
 	public void init(String host, int port, String password)
@@ -169,7 +169,7 @@ public abstract class ServerComLink
 		{ // Cant happen
 		}
 		
-		mWaitingData.offer(new AbstractMap.SimpleEntry<String, byte[]>(channel, stream.toByteArray()));
+		mWaitingData.offer(new AbstractMap.SimpleEntry<>(channel, stream.toByteArray()));
 	}
 	
 	public void sendMessage(String channel, byte[] data, MessageSender target)
@@ -187,7 +187,7 @@ public abstract class ServerComLink
 		{ // Cant happen
 		}
 		
-		mWaitingData.offer(new AbstractMap.SimpleEntry<String, byte[]>(channel, stream.toByteArray()));
+		mWaitingData.offer(new AbstractMap.SimpleEntry<>(channel, stream.toByteArray()));
 	}
 	
 	protected abstract MessageSender getSender(int id);
@@ -256,10 +256,10 @@ public abstract class ServerComLink
 		/**
 		 * Note, this must not do anything now. Schedule something
 		 */
-		public void onConnectionLost(Throwable e);
+        void onConnectionLost(Throwable e);
 		/**
 		 * Note, this must not do anything now. Schedule something
 		 */
-		public void onConnectionRestored();
+        void onConnectionRestored();
 	}
 }

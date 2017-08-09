@@ -31,9 +31,9 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 	
 	public PacketManager(Plugin plugin)
 	{
-		mCodecs = new HashMap<ServerInfo, PacketCodec>();
+		mCodecs = new HashMap<>();
 		mHandlers = HashMultimap.create();
-		mPendingPackets = new LinkedList<SimpleEntry<ServerInfo,DataInput>>();
+		mPendingPackets = new LinkedList<>();
 		mComLink = BungeeChat.instance.getComLink();
 		mComLink.listenToChannel("BungeeChat", this);
 		mComLink.listenToChannel("BCState", this);
@@ -150,7 +150,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 				Debugger.logp("Received packet. Pending codec from %s", server.getName());
 				synchronized(mPendingPackets)
 				{
-					mPendingPackets.add(new SimpleEntry<ServerInfo, DataInput>(server, in));
+					mPendingPackets.add(new SimpleEntry<>(server, in));
 				}
 				return;
 			}

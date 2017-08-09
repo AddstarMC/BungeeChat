@@ -17,8 +17,8 @@ public class PacketSchema
 	
 	private PacketSchema()
 	{
-		mFields = new ArrayList<FieldDefinition>();
-		mFieldMap = new HashMap<String, Integer>();
+		mFields = new ArrayList<>();
+		mFieldMap = new HashMap<>();
 	}
 	
 	private void addField(String name, FieldType type, FieldType subType, boolean required)
@@ -229,7 +229,7 @@ public class PacketSchema
 	private List<?> readList(FieldType subType, DataInput input) throws IOException
 	{
 		int count = input.readUnsignedShort();
-		ArrayList<Object> list = new ArrayList<Object>(count);
+		ArrayList<Object> list = new ArrayList<>(count);
 		for(int i = 0; i < count; ++i)
 			list.add(read(subType, null, input));
 		

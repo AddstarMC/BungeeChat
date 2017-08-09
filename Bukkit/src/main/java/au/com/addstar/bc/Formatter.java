@@ -23,15 +23,15 @@ import au.com.addstar.bc.utils.Utilities;
 
 public class Formatter
 {
-	static ArrayList<PermissionSetting> permissionLevels = new ArrayList<PermissionSetting>();
+	static ArrayList<PermissionSetting> permissionLevels = new ArrayList<>();
 	static String consoleOverride = null;
 	
 	private static String mDefaultFormat = "<{DISPLAYNAME}> {MESSAGE}";
 	
 	static boolean keywordsEnabled;
-	static ArrayList<String> keywordEnabledChannels = new ArrayList<String>();
+	static ArrayList<String> keywordEnabledChannels = new ArrayList<>();
 	static String keywordPerm;
-	static HashMap<Pattern, String> keywordPatterns = new HashMap<Pattern, String>();
+	static HashMap<Pattern, String> keywordPatterns = new HashMap<>();
 	
 	static String mPMFormatInbound = "[{DISPLAYNAME} -> Me]: {MESSAGE}";
 	static String mPMFormatOutbound = "[Me -> {DISPLAYNAME}]: {MESSAGE}";

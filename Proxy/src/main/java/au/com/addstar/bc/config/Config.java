@@ -20,16 +20,16 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	{
 		super(file.getPath(), "BungeeChat config");
 		
-		permSettings = new LinkedHashMap<String, PermissionSetting>();
-		channels = new LinkedHashMap<String, ChatChannel>();
+		permSettings = new LinkedHashMap<>();
+		channels = new LinkedHashMap<>();
 		
 		permSettings.put("default", new PermissionSetting("<{DISPLAYNAME}>: {MESSAGE}", "f", 0));
 		channels.put("BCast", new ChatChannel("bcast", "&6[&4Broadcast&6] &a{MESSAGE}", "bungeechat.broadcast", "*"));
 		
 		keywordHighlighter = new KeywordHighlighterSettings();
 		
-		socialSpyKeywords = new ArrayList<String>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply"));
-		mutedCommands = new ArrayList<String>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply", "me", "afk"));
+		socialSpyKeywords = new ArrayList<>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply"));
+		mutedCommands = new ArrayList<>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply", "me", "afk"));
 		
 		servers.put("servername", new ServerConfig());
 	}
@@ -81,7 +81,7 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	public String tabListFooter = "&l{COUNT}/{MAX}";
 	
 	@Comments("Place server specific settings here")
-	public HashMap<String, ServerConfig> servers = new HashMap<String, ServerConfig>();
+	public HashMap<String, ServerConfig> servers = new HashMap<>();
 	
 	public SyncConfig toSyncConfig()
 	{

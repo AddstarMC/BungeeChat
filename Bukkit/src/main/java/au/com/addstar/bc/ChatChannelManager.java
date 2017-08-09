@@ -21,7 +21,7 @@ import au.com.addstar.bc.sync.SyncConfig;
 
 public class ChatChannelManager implements Listener, CommandExecutor
 {
-	private HashMap<String, ChatChannel> mChannels = new HashMap<String, ChatChannel>();
+	private HashMap<String, ChatChannel> mChannels = new HashMap<>();
 	
 	public ChatChannelManager(Plugin plugin)
 	{

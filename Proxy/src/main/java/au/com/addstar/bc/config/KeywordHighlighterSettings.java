@@ -13,13 +13,13 @@ public class KeywordHighlighterSettings extends Config implements SyncSerializab
 {
 	public String permission = "bungeechat.keywords";
 	public boolean enabled = false;
-	public List<String> allowInChannels = new ArrayList<String>();
+	public List<String> allowInChannels = new ArrayList<>();
 	public String keywordFile = "keywords.txt";
 	
 	@Override
 	public Map<String, Object> toMap()
 	{
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<>();
 		map.put("perm", permission);
 		map.put("enabled", enabled);
 		

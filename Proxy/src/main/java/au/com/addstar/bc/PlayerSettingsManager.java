@@ -10,7 +10,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class PlayerSettingsManager
 {
-	private WeakHashMap<ProxiedPlayer, PlayerSettings> mLoadedSettings = new WeakHashMap<ProxiedPlayer, PlayerSettings>();
+	private WeakHashMap<ProxiedPlayer, PlayerSettings> mLoadedSettings = new WeakHashMap<>();
 	private File mFolder;
 	
 	public PlayerSettingsManager(File folder)

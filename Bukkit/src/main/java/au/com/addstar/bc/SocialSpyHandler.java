@@ -21,7 +21,7 @@ import au.com.addstar.bc.utils.Utilities;
 
 public class SocialSpyHandler implements Listener, CommandExecutor
 {
-	private HashSet<String> mKeywords = new HashSet<String>();
+	private HashSet<String> mKeywords = new HashSet<>();
 	
 	public SocialSpyHandler(Plugin plugin)
 	{

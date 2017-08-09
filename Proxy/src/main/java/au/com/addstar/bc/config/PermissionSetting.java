@@ -29,7 +29,7 @@ public class PermissionSetting extends net.cubespace.Yamler.Config.Config implem
 	@Override
 	public Map<String, Object> toMap()
 	{
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, Object> map = new HashMap<>();
 		map.put("fmt", format);
 		map.put("c", color);
 		map.put("pri", priority);

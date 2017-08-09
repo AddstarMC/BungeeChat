@@ -4,5 +4,5 @@ import net.md_5.bungee.api.config.ServerInfo;
 
 public interface IPacketHandler
 {
-	public void handle(Packet packet, ServerInfo sender);
+	void handle(Packet packet, ServerInfo sender);
 }

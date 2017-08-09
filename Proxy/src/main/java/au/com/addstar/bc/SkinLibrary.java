@@ -129,7 +129,7 @@ public class SkinLibrary
 	{
 		SkinData data = getSkin(id);
 		if (data != null)
-			return new SucceededFuture<SkinData>(null, data);
+			return new SucceededFuture<>(null, data);
 		
 		Callable<SkinData> lookup = new Callable<SkinData>()
 		{
@@ -210,13 +210,13 @@ public class SkinLibrary
 	{
 		UUID id = mNames.get(name.toLowerCase());
 		if (id != null)
-			return new SucceededFuture<UUID>(null, id);
+			return new SucceededFuture<>(null, id);
 		
 		ProxiedPlayer onlinePlayer = ProxyServer.getInstance().getPlayer(name);
 		if (onlinePlayer != null)
 		{
 			mNames.put(name.toLowerCase(), onlinePlayer.getUniqueId());
-			return new SucceededFuture<UUID>(null, onlinePlayer.getUniqueId());
+			return new SucceededFuture<>(null, onlinePlayer.getUniqueId());
 		}
 		
 		Callable<UUID> lookup = new Callable<UUID>()

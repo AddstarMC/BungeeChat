@@ -20,7 +20,7 @@ public enum FieldType
 	private boolean mHasSubType;
 	private boolean mNullable;
 	
-	private FieldType(Class<?> clazz, boolean hasSubType, boolean nullable)
+	FieldType(Class<?> clazz, boolean hasSubType, boolean nullable)
 	{
 		mClass = clazz;
 		mHasSubType = hasSubType;

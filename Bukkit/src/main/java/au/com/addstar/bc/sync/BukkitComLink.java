@@ -15,7 +15,7 @@ public class BukkitComLink extends ServerComLink
 	
 	public BukkitComLink()
 	{
-		mServers = new HashMap<Integer, RemoteServer>();
+		mServers = new HashMap<>();
 	}
 	
 	@Override

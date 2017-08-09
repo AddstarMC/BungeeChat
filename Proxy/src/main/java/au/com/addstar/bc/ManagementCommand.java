@@ -39,7 +39,6 @@ public class ManagementCommand extends Command
 		else
 		{
 			sender.sendMessage(new TextComponent("Usage: /bungeechat reload"));
-			return;
 		}
 	}
 

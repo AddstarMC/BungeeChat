@@ -59,7 +59,6 @@ public class ChatHandler implements Listener
 		if(newMessage == null)
 		{
 			BungeeChat.mirrorChat(message, ChannelType.KeywordHighlight.getName());
-			return;
 		}
 		else
 		{

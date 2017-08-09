@@ -14,7 +14,7 @@ public class SyncConfig
 	
 	public SyncConfig()
 	{
-		mData = new HashMap<String, Object>();
+		mData = new HashMap<>();
 	}
 	
 	private SyncConfig(Map<String, Object> data)

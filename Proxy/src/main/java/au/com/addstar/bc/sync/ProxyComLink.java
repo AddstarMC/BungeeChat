@@ -16,8 +16,8 @@ public class ProxyComLink extends ServerComLink
 	
 	public ProxyComLink()
 	{
-		mServers = new HashMap<Integer, BukkitMessageSender>();
-		mRevServers = new HashMap<ServerInfo, MessageSender>();
+		mServers = new HashMap<>();
+		mRevServers = new HashMap<>();
 		for(ServerInfo server : ProxyServer.getInstance().getServers().values())
 		{
 			int id = server.getAddress().getPort();

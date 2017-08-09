@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 
 public class PacketCodec
 {
-	private HashMap<String, PacketSchema> mReadSchemas = new HashMap<String, PacketSchema>();
+	private HashMap<String, PacketSchema> mReadSchemas = new HashMap<>();
 	private boolean mEnabled;
 	
 	public PacketCodec()

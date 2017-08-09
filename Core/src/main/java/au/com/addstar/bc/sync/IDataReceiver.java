@@ -10,5 +10,5 @@ public interface IDataReceiver
 	 * @param in A data input to read with
 	 * @param sender The sender of the message. Null if this is on bukkit side
 	 */
-	public void onReceive(String channel, DataInput in, MessageSender sender);
+    void onReceive(String channel, DataInput in, MessageSender sender);
 }
