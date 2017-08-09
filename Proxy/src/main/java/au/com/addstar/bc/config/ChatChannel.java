@@ -18,14 +18,16 @@ public class ChatChannel extends net.cubespace.Yamler.Config.Config implements S
 	public ChatChannel(String cmd, String prefix, String perm, String listenPerm){
 		this(cmd,prefix, perm, listenPerm, false, false);
 	}
-	public ChatChannel(String cmd, String prefix, String perm, String listenPerm,Boolean subscribe, boolean isRP)
+	public ChatChannel(String cmd, String prefix, String perm, String listenPerm,Boolean subscribe, Boolean rp)
 	{
 		this.command = cmd;
 		this.format = prefix;
 		this.permission = perm;
 		this.listenPermission = listenPerm;
+		if(subscribe == null)subscribe =false;
 		this.subscribe = subscribe;
-		this.isRp = isRP;
+		if( rp == null)rp = false;
+		this.isRp = rp;
 	}
 	
 	@Override
