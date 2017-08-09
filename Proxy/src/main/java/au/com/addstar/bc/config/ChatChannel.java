@@ -11,8 +11,8 @@ public class ChatChannel extends net.cubespace.Yamler.Config.Config implements S
 	public String format;
 	public String permission;
 	public String listenPermission;
-	public boolean subscribe = false;
-	public boolean isRp = false;
+	public Boolean subscribe = false;
+	public Boolean isRp = false;
 	
 	public ChatChannel() {}
 	public ChatChannel(String cmd, String prefix, String perm, String listenPerm){
