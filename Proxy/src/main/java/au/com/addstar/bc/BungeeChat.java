@@ -297,7 +297,7 @@ public class BungeeChat extends Plugin implements Listener
 		{
 			output = new FileOutputStream(destination);
 			byte[] buffer = new byte[1024];
-			int read = 0;
+			int read;
 			
 			while((read = input.read(buffer)) != -1)
 			{

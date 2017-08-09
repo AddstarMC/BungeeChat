@@ -157,7 +157,7 @@ public class PacketSchema
 			if(object == null)
 				output.writeShort(-1);
 			else
-				writeString(((UUID)object).toString(), output);
+				writeString(object.toString(), output);
 			break;
 		case Object:
 			SyncUtil.writeObject(output, object);

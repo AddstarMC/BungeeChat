@@ -10,7 +10,7 @@ public class ManagementCommand extends Command
 	
 	public ManagementCommand(BungeeChat plugin)
 	{
-		super("bungeechat", "bungeechat.command.manage", new String[] {"bchat"});
+		super("bungeechat", "bungeechat.command.manage", "bchat");
 		mPlugin = plugin;
 	}
 

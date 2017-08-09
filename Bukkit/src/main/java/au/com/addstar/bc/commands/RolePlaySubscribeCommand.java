@@ -42,6 +42,9 @@ public class RolePlaySubscribeCommand implements CommandExecutor {
                     }
                 }
             }else {
+                if(!manager.isSubscribable(channel)){
+                    commandSender.sendMessage("That channel is either not available or not subscribable.");
+                }
                 if (commandSender.hasPermission(perm)) {
                     commandSender.sendMessage("You are alredy subcribed to " + channel);
                     if(prefix != null){

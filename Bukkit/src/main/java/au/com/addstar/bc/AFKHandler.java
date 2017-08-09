@@ -167,7 +167,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 	
 	private void onAFKChange(Player player, boolean isAFK)
 	{
-		String message = null;
+		String message;
 		if(isAFK)
 			message = ChatColor.GRAY + "* " + ChatColor.stripColor(player.getDisplayName()) + " is now AFK.";
 		else

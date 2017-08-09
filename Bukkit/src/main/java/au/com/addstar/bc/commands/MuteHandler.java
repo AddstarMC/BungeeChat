@@ -138,7 +138,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 				}
 			}
 			
-			String name = null;
+			String name;
 			if (player != null)
 			{
 				if(player instanceof Player)

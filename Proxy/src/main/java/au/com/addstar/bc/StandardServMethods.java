@@ -36,7 +36,7 @@ public class StandardServMethods implements SyncMethod
 			case "bchat:setMute":
 				return setMute((UUID) arguments[0], (Long) arguments[1]);
 			case "bchat:setMuteIP":
-				return setMuteIP((Object) arguments[0], (Long) arguments[1]);
+				return setMuteIP(arguments[0], (Long) arguments[1]);
 			case "bchat:setGMute":
 				return setGMute((Long) arguments[0]);
 			case "bchat:toggleGMute":
