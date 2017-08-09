@@ -11,7 +11,7 @@
   <name>BungeeChat-Core</name>
   
   <build>
-  	<sourceDirectory>src</sourceDirectory>
+  	<sourceDirectory>src/main/java</sourceDirectory>
   </build>
   <dependencies>
   	<dependency>

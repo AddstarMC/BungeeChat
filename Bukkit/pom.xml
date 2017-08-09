@@ -26,6 +26,7 @@
 
     <!-- For Vault -->
     <repository>
+
       <id>vault-repo</id>
       <name>Public Releases</name>
       <url>http://nexus.hc.to/content/repositories/pub_releases/</url>
@@ -68,15 +69,14 @@
       <resource>
         <targetPath>.</targetPath>
         <filtering>true</filtering>
-        <directory>${basedir}/.</directory>
+        <directory>${basedir}/src/main/resources</directory>
         <includes>
           <include>plugin.yml</include>
           <include>config.yml</include>
         </includes>
       </resource>
     </resources>
-
-    <sourceDirectory>src</sourceDirectory>
+    <sourceDirectory>src/main/java</sourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
