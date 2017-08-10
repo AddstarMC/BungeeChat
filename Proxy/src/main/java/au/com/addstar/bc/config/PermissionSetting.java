@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import au.com.addstar.bc.sync.SyncSerializable;
+import net.cubespace.Yamler.Config.YamlConfig;
 
-public class PermissionSetting extends net.cubespace.Yamler.Config.Config implements SyncSerializable
+public class PermissionSetting extends YamlConfig implements SyncSerializable
 {
 	public PermissionSetting() {}
 	public PermissionSetting(String format, String color, int priority)

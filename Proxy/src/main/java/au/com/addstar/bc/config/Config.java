@@ -13,27 +13,11 @@ import au.com.addstar.bc.sync.SyncConfig;
 import net.cubespace.Yamler.Config.Comment;
 import net.cubespace.Yamler.Config.Comments;
 import net.cubespace.Yamler.Config.Path;
+import net.cubespace.Yamler.Config.YamlConfig;
 
-public class Config extends net.cubespace.Yamler.Config.Config
+public class Config extends YamlConfig
 {
-	public Config(File file)
-	{
-		super(file.getPath(), "BungeeChat config");
-		
-		permSettings = new LinkedHashMap<>();
-		channels = new LinkedHashMap<>();
-		
-		permSettings.put("default", new PermissionSetting("<{DISPLAYNAME}>: {MESSAGE}", "f", 0));
-		channels.put("BCast", new ChatChannel("bcast", "&6[&4Broadcast&6] &a{MESSAGE}", "bungeechat.broadcast", "*"));
-		
-		keywordHighlighter = new KeywordHighlighterSettings();
-		
-		socialSpyKeywords = new ArrayList<>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply"));
-		mutedCommands = new ArrayList<>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply", "me", "afk"));
-		
-		servers.put("servername", new ServerConfig());
-	}
-	
+
 	@Comment("You can override the name of the console here. Leave blank for no change")
 	public String consoleName = "";
 	
@@ -82,7 +66,26 @@ public class Config extends net.cubespace.Yamler.Config.Config
 	
 	@Comments("Place server specific settings here")
 	public HashMap<String, ServerConfig> servers = new HashMap<>();
-	
+
+	public Config(File file)
+	{
+		//super(file.getPath(), "BungeeChat config");
+		super(file.getPath());
+
+		permSettings = new LinkedHashMap<>();
+		channels = new LinkedHashMap<>();
+
+		permSettings.put("default", new PermissionSetting("<{DISPLAYNAME}>: {MESSAGE}", "f", 0));
+		channels.put("BCast", new ChatChannel("bcast", "&6[&4Broadcast&6] &a{MESSAGE}", "bungeechat.broadcast", "*"));
+
+		keywordHighlighter = new KeywordHighlighterSettings();
+
+		socialSpyKeywords = new ArrayList<>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply"));
+		mutedCommands = new ArrayList<>(Arrays.asList("msg", "m", "w", "whisper", "t", "tell", "r", "reply", "me", "afk"));
+
+		servers.put("servername", new ServerConfig());
+	}
+
 	public SyncConfig toSyncConfig()
 	{
 		SyncConfig config = new SyncConfig();

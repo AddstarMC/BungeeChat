@@ -4,8 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import au.com.addstar.bc.sync.SyncSerializable;
+import net.cubespace.Yamler.Config.YamlConfig;
 
-public class ChatChannel extends net.cubespace.Yamler.Config.Config implements SyncSerializable
+import static java.lang.Boolean.FALSE;
+
+public class ChatChannel extends YamlConfig implements SyncSerializable
 {
 	public String command;
 	public String format;
@@ -16,7 +19,7 @@ public class ChatChannel extends net.cubespace.Yamler.Config.Config implements S
 	
 	public ChatChannel() {}
 	public ChatChannel(String cmd, String prefix, String perm, String listenPerm){
-		this(cmd,prefix, perm, listenPerm, false, false);
+		this(cmd,prefix, perm, listenPerm, FALSE, FALSE);
 	}
 	public ChatChannel(String cmd, String prefix, String perm, String listenPerm,Boolean subscribe, Boolean rp)
 	{
@@ -24,9 +27,9 @@ public class ChatChannel extends net.cubespace.Yamler.Config.Config implements S
 		this.format = prefix;
 		this.permission = perm;
 		this.listenPermission = listenPerm;
-		if(subscribe == null)subscribe =false;
+		if(subscribe == null)subscribe =FALSE;
 		this.subscribe = subscribe;
-		if( rp == null)rp = false;
+		if( rp == null)rp = FALSE;
 		this.isRp = rp;
 	}
 	
