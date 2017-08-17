@@ -169,3 +169,7 @@ commands:
     usage: /<command> <channel> <timeSecs> <roleplayname>
     description: Subcribes to an rp channel
     permission: bungeechat.subscribe
+  rplist:
+    usage: /<command>
+    description: List RP Channels;
+    permission: bungeechat.rplist

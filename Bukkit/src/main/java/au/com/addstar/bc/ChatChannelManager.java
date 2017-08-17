@@ -1,6 +1,9 @@
 package au.com.addstar.bc;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.ChatChannel;
@@ -161,6 +164,21 @@ public class ChatChannelManager implements Listener, CommandExecutor
 			register(key, setting.command, setting.format, setting.permission, setting.listenPermission, setting.subscribe, setting.isRP);
 		}
 	}
+
+	public List<String> getChannels(boolean sub){
+		List<String> channels = new ArrayList<>();
+		for (Map.Entry<String, ChatChannel> channel: mChannels.entrySet()){
+			if(sub) {
+				if (channel.getValue().subscribe) {
+					channels.add(channel.getKey());
+				}
+			}else{
+				channels.add(channel.getKey());
+			}
+		}
+		return channels;
+	}
+
 
 	public boolean isSubscribable(String channel){
 	    return mChannels.get(channel).subscribe;
