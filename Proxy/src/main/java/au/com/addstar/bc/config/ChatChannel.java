@@ -14,8 +14,8 @@ public class ChatChannel extends YamlConfig implements SyncSerializable {
     public String format;
     public String permission;
     public String listenPermission;
-    public Boolean subscribe;
-    public Boolean isRp;
+    private Boolean subscribe;
+    private Boolean isRp;
 
     public ChatChannel() {
         subscribe = false;
