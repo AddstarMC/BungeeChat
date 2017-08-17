@@ -181,11 +181,17 @@ public class ChatChannelManager implements Listener, CommandExecutor
 
 
 	public boolean isSubscribable(String channel){
-	    return mChannels.get(channel).subscribe;
+		if(mChannels.containsKey(channel)) {
+			return mChannels.get(channel).subscribe;
+		}
+		return false;
     }
 
     public String getChannelSpeakPerm(String channel){
-        return mChannels.get(channel).permission;
+		if(mChannels.containsKey(channel)) {
+			return mChannels.get(channel).permission;
+		}
+		return null;
     }
 	
 }
