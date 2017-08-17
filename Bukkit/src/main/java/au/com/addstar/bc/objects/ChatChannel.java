@@ -30,10 +30,9 @@ public class ChatChannel
 		this.name = name;
 		this.command = command;
 		this.format = ChatColor.translateAlternateColorCodes('&', format);
-		if(!permission.isEmpty())
+		if(permission != null && !permission.isEmpty())
 			this.permission = permission;
-
-		if(!listenPerm.isEmpty())
+		if(permission != null && !listenPerm.isEmpty())
 			this.listenPermission = listenPerm;
 		this.subscribe = subscribe;
 		this.isRP = isRP;
