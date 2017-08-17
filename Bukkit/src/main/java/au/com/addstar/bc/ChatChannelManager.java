@@ -135,9 +135,9 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		mChannels.clear();
 	}
 	
-	public void register(String name, String command, String format, String permission, String listenPerm)
+	public void register(String name, String command, String format, String permission, String listenPerm, Boolean subscribe, Boolean isRp)
 	{
-		ChatChannel channel = new ChatChannel(name, command, format, permission, listenPerm);
+		ChatChannel channel = new ChatChannel(name, command, format, permission, listenPerm, subscribe, isRp);
 		channel.registerChannel();
 		mChannels.put(channel.name, channel);
 	}
@@ -158,7 +158,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		for(String key : channels.getKeys())
 		{
 			ChatChannelConfig setting = (ChatChannelConfig) channels.get(key, null);
-			register(key, setting.command, setting.format, setting.permission, setting.listenPermission);
+			register(key, setting.command, setting.format, setting.permission, setting.listenPermission, setting.subscribe, setting.isRP);
 		}
 	}
 

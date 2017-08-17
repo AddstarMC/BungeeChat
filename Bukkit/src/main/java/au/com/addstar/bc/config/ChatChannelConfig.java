@@ -4,14 +4,16 @@ import java.util.Map;
 
 import au.com.addstar.bc.sync.SyncSerializable;
 
+import static java.lang.Boolean.FALSE;
+
 public class ChatChannelConfig implements SyncSerializable
 {
 	public String command;
 	public String format;
 	public String permission;
 	public String listenPermission;
-	public boolean subscribe;
-	public boolean isRP;
+	public Boolean subscribe;
+	public Boolean isRP;
 	
 	@Override
 	public Map<String, Object> toMap()
@@ -27,8 +29,8 @@ public class ChatChannelConfig implements SyncSerializable
 		conf.format = (String)map.get("fmt");
 		conf.permission = (String)map.get("perm");
 		conf.listenPermission = (String)map.get("lperm");
-		conf.subscribe = (map.containsKey("sub"))?(Boolean)map.get("sub"):false;
-		conf.isRP =(map.containsKey("rp"))?(Boolean)map.get("rp"):false;
+		conf.subscribe = (map.containsKey("sub")||map.get("sub") == null)?(Boolean)map.get("sub"): FALSE;
+		conf.isRP =(map.containsKey("rp")||map.get("rp") == null)?(Boolean)map.get("rp"):FALSE;
 		
 		return conf;
 	}
