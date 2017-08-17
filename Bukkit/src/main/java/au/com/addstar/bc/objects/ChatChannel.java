@@ -17,15 +17,15 @@ public class ChatChannel
 	public String command;
 	public String permission;
 	public String listenPermission;
-	public Boolean subscribe;
-	public Boolean isRP;
+	public boolean subscribe;
+	public boolean isRP;
 
 
 	public ChatChannel(String name, String command, String format, String permission, String listenPerm)
 	{
-		this(name, command,format,permission,listenPerm,FALSE,FALSE);
+		this(name, command,format,permission,listenPerm,false,false);
 	}
-	public ChatChannel(String name, String command, String format, String permission, String listenPerm, Boolean subscribe, Boolean isRP)
+	public ChatChannel(String name, String command, String format, String permission, String listenPerm, Boolean subscribe, Boolean rp)
 	{
 		this.name = name;
 		this.command = command;
@@ -34,8 +34,9 @@ public class ChatChannel
 			this.permission = permission;
 		if(permission != null && !listenPerm.isEmpty())
 			this.listenPermission = listenPerm;
-		this.subscribe = subscribe;
-		this.isRP = isRP;
+		this.subscribe = subscribe != null && subscribe;
+        isRP = rp != null && rp;
+
 	}
 	
 	public void registerChannel()

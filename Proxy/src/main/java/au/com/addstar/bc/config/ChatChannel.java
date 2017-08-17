@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import au.com.addstar.bc.sync.SyncSerializable;
+import org.jetbrains.annotations.NotNull;
 import net.cubespace.Yamler.Config.YamlConfig;
 
 import static java.lang.Boolean.FALSE;
@@ -14,23 +15,24 @@ public class ChatChannel extends YamlConfig implements SyncSerializable
 	public String format;
 	public String permission;
 	public String listenPermission;
-	public Boolean subscribe = false;
-	public Boolean isRp = false;
+	public boolean subscribe;
+	public boolean isRp;
 	
-	public ChatChannel() {}
-	public ChatChannel(String cmd, String prefix, String perm, String listenPerm){
-		this(cmd,prefix, perm, listenPerm, FALSE, FALSE);
+	public ChatChannel() {
+		subscribe = false;
+		isRp =false;
 	}
-	public ChatChannel(String cmd, String prefix, String perm, String listenPerm,Boolean subscribe, Boolean rp)
+	public ChatChannel(String cmd, String prefix, String perm, String listenPerm){
+		this(cmd,prefix, perm, listenPerm, false, false);
+	}
+	public ChatChannel(String cmd, String prefix, String perm, String listenPerm, @NotNull Boolean sub, @NotNull Boolean rp)
 	{
 		this.command = cmd;
 		this.format = prefix;
 		this.permission = perm;
 		this.listenPermission = listenPerm;
-		if(subscribe == null)subscribe =FALSE;
-		this.subscribe = subscribe;
-		if( rp == null)rp = FALSE;
-		this.isRp = rp;
+		this.subscribe = sub !=null && sub;
+		this.isRp = rp !=null && rp;
 	}
 	
 	@Override
