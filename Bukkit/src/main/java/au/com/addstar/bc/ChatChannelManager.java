@@ -91,13 +91,13 @@ public class ChatChannelManager implements Listener, CommandExecutor
 				if(channel.permission != null && !sender.hasPermission(channel.permission))
 					break;
 				
-				if(message != null)
-					if(channel.isRP){
-				        String prefix = instance.getPlayerManager().getPlayerRPPrefix(sender);
-						channel.say(sender, "{"+prefix+"} " + message);
+				if(message != null) {
+					if (channel.isRP) {
+						String prefix = instance.getPlayerManager().getPlayerRPPrefix(sender);
+						channel.say(sender, "{" + prefix + "} " + message);
 					}
 					channel.say(sender, message);
-				
+				}
 				return true;
 			}
 		}
@@ -180,11 +180,8 @@ public class ChatChannelManager implements Listener, CommandExecutor
 	}
 
 
-	public boolean isSubscribable(String channel){
-		if(mChannels.containsKey(channel)) {
-			return mChannels.get(channel).subscribe;
-		}
-		return false;
+	public boolean isSubscribable(String channel) {
+        return hasChannel(channel) && mChannels.get(channel).subscribe;
     }
 
     public String getChannelSpeakPerm(String channel){
@@ -193,5 +190,10 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		}
 		return null;
     }
-	
+	public boolean hasChannel(String channel){
+		return mChannels.containsKey(channel);
+	}
+
+
 }
+

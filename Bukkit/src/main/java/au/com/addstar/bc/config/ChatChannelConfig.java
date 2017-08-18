@@ -31,7 +31,6 @@ public class ChatChannelConfig implements SyncSerializable
 		conf.listenPermission = (String)map.get("lperm");
 		conf.subscribe = (map.containsKey("sub")||map.get("sub") == null)?(Boolean)map.get("sub"): FALSE;
 		conf.isRP =(map.containsKey("rp")||map.get("rp") == null)?(Boolean)map.get("rp"):FALSE;
-		
 		return conf;
 	}
 }
