@@ -93,7 +93,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 				
 				if(message != null) {
 					if (channel.isRP) {
-						String prefix = instance.getPlayerManager().getPlayerRPPrefix(sender);
+						String prefix = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
 						channel.say(sender, "{" + prefix + "} " + message);
 					}
 					channel.say(sender, message);
@@ -121,7 +121,10 @@ public class ChatChannelManager implements Listener, CommandExecutor
 			{
 				if(channel.permission != null && !sender.hasPermission(channel.permission))
 					break;
-				
+                if (channel.isRP) {
+                    String prefix = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
+                    channel.say(sender, "{" + prefix + "} " + message);
+                }
 				channel.say(sender, message);
 				return true;
 			}

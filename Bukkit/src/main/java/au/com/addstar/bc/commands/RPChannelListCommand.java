@@ -23,15 +23,24 @@ public class RPChannelListCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        ChatChannelManager manager = instance.getChatChannelsManager();
-        List<String> message = new ArrayList<>();
-        message.add("***List of Roleplay Channels**");
-        message.add("-----------------------");
-        for(String string : manager.getChannels(true))
-        {
-            message.add(string);
-        };
-        message.add("-----------------------");
-        return true;
+        if(commandSender.hasPermission("bungeechat.rplist")) {
+            boolean sub = true;
+            if(strings.length > 0 && strings[0].equals("all"))sub = false;
+            ChatChannelManager manager = instance.getChatChannelsManager();
+            List<String> message = new ArrayList<>();
+            if(sub){
+                message.add("***List of Channels**");
+            }else {
+                message.add("***List of Roleplay Channels**");
+            }
+            message.add("-----------------------");
+            message.addAll(manager.getChannels(sub));
+            message.add("-----------------------");
+            commandSender.sendMessage((String[])message.toArray());
+            return true;
+        }else{
+            commandSender.sendMessage("No Permission");
+        }
+        return false;
     }
 }
