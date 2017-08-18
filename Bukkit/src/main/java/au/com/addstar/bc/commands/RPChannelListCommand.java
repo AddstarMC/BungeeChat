@@ -36,7 +36,9 @@ public class RPChannelListCommand implements CommandExecutor {
             message.add("-----------------------");
             message.addAll(manager.getChannels(sub));
             message.add("-----------------------");
-            commandSender.sendMessage((String[])message.toArray());
+            String[] messages = new String[message.size()];
+            message.toArray(messages);
+            commandSender.sendMessage(messages);
             return true;
         }else{
             commandSender.sendMessage("No Permission");
