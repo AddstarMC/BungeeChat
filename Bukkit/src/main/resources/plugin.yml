@@ -165,10 +165,11 @@ commands:
      - "/<command> resync"
     description: Allows you to debug aspects of bungeechat
     permission: bungeechat.debug
+ # Subscription can be limited by limiting the subscribe command permission suffixed with the channel name
   rpsubscribe:
     usage: /<command> <channel> <timeSecs> <roleplayname>
     description: Subcribes to an rp channel
-    permission: bungeechat.subscribe
+    permission: bungeechat.subscribe.*
   rplist:
     usage: /<command>
     description: List RP Channels;
