@@ -42,6 +42,6 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 	@Override
 	public int compareTo( PermissionSetting o )
 	{
-		return Integer.valueOf(priority).compareTo(o.priority);
+		return Integer.compare(priority, o.priority);
 	}
 }

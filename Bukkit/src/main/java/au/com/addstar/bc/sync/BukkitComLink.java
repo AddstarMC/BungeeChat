@@ -47,14 +47,9 @@ public class BukkitComLink extends ServerComLink
 	{
 		if (id == 0)
 			return null;
-		
-		RemoteServer server = mServers.get(id);
-		if(server == null)
-		{
-			server = new RemoteServer(id);
-			mServers.put(id, server);
-		}
-		
+
+		RemoteServer server = mServers.computeIfAbsent(id, RemoteServer::new);
+
 		return server;
 	}
 

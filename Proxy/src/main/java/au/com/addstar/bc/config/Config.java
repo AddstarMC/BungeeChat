@@ -46,7 +46,10 @@ public class Config extends YamlConfig
 	
 	@Path("afk-kick-enabled")
 	public boolean afkKickEnabled = false;
-	
+
+	@Path("debug")
+	public boolean debug = false;
+
 	@Comment("The time in minutes of being afk that someone is kicked")
 	@Path("afk-kick-delay")
 	public int afkKickDelay = 30;
@@ -99,6 +102,7 @@ public class Config extends YamlConfig
 		config.set("afk-kick-enabled", afkKickEnabled);
 		config.set("afk-kick-message", afkKickMessage);
 		config.set("afk-kick-delay", afkKickDelay);
+		config.set("debug", debug);
 		
 		config.set("socialspykeywords", socialSpyKeywords);
 		config.set("mutedcommands", mutedCommands);

@@ -25,6 +25,8 @@ public class PlayerSettings
 	public boolean isAFK = false;
 
 	public String rolePlayPrefix;
+
+	public String defaultChannel;
 	
 	public CommandSender getLastMsgTarget()
 	{
@@ -40,10 +42,11 @@ public class PlayerSettings
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
 		rolePlayPrefix = packet.getRPprefix();
+		defaultChannel =packet.getDefaultChannel();
 	}
 	
 	public PlayerSettingsPacket toPacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, rolePlayPrefix);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, rolePlayPrefix, defaultChannel);
 	}
 }

@@ -6,23 +6,7 @@ import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import au.com.addstar.bc.sync.packet.AFKPacket;
-import au.com.addstar.bc.sync.packet.CallFailedResponsePacket;
-import au.com.addstar.bc.sync.packet.CallPacket;
-import au.com.addstar.bc.sync.packet.CallSuccessResponsePacket;
-import au.com.addstar.bc.sync.packet.ConfigPacket;
-import au.com.addstar.bc.sync.packet.ConfigRequestPacket;
-import au.com.addstar.bc.sync.packet.FireEventPacket;
-import au.com.addstar.bc.sync.packet.GlobalMutePacket;
-import au.com.addstar.bc.sync.packet.MirrorPacket;
-import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
-import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
-import au.com.addstar.bc.sync.packet.PlayerListPacket;
-import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
-import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
-import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
-import au.com.addstar.bc.sync.packet.SendPacket;
-import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+import au.com.addstar.bc.sync.packet.*;
 
 public class PacketRegistry
 {

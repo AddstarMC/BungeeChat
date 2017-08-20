@@ -2,6 +2,7 @@ package au.com.addstar.bc.listeners;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.objects.ChannelType;
+import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.PermissionSetting;
 import org.bukkit.Bukkit;
@@ -17,11 +18,36 @@ import org.bukkit.permissions.Permissible;
 import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.utils.Utilities;
 
-public class ChatHandler implements Listener
-{
+public class ChatHandler implements Listener{
+
+	private BungeeChat instance;
+
+	public ChatHandler(BungeeChat instance) {
+		this.instance = instance;
+	}
+
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
 	private void onPlayerChatLowest(AsyncPlayerChatEvent event)
 	{
+        String channel = BungeeChat.getPlayerManager().getDefaultChatChannel(event.getPlayer());
+        if(channel != null){
+            if(instance.getChatChannelsManager().hasChannel(channel)){
+                if(BungeeChat.forceGlobalprefix.equals
+                        (event.getMessage().substring(0,1))){
+                    event.setMessage(event.getMessage().substring(1));
+                }else{
+                    for (ChatChannel out : instance.getChatChannelsManager().getChannelObj().values()) {
+                        if (out.name.equals(channel)) {
+                            out.say(event.getPlayer(),event.getMessage());
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+                }
+            }else{
+                instance.getLogger().info("Channel Manager not have the default channel...." + channel);
+            }
+        }
 		PermissionSetting level = Formatter.getPermissionLevel(event.getPlayer());
 		
 		event.setFormat(Formatter.getChatFormatForUse(event.getPlayer(), level));
@@ -53,6 +79,7 @@ public class ChatHandler implements Listener
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerChatFinal(AsyncPlayerChatEvent event)
 	{
+
 		String message = String.format(event.getFormat(), event.getPlayer().getDisplayName(), event.getMessage());
 		BungeeChat.mirrorChat(message, ChannelType.Default.getName());
 		

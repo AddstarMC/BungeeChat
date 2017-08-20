@@ -38,12 +38,15 @@ import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
-public class PlayerManager implements Listener, IPacketHandler
+import javax.annotation.Nullable;
+
+  public class PlayerManager implements Listener, IPacketHandler
 {
 	private HashMap<UUID, CommandSender> mAllProxied = new HashMap<>();
 	private HashSet<UUID> mProxied = new HashSet<>();
 	private HashMap<UUID, String> mNicknames = new HashMap<>();
 	private HashMap<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
+	private HashMap<UUID, String> mDefaultChannel = new HashMap<>();
 	
 	public PlayerManager(BungeeChat plugin)
 	{
@@ -188,7 +191,10 @@ public class PlayerManager implements Listener, IPacketHandler
 		{
 			PlayerSettings settings = getPlayerSettings(player);
 			return settings.rolePlayPrefix;
-		}
+		}else if(player instanceof RemotePlayer){
+            PlayerSettings settings = mPlayerSettings.get(((RemotePlayer) player).getUniqueId());
+            return settings.rolePlayPrefix;
+        }
 		else {
 			return null;
 		}
@@ -199,6 +205,7 @@ public class PlayerManager implements Listener, IPacketHandler
 		{
 			PlayerSettings settings = getPlayerSettings(player);
 			settings.rolePlayPrefix = prefix;
+			mPlayerSettings.put(((Player) player).getUniqueId(),settings);
 			updatePlayerSettings(player);
 			Debugger.log("Setting RpPrefix local %s to '%s'", player.getName(), prefix);
 
@@ -250,7 +257,7 @@ public class PlayerManager implements Listener, IPacketHandler
 	
 	public PlayerSettings getPlayerSettings(CommandSender player)
 	{
-		Validate.isTrue(player instanceof Player, "Cannot get player settins of non local player");
+		Validate.isTrue(player instanceof Player, "Cannot get player settings of non local player");
 		
 		UUID id = getUniqueId(player);
 		PlayerSettings settings = mPlayerSettings.get(id);
@@ -258,6 +265,9 @@ public class PlayerManager implements Listener, IPacketHandler
 		{
 			settings = new PlayerSettings();
 			mPlayerSettings.put(id, settings);
+			if(settings.defaultChannel != null){
+			    mDefaultChannel.put(id,settings.defaultChannel);
+            }
 		}
 		
 		return settings;
@@ -275,12 +285,9 @@ public class PlayerManager implements Listener, IPacketHandler
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setMute", null, PlayerManager.getUniqueId(player), endTime);
 	}
 	
-	public boolean isPlayerMuted(CommandSender player)
-	{
-		if(player instanceof Player)
-			return System.currentTimeMillis() < getPlayerSettings(player).muteTime;
-		
-		return false;
+	public boolean isPlayerMuted(CommandSender player) {
+		return player instanceof Player && System.currentTimeMillis() < getPlayerSettings(player).muteTime;
+
 	}
 	
 	public void refreshPlayer(final Player player)
@@ -338,6 +345,7 @@ public class PlayerManager implements Listener, IPacketHandler
 		CommandSender player = mAllProxied.remove(packet.getID());
 		mProxied.remove(packet.getID());
 		mNicknames.remove(packet.getID());
+		mDefaultChannel.remove(packet.getID());
 		
 		Debugger.log("Proxy leave %s. Remove as local/remote", (player != null ? player.getName() : packet.getID()));
 	}
@@ -394,7 +402,15 @@ public class PlayerManager implements Listener, IPacketHandler
 		String nickname = mNicknames.get(current.getUniqueId());
 		if (nickname != null)
 			current.setDisplayName(nickname);
-		
+		PlayerSettings settings = mPlayerSettings.get(current.getUniqueId());
+		String chan = settings.defaultChannel;
+		if(chan != null){
+			if(BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)){
+				mDefaultChannel.put(current.getUniqueId(),chan);
+				BungeeChat.permissionManager.playerRemove(current,
+						BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan));
+			}
+		}
 		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
 		{
 			@Override
@@ -410,6 +426,12 @@ public class PlayerManager implements Listener, IPacketHandler
 	{
 		Player player = event.getPlayer();
 		mPlayerSettings.remove(player.getUniqueId());
+		String channel = mDefaultChannel.get(player.getUniqueId());
+		if(BungeeChat.getInstance().getChatChannelsManager().hasChannel(channel)){
+			BungeeChat.permissionManager.playerRemove(player,
+					BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(channel));
+		}
+		mDefaultChannel.remove(player.getUniqueId());
 		
 		// Prevent re-adding the player when they leave the proxy
 		if (mProxied.contains(player.getUniqueId()))
@@ -564,4 +586,23 @@ public class PlayerManager implements Listener, IPacketHandler
 			return ((RemotePlayer)sender).getUniqueId();
 		return null;
 	}
+
+	public void setDefaultChannel(Player sender, String channel){
+        PlayerSettings settings = getPlayerSettings(sender);
+        settings.defaultChannel = channel;
+        mPlayerSettings.put(sender.getUniqueId(),settings);
+        if ((channel != null)) {
+            mDefaultChannel.put(sender.getUniqueId(), channel);
+        } else {
+            mDefaultChannel.remove(sender.getUniqueId());
+        }
+        updatePlayerSettings(sender);
+    }
+
+    @Nullable
+	public String getDefaultChatChannel(Player sender){
+        return mDefaultChannel.getOrDefault(sender.getUniqueId(), null);
+    }
+
+
 }

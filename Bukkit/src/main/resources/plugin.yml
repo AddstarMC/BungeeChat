@@ -166,11 +166,15 @@ commands:
     description: Allows you to debug aspects of bungeechat
     permission: bungeechat.debug
  # Subscription can be limited by limiting the subscribe command permission suffixed with the channel name
-  rpsubscribe:
+  chat:
     usage: /<command> <channel> <timeSecs> <roleplayname>
     description: Subcribes to an rp channel
-    permission: bungeechat.subscribe.*
-  rplist:
+    permission: bungeechat.subscribe
+  chanlist:
     usage: /<command> [all]
     description: List RP Channels;
-    permission: bungeechat.rplist
+    permission: bungeechat.chanlist
+  chatname:
+    usage: /<command> <name>
+    description: set a chat name
+    permission: bungeechat.chatprefix

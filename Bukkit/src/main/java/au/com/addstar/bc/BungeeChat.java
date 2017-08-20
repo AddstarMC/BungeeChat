@@ -6,6 +6,7 @@ import au.com.addstar.bc.listeners.SystemMessagesHandler;
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.RemotePlayer;
+import au.com.addstar.bc.sync.packet.*;
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
@@ -29,15 +30,11 @@ import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
-import au.com.addstar.bc.sync.packet.MirrorPacket;
-import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
-import au.com.addstar.bc.sync.packet.SendPacket;
-import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 import au.com.addstar.bc.utils.Utilities;
 
 public class BungeeChat extends JavaPlugin implements Listener
 {
-	static Permission permissionManager;
+	public static Permission permissionManager;
 	
 	public static String serverName = "ERROR";
 	private static BungeeChat mInstance;
@@ -54,20 +51,21 @@ public class BungeeChat extends JavaPlugin implements Listener
 	
 	private SyncManager mSyncManager;
 	private BukkitComLink mComLink;
-	
+	public boolean debug;
+	public static String forceGlobalprefix = "!";
 	@SuppressWarnings( "unchecked" )
 	@Override
 	public void onEnable()
 	{
 		mInstance = this;
-		
+		debug = false;
 		RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(Permission.class);
 		if (permissionProvider != null)
 			permissionManager = permissionProvider.getProvider();
 		else
 			permissionManager = null;
 		
-		Bukkit.getPluginManager().registerEvents(new ChatHandler(), this);
+		Bukkit.getPluginManager().registerEvents(new ChatHandler(this), this);
 		
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
@@ -134,8 +132,9 @@ public class BungeeChat extends JavaPlugin implements Listener
 		
 		getCommand("runchat").setExecutor(mChatChannels);
 		getCommand("bchatdebug").setExecutor(new Debugger());
-		getCommand("rpsubscribe").setExecutor(new RolePlaySubscribeCommand(mInstance));
-		getCommand("rplist").setExecutor(new RPChannelListCommand(mInstance));
+		getCommand("chat").setExecutor(new SubscribeCommand(mInstance));
+		getCommand("chanlist").setExecutor(new ChannelListCommand(mInstance));
+		getCommand("chatname").setExecutor(new SetChatNameCommand());
 	}
 	
 	@Override
@@ -187,6 +186,8 @@ public class BungeeChat extends JavaPlugin implements Listener
 			mChatChannels.load(config);
 			mSocialSpyHandler.load(config);
 			mAfkHandler.load(config);
+			debug = config.getBoolean("debug", false);
+			forceGlobalprefix = config.getString("forceGlobalPrefix", "!");
 		}
 	}
 
@@ -226,7 +227,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		int pos = -1;
 		char colorChar = '&';
 		
-		StringBuffer buffer = new StringBuffer(message);
+		StringBuilder buffer = new StringBuilder(message);
 		
 		boolean hasColor = sender.hasPermission("bungeechat.color");
 		boolean hasReset = sender.hasPermission("bungeechat.format.reset");
@@ -317,7 +318,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		return mInstance;
 	}
 
-	public  ChatChannelManager getChatChannelsManager() {
+	public ChatChannelManager getChatChannelsManager() {
 		return mChatChannels;
 	}
 }

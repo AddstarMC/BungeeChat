@@ -7,8 +7,6 @@ import au.com.addstar.bc.sync.SyncSerializable;
 import org.jetbrains.annotations.NotNull;
 import net.cubespace.Yamler.Config.YamlConfig;
 
-import static java.lang.Boolean.FALSE;
-
 public class ChatChannel extends YamlConfig implements SyncSerializable {
     public String command;
     public String format;
@@ -26,7 +24,7 @@ public class ChatChannel extends YamlConfig implements SyncSerializable {
         this(cmd, prefix, perm, listenPerm, false, false);
     }
 
-    public ChatChannel(String cmd, String prefix, String perm, String listenPerm, @NotNull Boolean sub, @NotNull Boolean rp) {
+    public ChatChannel(String cmd, String prefix, String perm, String listenPerm, Boolean sub, Boolean rp) {
         this.command = cmd;
         this.format = prefix;
         this.permission = perm;

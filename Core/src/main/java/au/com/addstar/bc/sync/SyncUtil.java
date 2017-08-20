@@ -206,15 +206,10 @@ public class SyncUtil
 		{
 			System.out.println("WARNING: Unable to find fromMap method in class '" + className + "' required for deserialization");
 		}
-		catch ( SecurityException e )
+		catch ( SecurityException | IllegalAccessException e )
 		{
 			throw new RuntimeException(e);
-		}
-		catch ( IllegalAccessException e )
-		{
-			throw new RuntimeException(e);
-		}
-		catch ( InvocationTargetException e )
+		} catch ( InvocationTargetException e )
 		{
 			if(e.getCause() instanceof RuntimeException)
 				throw (RuntimeException)e.getCause();

@@ -13,19 +13,20 @@ import java.util.List;
  * Created for the Ark: Survival Evolved.
  * Created by Narimm on 17/08/2017.
  */
-public class RPChannelListCommand implements CommandExecutor {
+public class ChannelListCommand implements CommandExecutor {
 
 
     private static BungeeChat instance;
-    public RPChannelListCommand(BungeeChat plugin) {
+    public ChannelListCommand(BungeeChat plugin) {
         instance = plugin;
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
-        if(commandSender.hasPermission("bungeechat.rplist")) {
+    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if(commandSender.hasPermission("bungeechat.chanlist")) {
             boolean sub = true;
-            if(strings.length > 0 && strings[0].equals("all"))sub = false;
+            if(args.length > 0 && args[0].equals("all") &&
+                    commandSender.hasPermission("bungeechat.chanlist.all"))sub = false;
             ChatChannelManager manager = instance.getChatChannelsManager();
             List<String> message = new ArrayList<>();
             if(sub){
@@ -34,7 +35,7 @@ public class RPChannelListCommand implements CommandExecutor {
                 message.add("***List of Roleplay Channels**");
             }
             message.add("-----------------------");
-            message.addAll(manager.getChannels(sub));
+            message.addAll(manager.getChannelNames(sub));
             message.add("-----------------------");
             String[] messages = new String[message.size()];
             message.toArray(messages);

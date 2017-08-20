@@ -209,67 +209,51 @@ public class BungeeChat extends Plugin implements Listener
 	{
 		mKeywordSettings.clear();
 		File onDisk = new File(getDataFolder(), file);
-			
-		InputStream input = new FileInputStream(onDisk);
-		
-		try
-		{
+
+		try (InputStream input = new FileInputStream(onDisk)) {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-			
+
 			int lineNo = 0;
-			while(reader.ready())
-			{
+			while (reader.ready()) {
 				++lineNo;
 				String line = reader.readLine();
-				if(line.startsWith("#") || line.trim().isEmpty())
+				if (line.startsWith("#") || line.trim().isEmpty())
 					continue;
-				
+
 				String regex, colourString;
-			
-				if(line.contains(">"))
-				{
+
+				if (line.contains(">")) {
 					int pos = line.lastIndexOf('>');
 					regex = line.substring(0, pos).trim();
 					colourString = line.substring(pos + 1).trim();
-				}
-				else
-				{
+				} else {
 					regex = line.trim();
 					colourString = ChatColor.GOLD.toString();
 				}
 
-				try
-				{
+				try {
 					Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-				}
-				catch(PatternSyntaxException e)
-				{
+				} catch (PatternSyntaxException e) {
 					getLogger().warning("[" + file + "] Invalid regex: \"" + regex + "\" at line " + lineNo);
 					continue;
 				}
-				
-				StringBuilder colour = new StringBuilder(); 
-				for(int i = 0; i < colourString.length(); ++i)
-				{
+
+				StringBuilder colour = new StringBuilder();
+				for (int i = 0; i < colourString.length(); ++i) {
 					char c = colourString.charAt(i);
 					ChatColor col = ChatColor.getByChar(c);
-					
-					if(col == null)
-					{
+
+					if (col == null) {
 						getLogger().warning("[" + file + "] Invalid colour code: \'" + c + "\' at line " + lineNo);
 						continue;
 					}
-					
+
 					colour.append(col.toString());
 				}
-				
+
 				mKeywordSettings.put(regex, colour.toString());
 			}
 			reader.close();
-		}
-		finally
-		{
-			input.close();
 		}
 	}
 	

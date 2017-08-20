@@ -121,13 +121,8 @@ public class SyncManager implements Listener, IPacketHandler
 	
 	public void setProperty(ProxiedPlayer player, String property, Object value)
 	{
-		HashMap<String, Object> values = mPlayerProperties.get(player);
-		if(values == null)
-		{
-			values = new HashMap<>();
-			mPlayerProperties.put(player, values);
-		}
-		
+		HashMap<String, Object> values = mPlayerProperties.computeIfAbsent(player, k -> new HashMap<>());
+
 		Object oldValue;
 		if(value == null)
 			oldValue = values.remove(property);

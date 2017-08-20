@@ -29,7 +29,7 @@ public class Formatter
 	public static String consoleOverride = null;
 	
 	private static String mDefaultFormat = "<{DISPLAYNAME}> {MESSAGE}";
-	
+	private static String mRpDefaultFormat = "<{DISPLAYNAME}>({CHATNAME}) {MESSAGE}";
 	public static boolean keywordsEnabled;
 	public static ArrayList<String> keywordEnabledChannels = new ArrayList<>();
 	public static String keywordPerm;
@@ -135,6 +135,18 @@ public class Formatter
 		else
 			return level.color + displayName;
 	}
+	public static String getChatName(CommandSender sender){
+		String chatName = null;
+		if(sender instanceof Player) {
+			chatName = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
+		}else if (sender instanceof RemotePlayer){
+			chatName = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
+		}else{
+
+		}
+		return chatName;
+	}
+
 	
 	public static String getDisplayName(CommandSender sender, PermissionSetting level)
 	{
@@ -160,18 +172,23 @@ public class Formatter
 		string = string.replace("{RAWDISPLAYNAME}", ChatColor.stripColor(getDisplayName(sender, level)));
 		string = string.replace("{NAME}", sender.getName());
 		string = string.replace("{MESSAGE}", "%2$s");
-
 		string = string.replace("{SERVER}", BungeeChat.serverName);
 		
 		if(sender instanceof Player)
 		{
 			Player player = (Player)sender;
+			String prefix = "";
+			if(prefix == null){
+				prefix = "";
+			}
+			string = string.replace("{CHATNAME}", prefix );
 			String group = BungeeChat.getPrimaryGroup(player);
 			string = string.replace("{GROUP}", (group != null ? group : "Default"));
 			string = string.replace("{WORLD}", player.getWorld().getName());
 		}
 		else
 		{
+			string = string.replace("{CHATNAME}", "" );
 			string = string.replace("{GROUP}", "Server");
 			string = string.replace("{WORLD}", "");
 		}
@@ -191,12 +208,18 @@ public class Formatter
 		if(sender instanceof Player)
 		{
 			Player player = (Player)sender;
+			String prefix = BungeeChat.getPlayerManager().getPlayerRPPrefix(player);
+			if(prefix == null){
+				prefix = "";
+			}
+			string = string.replace("{CHATNAME}", prefix );
 			String group = BungeeChat.getPrimaryGroup(player);
 			string = string.replace("{GROUP}", (group != null ? group : "Default"));
 			string = string.replace("{WORLD}", player.getWorld().getName());
 		}
 		else
 		{
+			string = string.replace("{CHATNAME}", "" );
 			string = string.replace("{GROUP}", "Server");
 			string = string.replace("{WORLD}", "");
 		}

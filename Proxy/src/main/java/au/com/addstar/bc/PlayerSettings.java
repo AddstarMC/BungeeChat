@@ -6,8 +6,9 @@ import java.util.UUID;
 
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import net.cubespace.Yamler.Config.Config;
+import net.cubespace.Yamler.Config.YamlConfig;
 
-public class PlayerSettings extends Config
+public class PlayerSettings extends YamlConfig
 {
 	public PlayerSettings(File file)
 	{
@@ -33,7 +34,10 @@ public class PlayerSettings extends Config
 
 	@NoSave
 	public String rolePlayPrefix = "";
-	
+
+	@NoSave
+	public String defaultChannel = "";
+
 	@Override
 	protected boolean doSkip( Field field )
 	{
@@ -49,10 +53,11 @@ public class PlayerSettings extends Config
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
 		rolePlayPrefix = packet.getRPprefix();
+		defaultChannel = packet.getDefaultChannel();
 	}
 	
 	public PlayerSettingsPacket getUpdatePacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, rolePlayPrefix);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, rolePlayPrefix,defaultChannel);
 	}
 }

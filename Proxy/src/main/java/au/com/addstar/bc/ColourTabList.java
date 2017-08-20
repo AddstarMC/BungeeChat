@@ -126,14 +126,7 @@ public class ColourTabList extends TabListAdapter
 				sendPacket(packet, player);
 		}
 		
-		ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				updateAllHeaders();
-			}
-		}, 50, TimeUnit.MILLISECONDS);
+		ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, ColourTabList::updateAllHeaders, 50, TimeUnit.MILLISECONDS);
 		
 		mVisiblePlayers.clear();
 		mTabLists.remove(this);

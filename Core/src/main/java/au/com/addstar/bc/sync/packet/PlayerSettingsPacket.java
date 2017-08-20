@@ -7,11 +7,11 @@ import au.com.addstar.bc.sync.PacketSchema;
 
 public class PlayerSettingsPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("id=UUID,nickname=String,lmt=UUID,socialspy=Byte,msgtoggle=Boolean,mute=Long,afk=Boolean,roleplayprefix=String");
+	public static final PacketSchema schema = PacketSchema.from("id=UUID,nickname=String,lmt=UUID,socialspy=Byte,msgtoggle=Boolean,mute=Long,afk=Boolean,roleplayprefix=String,defaultChannel=String");
 	
-	public PlayerSettingsPacket(UUID id, String nickname, UUID lastMessageTarget, int socialSpyState, boolean msgToggle, long muteTime, boolean afk, String roleplayprefix)
+	public PlayerSettingsPacket(UUID id, String nickname, UUID lastMessageTarget, int socialSpyState, boolean msgToggle, long muteTime, boolean afk, String roleplayprefix, String defaultChannel)
 	{
-		super(id, nickname, lastMessageTarget, (byte)socialSpyState, msgToggle, muteTime, afk, roleplayprefix);
+		super(id, nickname, lastMessageTarget, (byte)socialSpyState, msgToggle, muteTime, afk, roleplayprefix,defaultChannel);
 	}
 	
 	protected PlayerSettingsPacket(Object[] data)
@@ -56,5 +56,9 @@ public class PlayerSettingsPacket extends Packet
 
 	public String getRPprefix() {
 		return (String)getData(7);
+	}
+
+	public String getDefaultChannel() {
+		return (String) getData(8);
 	}
 }

@@ -5,7 +5,6 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 
-import javax.xml.soap.Text;
 import java.util.Map;
 
 public class ManagementCommand extends Command

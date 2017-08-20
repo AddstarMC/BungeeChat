@@ -7,7 +7,6 @@ import java.util.Map;
 
 import au.com.addstar.bc.sync.SyncSerializable;
 
-import net.cubespace.Yamler.Config.Config;
 import net.cubespace.Yamler.Config.YamlConfig;
 
 public class KeywordHighlighterSettings extends YamlConfig implements SyncSerializable

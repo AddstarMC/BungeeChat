@@ -8,8 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import static java.lang.Boolean.FALSE;
-
 public class ChatChannel
 {
 	public String name;

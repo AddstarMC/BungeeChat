@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.ChatChannel;
 import org.apache.commons.lang.StringUtils;
@@ -17,7 +18,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
-import org.bukkit.plugin.Plugin;
 
 import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.event.ChatChannelEvent;
@@ -27,10 +27,8 @@ import au.com.addstar.bc.sync.SyncConfig;
 public class ChatChannelManager implements Listener, CommandExecutor
 {
 	private HashMap<String, ChatChannel> mChannels = new HashMap<>();
-	private static BungeeChat instance;
 	public ChatChannelManager(BungeeChat plugin)
 	{
-		instance = plugin;
 	    Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 	
@@ -41,13 +39,13 @@ public class ChatChannelManager implements Listener, CommandExecutor
 			return;
 		
 		ChatChannel channelObj = mChannels.get(event.getChannelName());
-		if(channelObj != null)
-		{
-			if(channelObj.listenPermission != null)
-				Bukkit.broadcast(event.getMessage(), channelObj.listenPermission);
-			else
-				Bukkit.broadcastMessage(event.getMessage());
-		}
+		if(channelObj != null) {
+			Debugger.log(event.getEventName() + " Chat EVENT RCV  ->" + event.getMessage());
+                if (channelObj.listenPermission != null)
+                    Bukkit.broadcast(event.getMessage(), channelObj.listenPermission);
+                else
+                    Bukkit.broadcastMessage(event.getMessage());
+        }
 	}
 	
 	@EventHandler(priority=EventPriority.LOW, ignoreCancelled=true)
@@ -55,6 +53,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 	{
 		if(processCommands(event.getPlayer(), event.getMessage().substring(1)))
 		{
+			Debugger.log(event.getEventName() + " Preproccess  CANCELLED - BC processed ->" + event.getMessage());
 			event.setMessage("/nullcmd");
 			event.setCancelled(true);
 		}
@@ -65,6 +64,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 	{
 		if(processCommands(event.getSender(), event.getCommand()))
 		{
+			Debugger.log(event.getCommand()+ " SRV CMD CANCELLED - BC processed ->" + event.getCommand());
 			event.setCommand("/nullcmd");
 		}
 	}
@@ -83,25 +83,21 @@ public class ChatChannelManager implements Listener, CommandExecutor
 			command = message.substring(0, pos);
 			message = message.substring(pos+1);
 		}
-		
+
 		for(ChatChannel channel : mChannels.values())
 		{
-			if(!channel.command.isEmpty() && channel.command.equals(command))
+			if((channel.command != null) && !channel.command.isEmpty() && channel.command.equals(command))
 			{
-				if(channel.permission != null && !sender.hasPermission(channel.permission))
-					break;
-				
-				if(message != null) {
-					if (channel.isRP) {
-						String prefix = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
-						channel.say(sender, "{" + prefix + "} " + message);
-					}
-					channel.say(sender, message);
+				if(channel.permission != null && !sender.hasPermission(channel.permission)){
+				    break;
 				}
-				return true;
+				if(message != null) {
+                    channel.say(sender, message);
+                    return true;
+                }
+				Debugger.log("BC : " + channel.name + ": NULL MSG");
 			}
 		}
-		
 		return false;
 	}
 	
@@ -114,24 +110,22 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		String channelCmd = args[0];
 		
 		String message = StringUtils.join(args, ' ', 1, args.length);
-		
 		for(ChatChannel channel : mChannels.values())
 		{
-			if(!channel.command.isEmpty() && channel.command.equalsIgnoreCase(channelCmd))
-			{
-				if(channel.permission != null && !sender.hasPermission(channel.permission))
-					break;
-                if (channel.isRP) {
-                    String prefix = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
-                    channel.say(sender, "{" + prefix + "} " + message);
-                }
-				channel.say(sender, message);
-				return true;
+			if(!channel.command.isEmpty() && channel.command.equalsIgnoreCase(channelCmd)) {
+				BungeeChat.getInstance().getLogger().info("Command: " +channelCmd +" matched");
+				if (channel.permission != null)
+					if (sender.hasPermission(channel.permission)) {
+                        channel.say(sender, message);
+					} else {
+						Debugger.log("BC : " + channel.name + ":" + message);
+						return true;
+					}
+				}
 			}
-		}
-		
-		return true;
+			return false;
 	}
+
 	
 	public void unregisterAll()
 	{
@@ -168,7 +162,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		}
 	}
 
-	public List<String> getChannels(boolean sub){
+	public List<String> getChannelNames(boolean sub){
 		List<String> channels = new ArrayList<>();
 		for (Map.Entry<String, ChatChannel> channel: mChannels.entrySet()){
 			if(sub) {
@@ -182,10 +176,17 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		return channels;
 	}
 
+	public HashMap<String, ChatChannel> getChannelObj() {
+		return mChannels;
+	}
 
 	public boolean isSubscribable(String channel) {
         return hasChannel(channel) && mChannels.get(channel).subscribe;
     }
+
+	public boolean isRolePlay(String channel) {
+		return hasChannel(channel) && mChannels.get(channel).isRP;
+	}
 
     public String getChannelSpeakPerm(String channel){
 		if(mChannels.containsKey(channel)) {
