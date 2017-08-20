@@ -34,6 +34,13 @@
     <module>Bukkit</module>
     <module>Core</module>
   </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>2.8.47</version>
+    </dependency>
+  </dependencies>
 
   <build>
     <pluginManagement>
