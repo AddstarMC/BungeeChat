@@ -1,10 +1,12 @@
 package au.com.addstar.bc;
 
+import au.com.addstar.bc.commands.ChannelListCommand;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -22,32 +24,14 @@ public class Utilities {
         return player;
     }
 
-    public BungeeChat createPlugin(){
-        BungeeChat plugin = mock(BungeeChat.class);
-
+    public BungeeChatTest createPlugin(){
+        BungeeChatTest plugin = new BungeeChatTest();
+        return plugin;
     }
 
-
-    private class BungeeChatTest extends BungeeChat{
-
-
-        @Override
-        public FileConfiguration getConfig() {
-            return super.getConfig();
-        }
-
-        @Override
-        public void onEnable() {
-            super.onEnable();
-        }
-
-        public PluginCommand getCommand(String command){
-            PluginCommand pcommand = mock(PluginCommand.class);
-            when(pcommand.setExecutor(CommandExecutor.))
-            return pcommand;
-        }
-
-
+    public ChatChannelManager createChannelManager(){
+       ChatChannelManager mocked =  mock(ChatChannelManager.class);
+       return mocked;
     }
 
 }
