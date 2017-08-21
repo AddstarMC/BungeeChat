@@ -12,18 +12,19 @@ import org.bukkit.entity.Player;
  */
 public class SetChatNameCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if(commandSender instanceof Player){
+    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {           if(commandSender instanceof Player){
+            if (args.length == 0) {
+                commandSender.sendMessage("Usage: /chatname <name>");
+                return false;
+            } else {
+                Player player = (Player) commandSender;
+                String prefix = args[0];
+                BungeeChat.getPlayerManager().setPlayerRPPrefix(player, prefix);
+                return true;
+            }
+        }else{
             commandSender.sendMessage("Must be used as a local player");
         }
-        if (args.length == 0) {
-            commandSender.sendMessage("Usage: /chatname <name>");
-            return false;
-        } else {
-            String prefix = args[0];
-            BungeeChat.getPlayerManager().setPlayerRPPrefix(commandSender, prefix);
-
-            return true;
-        }
+        return false;
     }
 }

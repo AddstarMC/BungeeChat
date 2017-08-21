@@ -207,10 +207,10 @@ import javax.annotation.Nullable;
 			settings.rolePlayPrefix = prefix;
 			mPlayerSettings.put(((Player) player).getUniqueId(),settings);
 			updatePlayerSettings(player);
-			Debugger.log("Setting RpPrefix local %s to '%s'", player.getName(), prefix);
+			Debugger.log("Setting chat name local %s to '%s'", player.getName(), prefix);
 
 		}else {
-			Debugger.log("Cannot set RpPrefix local %s to '%s' as player is not local", player.getName(), prefix);
+			Debugger.log("Cannot set chat name local %s to '%s' as player is not local", player.getName(), prefix);
 		}
 
 	}
@@ -512,6 +512,7 @@ import javax.annotation.Nullable;
 			
 			if(!nickname.isEmpty())
 				mNicknames.put(id, nickname);
+
 		}
 	}
 	
@@ -533,6 +534,11 @@ import javax.annotation.Nullable;
 			{
 				player.setDisplayName(settings.nickname);
 				onPlayerNameChange(player.getUniqueId(), settings.nickname);
+			}
+			if(settings.defaultChannel.isEmpty()){
+				mDefaultChannel.remove(player.getUniqueId());
+			}else{
+				mDefaultChannel.put(player.getUniqueId(),settings.defaultChannel);
 			}
 		}
 	}
