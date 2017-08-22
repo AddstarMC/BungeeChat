@@ -9,13 +9,16 @@ import java.util.List;
 import java.util.UUID;
 
 import au.com.addstar.bc.commands.Debugger;
+import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.PlayerSettings;
 import au.com.addstar.bc.objects.RemotePlayer;
+import com.sun.org.apache.regexp.internal.RE;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -204,7 +207,7 @@ import javax.annotation.Nullable;
 	public void setPlayerChatName(CommandSender player, String prefix){
 		if(player instanceof Player)
 		{
-			PlayerSettings settings = getPlayerSettings((Player)player);
+			PlayerSettings settings = getPlayerSettings(player);
 			settings.chatName = prefix;
 			mPlayerSettings.put(((Player) player).getUniqueId(),settings);
 			updatePlayerSettings(player);
@@ -348,8 +351,8 @@ import javax.annotation.Nullable;
 		CommandSender player = mAllProxied.remove(packet.getID());
 		mProxied.remove(packet.getID());
 		mNicknames.remove(packet.getID());
+		unsubscribeAll(packet.getID());
 		mDefaultChannel.remove(packet.getID());
-		
 		Debugger.log("Proxy leave %s. Remove as local/remote", (player != null ? player.getName() : packet.getID()));
 	}
 	
@@ -406,15 +409,12 @@ import javax.annotation.Nullable;
 		if (nickname != null)
 			current.setDisplayName(nickname);
 		String chan = mDefaultChannel.get(current.getUniqueId());
-		if(chan == null){
-				mDefaultChannel.remove(current.getUniqueId());
-				BungeeChat.permissionManager.playerRemove(current,
-						BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan));
-		}else{
+		if(chan != null){
 			if(BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)){
 				mDefaultChannel.put(current.getUniqueId(),chan);
-				BungeeChat.permissionManager.playerAdd(current,
+				BungeeChat.permissionManager.playerAdd(null,current,
 						BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan));
+				event.getPlayer().recalculatePermissions();
 			}
 		}
 		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
@@ -427,17 +427,6 @@ import javax.annotation.Nullable;
 		}, 2L);
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-		private void onWorldChange(PlayerChangedWorldEvent event){
-			Player player  = event.getPlayer();
-		String chan = mDefaultChannel.get(player.getUniqueId());
-		if (chan != null){
-			String chanPerm = BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan);
-			BungeeChat.permissionManager.playerRemove(event.getFrom().getName(),Bukkit.getOfflinePlayer(player.getUniqueId()),chanPerm);
-			BungeeChat.permissionManager.playerAdd(player,chanPerm);
-		}
-	}
-	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onPlayerLeaveServer(PlayerQuitEvent event)
 	{
@@ -445,11 +434,10 @@ import javax.annotation.Nullable;
 		mPlayerSettings.remove(player.getUniqueId());
 		String channel = mDefaultChannel.get(player.getUniqueId());
 		if(BungeeChat.getInstance().getChatChannelsManager().hasChannel(channel)){
-			BungeeChat.permissionManager.playerRemove(player,
+			BungeeChat.permissionManager.playerRemove(null,player,
 					BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(channel));
 		}
-		mDefaultChannel.remove(player.getUniqueId());
-		
+
 		// Prevent re-adding the player when they leave the proxy
 		if (mProxied.contains(player.getUniqueId()))
 		{
@@ -460,6 +448,8 @@ import javax.annotation.Nullable;
 		else
 		{
 			mAllProxied.remove(player.getUniqueId());
+			mDefaultChannel.remove(player.getUniqueId());
+			unsubscribeAll(player);
 			Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
 		}
 	}
@@ -626,6 +616,32 @@ import javax.annotation.Nullable;
 	public String getDefaultChatChannel(Player sender){
         return mDefaultChannel.getOrDefault(sender.getUniqueId(), null);
     }
+
+    public void unsubscribeAll(CommandSender sender){
+				if(sender instanceof Player){
+					unsubscribeAll(((Player) sender).getUniqueId());
+					PlayerSettings settings = getPlayerSettings(sender);
+					settings.defaultChannel = "";
+					updatePlayerSettings(sender);
+				}
+				if(sender instanceof RemotePlayer){
+					unsubscribeAll(((RemotePlayer) sender).getUniqueId());
+				}
+
+	}
+
+	private void unsubscribeAll(UUID uuid){
+    	OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+    	if(player !=null) {
+			for (ChatChannel channels : BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()) {
+				if (channels.subscribe) {
+					if(BungeeChat.permissionManager.playerHas(null, player, channels.permission))
+						BungeeChat.permissionManager.playerRemove(null, player, channels.permission);
+				}
+			}
+		}
+		mDefaultChannel.remove(uuid);
+	}
 
 
 }

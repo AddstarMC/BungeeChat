@@ -57,6 +57,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 		BungeeChat.instance.getComLink().broadcastMessage("BCState", ostream.toByteArray());
 	}
 	
+
 	public void addHandler(IPacketHandler handler, Class<? extends Packet>... packets)
 	{
 		if(packets == null)

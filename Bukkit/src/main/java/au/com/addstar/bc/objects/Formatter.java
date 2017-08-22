@@ -135,14 +135,14 @@ public class Formatter
 		else
 			return level.color + displayName;
 	}
-	public static String getChatName(CommandSender sender){
-		String chatName = null;
+	private static String getChatName(CommandSender sender){
+		String chatName;
 		if(sender instanceof Player) {
 			chatName = BungeeChat.getPlayerManager().getPlayerChatName(sender);
 		}else if (sender instanceof RemotePlayer){
 			chatName = BungeeChat.getPlayerManager().getPlayerChatName(sender);
 		}else{
-
+			return null;
 		}
 		return chatName;
 	}
@@ -177,7 +177,7 @@ public class Formatter
 		if(sender instanceof Player)
 		{
 			Player player = (Player)sender;
-			String prefix = "";
+			String prefix = getChatName(sender);
 			if(prefix == null){
 				prefix = "";
 			}
@@ -202,13 +202,12 @@ public class Formatter
 		string = string.replace("{RAWDISPLAYNAME}", ChatColor.stripColor(getDisplayName(sender, level)));
 		string = string.replace("{NAME}", sender.getName());
 		string = string.replace("{MESSAGE}", "%1$s");
-
 		string = string.replace("{SERVER}", BungeeChat.serverName);
 		
 		if(sender instanceof Player)
 		{
 			Player player = (Player)sender;
-			String prefix = BungeeChat.getPlayerManager().getPlayerChatName(player);
+			String prefix = getChatName(player);
 			if(prefix == null){
 				prefix = "";
 			}

@@ -4,6 +4,7 @@ import au.com.addstar.bc.commands.*;
 import au.com.addstar.bc.listeners.ChatHandler;
 import au.com.addstar.bc.listeners.SystemMessagesHandler;
 import au.com.addstar.bc.objects.ChannelType;
+import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.RemotePlayer;
 import au.com.addstar.bc.sync.packet.*;
@@ -51,14 +52,12 @@ public class BungeeChat extends JavaPlugin implements Listener
 	
 	private SyncManager mSyncManager;
 	private BukkitComLink mComLink;
-	public boolean debug;
 	public static String forceGlobalprefix = "!";
 	@SuppressWarnings( "unchecked" )
 	@Override
 	public void onEnable()
 	{
 		mInstance = this;
-		debug = false;
 		RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(Permission.class);
 		if (permissionProvider != null)
 			permissionManager = permissionProvider.getProvider();
@@ -186,7 +185,6 @@ public class BungeeChat extends JavaPlugin implements Listener
 			mChatChannels.load(config);
 			mSocialSpyHandler.load(config);
 			mAfkHandler.load(config);
-			debug = config.getBoolean("debug", false);
 			forceGlobalprefix = config.getString("forceGlobalPrefix", "!");
 		}
 	}
@@ -321,4 +319,5 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public ChatChannelManager getChatChannelsManager() {
 		return mChatChannels;
 	}
+
 }

@@ -31,52 +31,40 @@ public class SubscribeCommand implements CommandExecutor {
         } else {
             String channel = args[0];
             if (channel.toLowerCase().equals("global")) {
-                String subscribed = BungeeChat.getPlayerManager().getDefaultChatChannel((Player)commandSender);
-                if (instance.getChatChannelsManager().hasChannel(subscribed)) {
+                String subscribed = BungeeChat.getPlayerManager().getDefaultChatChannel(player);
+                if (subscribed !=null  && instance.getChatChannelsManager().hasChannel(subscribed)) {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(subscribed);
-                    if (perm == null) {
-                        instance.getLogger().warning("The speak permission for " + channel + " is null");
-                        player.sendMessage("Error with Channel permission please contact admin");
-                        return false;
-                    }
-                    if (instance.getChatChannelsManager().isSubscribable(subscribed) && player.hasPermission(perm)) {
-                        BungeeChat.permissionManager.playerRemove(player, perm);
-                        player.recalculatePermissions();
-                        if (!player.hasPermission(perm)) {
-                            BungeeChat.getPlayerManager().setDefaultChannel(player, null);
-                            commandSender.sendMessage("Unsubscribed from "+channel);
-                        }else{
-                            commandSender.sendMessage("Could not unsubscribe from " + channel);
-                        }
+                    BungeeChat.getPlayerManager().unsubscribeAll(player);
+                    if (!player.hasPermission(perm)) {
+                        commandSender.sendMessage("Unsubscribed from "+channel);
+                    }else{
+                        commandSender.sendMessage("Could not unsubscribe from " + channel);
                     }
                 }else{
                     commandSender.sendMessage("You are not subscribed to any channels.");
-                    for(ChatChannel c: BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()){
-                        if(player.hasPermission(c.permission)){
-                            BungeeChat.permissionManager.playerRemove(player, c.permission);
-                            instance.getLogger().info("Removed Perm : " +player.getName() + " : " + c.permission );
-                        }
-
+                    BungeeChat.getPlayerManager().unsubscribeAll(player);
                     }
-                    player.recalculatePermissions();
-                }
                 return true;
             }
             if (commandSender.hasPermission("bungeechat.subscribe." + channel)) {
                 String prefix = BungeeChat.getPlayerManager().getPlayerSettings(player).chatName;
-                if (instance.getChatChannelsManager().hasChannel(channel)) {
-                    String perm = instance.getChatChannelsManager().getChannelSpeakPerm(channel);
+                final ChatChannel chatChannel = instance.getChatChannelsManager().getChatChannel(channel);
+                if (chatChannel != null) {
+                    String perm = chatChannel.permission;
                     if (perm == null) {
                         instance.getLogger().warning("The speak permission for " + channel + " is null");
                         player.sendMessage("Error with Channel permission please contact admin");
                         return false;
                     }
-                    if (instance.getChatChannelsManager().isSubscribable(channel) && !player.hasPermission(perm)) {
+                    BungeeChat.getPlayerManager().unsubscribeAll(player);
+                    if (chatChannel.subscribe && !player.hasPermission(perm)) {
                         BungeeChat.permissionManager.playerAdd(player, perm);
                         player.recalculatePermissions();
                         if (player.hasPermission(perm)) {
-                            BungeeChat.getPlayerManager().setDefaultChannel(player, channel);
-                            player.sendMessage("You have subcribed to " + channel);
+                            BungeeChat.getPlayerManager().setDefaultChannel(player, chatChannel.name);
+                            player.sendMessage("You have subcribed to " + chatChannel.name);
+                            player.sendMessage("Your chat will default to this channel.");
+                            player.sendMessage("However you can direct chat to this channel using : /" + chatChannel.command );
                             if (instance.getChatChannelsManager().isRolePlay(channel)) {
                                 if (prefix != null) {
                                     commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&',

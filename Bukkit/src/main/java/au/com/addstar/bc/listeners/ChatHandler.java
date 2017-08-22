@@ -45,7 +45,7 @@ public class ChatHandler implements Listener{
                     }
                 }
             }else{
-                instance.getLogger().info("Channel Manager not have the default channel...." + channel);
+                instance.getLogger().info("Channel Manager did not have the default channel...." + channel);
             }
         }
 		PermissionSetting level = Formatter.getPermissionLevel(event.getPlayer());

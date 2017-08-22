@@ -23,6 +23,8 @@ import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.sync.SyncConfig;
 
+import javax.annotation.Nullable;
+
 
 public class ChatChannelManager implements Listener, CommandExecutor
 {
@@ -198,6 +200,10 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		return mChannels.containsKey(channel);
 	}
 
+	@Nullable
+	public ChatChannel getChatChannel(String name){
+		return mChannels.getOrDefault(name, null);
+	}
 
 }
 

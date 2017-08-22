@@ -1,6 +1,8 @@
 package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.PermissionSetting;
+import au.com.addstar.bc.objects.Formatter;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,7 +21,8 @@ public class SetChatNameCommand implements CommandExecutor {
             } else {
                 Player player = (Player) commandSender;
                 String prefix = args[0];
-                BungeeChat.getPlayerManager().setPlayerChatName(player, prefix);
+                String colorprefix = BungeeChat.colorize(prefix,commandSender);
+                BungeeChat.getPlayerManager().setPlayerChatName(player, colorprefix);
                 return true;
             }
         }else{
