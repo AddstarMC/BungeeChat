@@ -58,7 +58,7 @@ public class SubscribeCommand implements CommandExecutor {
                     }
                     BungeeChat.getPlayerManager().unsubscribeAll(player);
                     if (chatChannel.subscribe && !player.hasPermission(perm)) {
-                        BungeeChat.permissionManager.playerAdd(player, perm);
+                        BungeeChat.permissionManager.playerAdd(null,player, perm);
                         player.recalculatePermissions();
                         if (player.hasPermission(perm)) {
                             BungeeChat.getPlayerManager().setDefaultChannel(player, chatChannel.name);

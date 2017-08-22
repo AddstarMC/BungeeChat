@@ -620,6 +620,7 @@ import javax.annotation.Nullable;
     public void unsubscribeAll(CommandSender sender){
 				if(sender instanceof Player){
 					unsubscribeAll(((Player) sender).getUniqueId());
+					unsubscribeAll(((Player) sender).getUniqueId(),((Player) sender).getWorld().getName());
 					PlayerSettings settings = getPlayerSettings(sender);
 					settings.defaultChannel = "";
 					updatePlayerSettings(sender);
@@ -629,14 +630,24 @@ import javax.annotation.Nullable;
 				}
 
 	}
-
 	private void unsubscribeAll(UUID uuid){
+    	unsubscribeAll(uuid, null);
+	}
+
+
+
+	private void unsubscribeAll(UUID uuid, String world){
     	OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
     	if(player !=null) {
 			for (ChatChannel channels : BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()) {
 				if (channels.subscribe) {
-					if(BungeeChat.permissionManager.playerHas(null, player, channels.permission))
-						BungeeChat.permissionManager.playerRemove(null, player, channels.permission);
+					if(BungeeChat.permissionManager.playerHas(world, player, channels.permission)) {
+						if(BungeeChat.permissionManager.playerRemove(world, player, channels.permission)){
+							Debugger.log(channels.permission + " was removed ");
+						}else{
+							Debugger.log(channels.permission + " removal failed ");
+						}
+					}
 				}
 			}
 		}
