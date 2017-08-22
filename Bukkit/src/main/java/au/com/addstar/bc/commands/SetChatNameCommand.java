@@ -14,15 +14,19 @@ import org.bukkit.entity.Player;
  */
 public class SetChatNameCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {           if(commandSender instanceof Player){
-            if (args.length == 0) {
+    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if(commandSender instanceof Player){
+        Player player = (Player) commandSender;
+        if (args.length == 0) {
                 commandSender.sendMessage("Usage: /chatname <name>");
-                return false;
-            } else {
-                Player player = (Player) commandSender;
+                BungeeChat.getPlayerManager().setPlayerChatName(player, "");
+            commandSender.sendMessage(" Your chat name is cleared");
+
+        } else {
                 String prefix = args[0];
                 String colorprefix = BungeeChat.colorize(prefix,commandSender);
                 BungeeChat.getPlayerManager().setPlayerChatName(player, colorprefix);
+                commandSender.sendMessage(" Your chat name is set to" + colorprefix);
                 return true;
             }
         }else{
