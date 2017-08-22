@@ -405,9 +405,7 @@ import javax.annotation.Nullable;
 		String nickname = mNicknames.get(current.getUniqueId());
 		if (nickname != null)
 			current.setDisplayName(nickname);
-		PlayerSettings settings = mPlayerSettings.get(current.getUniqueId());
 		String chan = mDefaultChannel.get(current.getUniqueId());
-		if(chan == null)chan = settings.defaultChannel;
 		if(chan == null){
 				mDefaultChannel.remove(current.getUniqueId());
 				BungeeChat.permissionManager.playerRemove(current,
