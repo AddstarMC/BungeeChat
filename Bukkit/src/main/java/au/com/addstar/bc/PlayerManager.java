@@ -22,6 +22,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.StringUtil;
@@ -186,25 +187,25 @@ import javax.annotation.Nullable;
 		return matches;
 	}
 
-	public String getPlayerRPPrefix(CommandSender player){
+	public String getPlayerChatName(CommandSender player){
 		if(player instanceof Player)
 		{
 			PlayerSettings settings = getPlayerSettings(player);
-			return settings.rolePlayPrefix;
+			return settings.chatName;
 		}else if(player instanceof RemotePlayer){
             PlayerSettings settings = mPlayerSettings.get(((RemotePlayer) player).getUniqueId());
-            return settings.rolePlayPrefix;
+            return settings.chatName;
         }
 		else {
 			return null;
 		}
 	}
 
-	public void setPlayerRPPrefix(CommandSender player, String prefix){
+	public void setPlayerChatName(CommandSender player, String prefix){
 		if(player instanceof Player)
 		{
-			PlayerSettings settings = getPlayerSettings(player);
-			settings.rolePlayPrefix = prefix;
+			PlayerSettings settings = getPlayerSettings((Player)player);
+			settings.chatName = prefix;
 			mPlayerSettings.put(((Player) player).getUniqueId(),settings);
 			updatePlayerSettings(player);
 			Debugger.log("Setting chat name local %s to '%s'", player.getName(), prefix);
@@ -319,7 +320,9 @@ import javax.annotation.Nullable;
 	private void onPlayerJoin(PlayerJoinPacket packet)
 	{
 		mProxied.add(packet.getID());
-		
+		if(!packet.getDefaultChannel().isEmpty())
+			mDefaultChannel.put(packet.getID(),packet.getDefaultChannel());
+
 		if(!packet.getNickname().isEmpty())
 			mNicknames.put(packet.getID(), packet.getNickname());
 		
@@ -403,11 +406,16 @@ import javax.annotation.Nullable;
 		if (nickname != null)
 			current.setDisplayName(nickname);
 		PlayerSettings settings = mPlayerSettings.get(current.getUniqueId());
-		String chan = settings.defaultChannel;
-		if(chan != null){
+		String chan = mDefaultChannel.get(current.getUniqueId());
+		if(chan == null)chan = settings.defaultChannel;
+		if(chan == null){
+				mDefaultChannel.remove(current.getUniqueId());
+				BungeeChat.permissionManager.playerRemove(current,
+						BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan));
+		}else{
 			if(BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)){
 				mDefaultChannel.put(current.getUniqueId(),chan);
-				BungeeChat.permissionManager.playerRemove(current,
+				BungeeChat.permissionManager.playerAdd(current,
 						BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan));
 			}
 		}
@@ -419,6 +427,17 @@ import javax.annotation.Nullable;
 				updateTabColor(current);
 			}
 		}, 2L);
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+		private void onWorldChange(PlayerChangedWorldEvent event){
+			Player player  = event.getPlayer();
+		String chan = mDefaultChannel.get(player.getUniqueId());
+		if (chan != null){
+			String chanPerm = BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan);
+			BungeeChat.permissionManager.playerRemove(event.getFrom().getName(),Bukkit.getOfflinePlayer(player.getUniqueId()),chanPerm);
+			BungeeChat.permissionManager.playerAdd(player,chanPerm);
+		}
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)

@@ -138,9 +138,9 @@ public class Formatter
 	public static String getChatName(CommandSender sender){
 		String chatName = null;
 		if(sender instanceof Player) {
-			chatName = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
+			chatName = BungeeChat.getPlayerManager().getPlayerChatName(sender);
 		}else if (sender instanceof RemotePlayer){
-			chatName = BungeeChat.getPlayerManager().getPlayerRPPrefix(sender);
+			chatName = BungeeChat.getPlayerManager().getPlayerChatName(sender);
 		}else{
 
 		}
@@ -208,7 +208,7 @@ public class Formatter
 		if(sender instanceof Player)
 		{
 			Player player = (Player)sender;
-			String prefix = BungeeChat.getPlayerManager().getPlayerRPPrefix(player);
+			String prefix = BungeeChat.getPlayerManager().getPlayerChatName(player);
 			if(prefix == null){
 				prefix = "";
 			}

@@ -19,7 +19,7 @@ public class SetChatNameCommand implements CommandExecutor {
             } else {
                 Player player = (Player) commandSender;
                 String prefix = args[0];
-                BungeeChat.getPlayerManager().setPlayerRPPrefix(player, prefix);
+                BungeeChat.getPlayerManager().setPlayerChatName(player, prefix);
                 return true;
             }
         }else{

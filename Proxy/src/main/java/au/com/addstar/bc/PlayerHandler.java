@@ -119,7 +119,8 @@ public class PlayerHandler implements Listener
 		if(player.getServer() != null)
 			return;
 		
-		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(), player.getName(), mSettings.getSettings(player).nickname));
+		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(), player.getName(), mSettings.getSettings(player).nickname, mSettings.getSettings(player).defaultChannel)
+		);
 		
 		BCPlayerJoinEvent jevent = new BCPlayerJoinEvent(player, ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " joined the game.");
 		mProxy.getPluginManager().callEvent(jevent);

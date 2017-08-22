@@ -7,13 +7,12 @@ import au.com.addstar.bc.sync.PacketSchema;
 
 public class PlayerJoinPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("id=UUID,name=String,nickname=String");
-	
-	public PlayerJoinPacket(UUID id, String name, String nickname)
-	{
-		super(id, name, nickname);
+	public static final PacketSchema schema = PacketSchema.from("id=UUID,name=String,nickname=String,defaultChannel=String");
+
+	public PlayerJoinPacket(UUID id, String name, String nickname, String defaultChannel){
+		super(id, name, nickname, defaultChannel);
 	}
-	
+
 	protected PlayerJoinPacket(Object[] data)
 	{
 		super(data);
@@ -32,5 +31,9 @@ public class PlayerJoinPacket extends Packet
 	public String getNickname()
 	{
 		return (String)getData(2);
+	}
+
+	public String getDefaultChannel() {
+		return (String)getData(3);
 	}
 }

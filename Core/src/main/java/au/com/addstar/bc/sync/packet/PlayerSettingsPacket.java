@@ -54,7 +54,7 @@ public class PlayerSettingsPacket extends Packet
 		return (Boolean)getData(6);
 	}
 
-	public String getRPprefix() {
+	public String getChatName() {
 		return (String)getData(7);
 	}
 

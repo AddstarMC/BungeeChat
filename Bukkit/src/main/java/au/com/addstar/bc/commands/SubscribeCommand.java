@@ -1,7 +1,6 @@
 package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
-import au.com.addstar.bc.ChatChannelManager;
 import au.com.addstar.bc.objects.ChatChannel;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -64,7 +63,7 @@ public class SubscribeCommand implements CommandExecutor {
                 return true;
             }
             if (commandSender.hasPermission("bungeechat.subscribe." + channel)) {
-                String prefix = BungeeChat.getPlayerManager().getPlayerSettings(player).rolePlayPrefix;
+                String prefix = BungeeChat.getPlayerManager().getPlayerSettings(player).chatName;
                 if (instance.getChatChannelsManager().hasChannel(channel)) {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(channel);
                     if (perm == null) {

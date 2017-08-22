@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
-import net.cubespace.Yamler.Config.Config;
 import net.cubespace.Yamler.Config.YamlConfig;
 
 public class PlayerSettings extends YamlConfig
@@ -29,11 +28,12 @@ public class PlayerSettings extends YamlConfig
 	
 	@NoSave
 	public String tabColor = "";
+
 	@NoSave
 	public boolean isAFK = false;
 
 	@NoSave
-	public String rolePlayPrefix = "";
+	public String chatName = "";
 
 	@NoSave
 	public String defaultChannel = "";
@@ -52,12 +52,12 @@ public class PlayerSettings extends YamlConfig
 		msgEnabled = packet.getMsgToggle();
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
-		rolePlayPrefix = packet.getRPprefix();
+		chatName = packet.getChatName();
 		defaultChannel = packet.getDefaultChannel();
 	}
 	
 	public PlayerSettingsPacket getUpdatePacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, rolePlayPrefix,defaultChannel);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, chatName,defaultChannel);
 	}
 }
