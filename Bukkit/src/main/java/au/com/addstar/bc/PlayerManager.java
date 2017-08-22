@@ -543,7 +543,7 @@ import javax.annotation.Nullable;
 				onPlayerNameChange(player.getUniqueId(), settings.nickname);
 			}
 			if(settings.defaultChannel.isEmpty()){
-				mDefaultChannel.remove(player.getUniqueId());
+				unsubscribeAll(player.getUniqueId());
 			}else{
 				mDefaultChannel.put(player.getUniqueId(),settings.defaultChannel);
 			}
