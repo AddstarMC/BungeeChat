@@ -2,9 +2,8 @@ package au.com.addstar.bc;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -49,11 +48,19 @@ public class StandardServMethods implements SyncMethod
 				return kickPlayer((UUID) arguments[0], (String) arguments[1]);
 			case "bchat:setSkin":
 				return setSkin((UUID) arguments[0], arguments[1]);
+			case "bchat:getSubScribed":
+				return getSubscribed();
 			default:
 				return null;
 		}
 	}
-	
+
+	private HashMap<UUID, String> getSubscribed() {
+		HashMap<UUID, String> result = new HashMap<>();
+		result.putAll(BungeeChat.instance.getSubHandler().getAllSubscriptions());
+		return result;
+	}
+
 	public String getServer(ServerInfo server)
 	{
 		return server.getName();

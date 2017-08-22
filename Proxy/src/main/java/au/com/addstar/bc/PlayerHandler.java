@@ -98,7 +98,7 @@ public class PlayerHandler implements Listener
 		}
 		else
 			Debugger.log("Player %s never joined a server", player.getName());
-		
+		BungeeChat.instance.getSubHandler().unSubscribe(id);
 		mPackets.broadcast(new PlayerLeavePacket(id));
 		mSettings.unloadPlayer(id);
 	}

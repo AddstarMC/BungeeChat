@@ -61,7 +61,12 @@ public class PacketHandler implements IPacketHandler
 		PlayerSettings settings = getManager().getSettings(player);
 		settings.read(packet);
 		getManager().savePlayer(player);
-		
+		String defaultChannel = settings.defaultChannel;
+		if(defaultChannel.isEmpty()){
+			BungeeChat.instance.getSubHandler().unSubscribe(packet.getID());
+		}else{
+			BungeeChat.instance.getSubHandler().setSubscribed(player.getUniqueId(),defaultChannel);
+		}
 		String oldName = settings.nickname;
 		if(settings.nickname.isEmpty())
 			player.setDisplayName(player.getName());

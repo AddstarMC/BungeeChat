@@ -53,6 +53,12 @@ public class BungeeChat extends Plugin implements Listener
 	private SyncManager mSyncManager;
 	private PacketManager mPacketManager;
 	private MuteHandler mMuteHandler;
+
+	public SubscriptionHandler getSubHandler() {
+		return mSubHandler;
+	}
+
+	private SubscriptionHandler mSubHandler;
 	private SkinLibrary mSkins;
 	
 	private ProxyComLink mComLink;
@@ -134,6 +140,7 @@ public class BungeeChat extends Plugin implements Listener
 		getProxy().getPluginManager().registerListener(this, new PlayerHandler());
 
 		mMuteHandler = new MuteHandler(this);
+		mSubHandler = new SubscriptionHandler(this);
 		mMuteHandler.updateSettings(mConfig);
 		
 		mSkins = new SkinLibrary();

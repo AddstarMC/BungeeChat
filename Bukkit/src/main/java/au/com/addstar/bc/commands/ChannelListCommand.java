@@ -2,12 +2,12 @@ package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.ChatChannelManager;
+import au.com.addstar.bc.sync.IMethodCallback;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created for the Ark: Survival Evolved.
@@ -22,25 +22,67 @@ public class ChannelListCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        if(commandSender.hasPermission("bungeechat.chanlist")) {
-            boolean sub = true;
+    public boolean onCommand(final CommandSender commandSender, Command command, String s, String[] args) {
+        if(commandSender.hasPermission("bungeechat.chatlist")) {
+            boolean subnf = true;
             if(args.length > 0 && args[0].equals("all") &&
-                    commandSender.hasPermission("bungeechat.chanlist.all"))sub = false;
-            ChatChannelManager manager = instance.getChatChannelsManager();
-            List<String> message = new ArrayList<>();
-            if(sub){
-                message.add("***List of Channels**");
-            }else {
-                message.add("***List of Roleplay Channels**");
+                    commandSender.hasPermission("bungeechat.chatlist.all")){
+                subnf = false;
             }
-            message.add("-----------------------");
-            message.addAll(manager.getChannelNames(sub));
-            message.add("-----------------------");
-            String[] messages = new String[message.size()];
-            message.toArray(messages);
-            commandSender.sendMessage(messages);
-            return true;
+            final boolean sub = subnf;
+            BungeeChat.getSyncManager().callSyncMethod("bchat:getSubScribed",
+                    new IMethodCallback<HashMap<UUID, String>>() {
+
+                @Override
+                public void onFinished(HashMap<UUID, String> data) {
+                    HashMap<String, Integer> result = new HashMap<>();
+                   ChatChannelManager manager = instance.getChatChannelsManager();
+                   List<String> existChannels = manager.getChannelNames(sub);
+                    for (String c: existChannels){
+                        result.put(c,0);
+                    }
+                   for(Map.Entry<UUID, String> entry: data.entrySet()){
+                       if(result.containsKey(entry.getValue())){
+                           Integer current = result.get(entry.getValue());
+                           current++;
+                           result.put(entry.getValue(),current);
+                       }
+                   }
+                    List<String> message = new ArrayList<>();
+                    if(sub){
+                        message.add("***List of Channels**");
+                    }else {
+                        message.add("***List of Roleplay Channels**");
+                    }
+                    message.add("-Channel Name-----------Total-------");
+                   for(Map.Entry<String, Integer> res: result.entrySet()){
+                       message.add(res.getKey() + " :  " + res.getValue());
+                   }
+                   message.add("-----------------------");
+                    String[] messages = new String[message.size()];
+                    message.toArray(messages);
+                    commandSender.sendMessage(messages);
+                }
+
+                @Override
+                public void onError(String type, String message) {
+                    ChatChannelManager manager = instance.getChatChannelsManager();
+                    List<String> failure = new ArrayList<>();
+                    commandSender.sendMessage("Error: " + type +" : " + message);
+                    if(sub){
+                        failure.add("***List of Channels**");
+                    }else {
+                        failure.add("***List of Roleplay Channels**");
+                    }
+                    failure.add("-----------------------");
+                    failure.addAll(manager.getChannelNames(sub));
+                    failure.add("-----------------------");
+                    String[] messages = new String[failure.size()];
+                    failure.toArray(messages);
+                    commandSender.sendMessage(messages);
+                }
+            });
+                       return true;
         }else{
             commandSender.sendMessage("No Permission");
         }
