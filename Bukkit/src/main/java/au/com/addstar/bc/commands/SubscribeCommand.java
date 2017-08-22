@@ -36,14 +36,14 @@ public class SubscribeCommand implements CommandExecutor {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(subscribed);
                     BungeeChat.getPlayerManager().unsubscribeAll(player);
                     if (!player.hasPermission(perm)) {
-                        commandSender.sendMessage("Unsubscribed from "+channel);
+                        commandSender.sendMessage("Unsubscribed from "+ subscribed);
                     }else{
-                        commandSender.sendMessage("Could not unsubscribe from " + channel);
+                        commandSender.sendMessage("Could not unsubscribe from " + subscribed);
                     }
                 }else{
-                    commandSender.sendMessage("You are not subscribed to any channels.");
                     BungeeChat.getPlayerManager().unsubscribeAll(player);
-                    }
+                    commandSender.sendMessage("You are not subscribed to any channels.");
+                }
                 return true;
             }
             if (commandSender.hasPermission("bungeechat.subscribe." + channel)) {
