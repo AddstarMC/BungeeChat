@@ -49,16 +49,16 @@ public class ChannelListCommand implements CommandExecutor {
                        }
                    }
                     List<String> message = new ArrayList<>();
-                    if(sub){
-                        message.add("***List of Channels**");
+                    if(!sub){
+                        message.add("&6***List of Channels**");
                     }else {
-                        message.add("***List of Roleplay Channels**");
+                        message.add("&6***List of Subscribable Channels**");
                     }
-                    message.add("-Channel Name-----------Total-------");
+                    message.add("&6-Channel Name-:-Total Subscribed-&f");
                    for(Map.Entry<String, Integer> res: result.entrySet()){
-                       message.add(res.getKey() + " :  " + res.getValue());
+                       message.add(res.getKey() + "&6 : &f " + res.getValue());
                    }
-                   message.add("-----------------------");
+                   message.add("&6-----------------------&f");
                     String[] messages = new String[message.size()];
                     message.toArray(messages);
                     commandSender.sendMessage(messages);
@@ -69,14 +69,14 @@ public class ChannelListCommand implements CommandExecutor {
                     ChatChannelManager manager = instance.getChatChannelsManager();
                     List<String> failure = new ArrayList<>();
                     commandSender.sendMessage("Error: " + type +" : " + message);
-                    if(sub){
-                        failure.add("***List of Channels**");
+                    if(!sub){
+                        failure.add("&6***List of Channels**");
                     }else {
-                        failure.add("***List of Roleplay Channels**");
+                        failure.add("&6***List of Subscribable Channels**");
                     }
                     failure.add("-----------------------");
                     failure.addAll(manager.getChannelNames(sub));
-                    failure.add("-----------------------");
+                    failure.add("&6-----------------------&f");
                     String[] messages = new String[failure.size()];
                     failure.toArray(messages);
                     commandSender.sendMessage(messages);

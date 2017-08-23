@@ -170,7 +170,7 @@ commands:
     usage: /<command> <channel> <timeSecs> <roleplayname>
     description: Subcribes to an rp channel
     permission: bungeechat.subscribe
-  chanlist:
+  chatlist:
     usage: /<command> [all]
     description: List RP Channels;
     permission: bungeechat.chanlist
@@ -178,3 +178,7 @@ commands:
     usage: /<command> <name>
     description: set a chat name
     permission: bungeechat.chatprefix
+  chatwho:
+    usage: /<command>
+    description: show players in your chat channel (only works for subscribed channels)
+    permission: bungeechat.chatwho

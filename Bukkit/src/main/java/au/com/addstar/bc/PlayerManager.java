@@ -223,7 +223,7 @@ import javax.annotation.Nullable;
 	{
 		return mNicknames.get(getUniqueId(player));
 	}
-	
+
 	public void setPlayerNickname(CommandSender player, String name)
 	{
 		if(player instanceof Player)
