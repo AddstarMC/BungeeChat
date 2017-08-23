@@ -1,10 +1,7 @@
 package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
-import au.com.addstar.bc.ChatChannelManager;
-import au.com.addstar.bc.objects.RemotePlayer;
 import au.com.addstar.bc.sync.IMethodCallback;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
