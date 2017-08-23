@@ -64,11 +64,10 @@ public class SubscribeCommand implements CommandExecutor {
                             BungeeChat.getPlayerManager().setDefaultChannel(player, chatChannel.name);
                             player.sendMessage("You have subcribed to " + chatChannel.name);
                             player.sendMessage("Your chat will default to this channel.");
-                            player.sendMessage("However you can direct chat to this channel using : /" + chatChannel.command );
+                            player.sendMessage("Use ! before your message to send to public chat");
                             if (instance.getChatChannelsManager().isRolePlay(channel)) {
                                 if (prefix != null) {
-                                    commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                            "Your roleplay prefix is " + prefix));
+                                    commandSender.sendMessage("Your roleplay prefix is " +prefix);
                                 }
                             }
                         }
