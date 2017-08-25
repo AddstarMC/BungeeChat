@@ -79,6 +79,8 @@ public class PlayerSettingsManager
 	{
 		ProxiedPlayer player = ProxyServer.getInstance().getPlayer(id);
 		mLoadedSettings.remove(player);
+		BungeeChat.instance.getSubHandler().unSubscribe(id);
 		Debugger.log("Unloaded player settings %s", player.getName());
+		BungeeChat.instance.getSubHandler().unSubscribe(id);
 	}
 }

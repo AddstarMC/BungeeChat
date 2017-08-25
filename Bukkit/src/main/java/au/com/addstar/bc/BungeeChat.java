@@ -4,7 +4,6 @@ import au.com.addstar.bc.commands.*;
 import au.com.addstar.bc.listeners.ChatHandler;
 import au.com.addstar.bc.listeners.SystemMessagesHandler;
 import au.com.addstar.bc.objects.ChannelType;
-import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.RemotePlayer;
 import au.com.addstar.bc.sync.packet.*;

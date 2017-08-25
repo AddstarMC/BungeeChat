@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import au.com.addstar.bc.sync.SyncSerializable;
-import org.jetbrains.annotations.NotNull;
 import net.cubespace.Yamler.Config.YamlConfig;
 
 public class ChatChannel extends YamlConfig implements SyncSerializable {

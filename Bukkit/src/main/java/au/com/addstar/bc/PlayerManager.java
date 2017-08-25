@@ -13,7 +13,6 @@ import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.PlayerSettings;
 import au.com.addstar.bc.objects.RemotePlayer;
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -25,7 +24,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.StringUtil;
@@ -449,7 +447,7 @@ import javax.annotation.Nullable;
 		{
 			mAllProxied.remove(player.getUniqueId());
 			mDefaultChannel.remove(player.getUniqueId());
-			unsubscribeAll(player);
+			unsubscribeAll(player,true);
 			Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
 		}
 	}
@@ -617,17 +615,23 @@ import javax.annotation.Nullable;
         return mDefaultChannel.getOrDefault(sender.getUniqueId(), null);
     }
 
+
+
     public void unsubscribeAll(CommandSender sender){
-				if(sender instanceof Player){
-					unsubscribeAll(((Player) sender).getUniqueId());
-					unsubscribeAll(((Player) sender).getUniqueId(),((Player) sender).getWorld().getName());
-					PlayerSettings settings = getPlayerSettings(sender);
-					settings.defaultChannel = "";
-					updatePlayerSettings(sender);
-				}
-				if(sender instanceof RemotePlayer){
-					unsubscribeAll(((RemotePlayer) sender).getUniqueId());
-				}
+				unsubscribeAll(sender,false);
+	}
+
+	private void unsubscribeAll(CommandSender sender, boolean offline){
+		if(sender instanceof Player){
+			unsubscribeAll(((Player) sender).getUniqueId());
+			unsubscribeAll(((Player) sender).getUniqueId(),((Player) sender).getWorld().getName());
+			PlayerSettings settings = getPlayerSettings(sender);
+			settings.defaultChannel = "";
+			if(!offline)updatePlayerSettings(sender);
+		}
+		if(sender instanceof RemotePlayer){
+			unsubscribeAll(((RemotePlayer) sender).getUniqueId());
+		}
 
 	}
 	private void unsubscribeAll(UUID uuid){

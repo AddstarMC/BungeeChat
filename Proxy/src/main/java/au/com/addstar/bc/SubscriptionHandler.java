@@ -1,31 +1,28 @@
 package au.com.addstar.bc;
 
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.plugin.Listener;
-
 import java.util.*;
 
 /**
  * Created for use for the Add5tar MC Minecraft server
  * Created by benjamincharlton on 22/08/2017.
  */
-public class SubscriptionHandler implements Listener {
+public class SubscriptionHandler {
     private HashMap<UUID, String > subscriptions;
-    private PlayerSettingsManager mPlayerManager;
 
 
-    public SubscriptionHandler(BungeeChat plugin) {
+    SubscriptionHandler(BungeeChat plugin) {
         this.subscriptions = new HashMap<>();
-        this.mPlayerManager = plugin.getManager();
-        ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
-
     }
 
-    public void setSubscribed(UUID uuid, String channel){
-        subscriptions.put(uuid, channel);
+    void setSubscribed(UUID uuid, String channel){
+        if(channel != null && !channel.isEmpty()) {
+            subscriptions.put(uuid, channel);
+        }else{
+            subscriptions.remove(uuid);
+        }
     }
 
-    public void unSubscribe(UUID uuid){
+    void unSubscribe(UUID uuid){
         subscriptions.remove(uuid);
     }
 
@@ -39,7 +36,7 @@ public class SubscriptionHandler implements Listener {
         return result;
     }
 
-    public Map<UUID, String> getAllSubscriptions() {
+    Map<UUID, String> getAllSubscriptions() {
         return subscriptions;
     }
 }

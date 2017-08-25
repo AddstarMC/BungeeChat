@@ -39,7 +39,8 @@ public class ListSubscribedCommand implements CommandExecutor {
                                             String chatName = BungeeChat.getPlayerManager().getPlayerNickname(target);
                                             if(chatName != null && !chatName.isEmpty())name.append(" [").append(chatName).append("] ");
                                         }
-                                        if(!name.toString().isEmpty())result.add(name.toString());
+                                        String finalName = name.toString();
+                                        if(!(finalName.isEmpty()))result.add(finalName);
                                     }
                                 }
                                 List<String> message = new ArrayList<>();
