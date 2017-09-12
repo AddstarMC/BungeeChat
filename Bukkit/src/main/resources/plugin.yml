@@ -167,7 +167,7 @@ commands:
     permission: bungeechat.debug
  # Subscription can be limited by limiting the subscribe command permission suffixed with the channel name
   chat:
-    usage: /<command> <channel> <timeSecs> <roleplayname>
+    usage: /<command> <channel>
     description: Subcribes to an rp channel
     permission: bungeechat.subscribe
   chatlist:
