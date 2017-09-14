@@ -23,6 +23,10 @@ public class ListSubscribedCommand implements CommandExecutor {
 
                             @Override
                             public void onFinished(HashMap<UUID, String> data) {
+                                if(data.size() == 0){
+                                    BungeeChat.getInstance().getLogger().info("No Data returned");
+                                    return;
+                                }
                                 List<String> result = new ArrayList<>();
                                 String subscribed = BungeeChat.getPlayerManager().getDefaultChatChannel((Player)commandSender);
                                 for (Map.Entry<UUID, String> entry : data.entrySet()) {

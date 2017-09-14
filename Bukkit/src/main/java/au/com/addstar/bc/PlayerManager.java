@@ -1,4 +1,4 @@
-  package au.com.addstar.bc;
+package au.com.addstar.bc;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -256,13 +256,18 @@ import javax.annotation.Nullable;
 		
 		onPlayerNameChange(getUniqueId(player), name);
 	}
-	
-	public PlayerSettings getPlayerSettings(CommandSender player)
+
+	public PlayerSettings getPlayerSettings(CommandSender player){
+		return getPlayerSettings(player, false);
+	}
+
+	public PlayerSettings getPlayerSettings(CommandSender player, boolean noValidation)
 	{
-		Validate.isTrue(player instanceof Player, "Cannot get player settings of non local player");
+		if(!noValidation)Validate.isTrue(player instanceof Player, "Cannot get player settings of non local player");
 		
 		UUID id = getUniqueId(player);
 		PlayerSettings settings = mPlayerSettings.get(id);
+		if (noValidation) return settings;
 		if(settings == null)
 		{
 			settings = new PlayerSettings();
@@ -271,7 +276,6 @@ import javax.annotation.Nullable;
 			    mDefaultChannel.put(id,settings.defaultChannel);
             }
 		}
-		
 		return settings;
 	}
 	
