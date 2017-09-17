@@ -30,7 +30,7 @@ public class ChannelListCommand implements CommandExecutor {
                 subnf = false;
             }
             final boolean sub = subnf;
-            BungeeChat.getSyncManager().callSyncMethod("bchat:getSubScribed",
+            BungeeChat.getSyncManager().callSyncMethod("bchat:getSubscribed",
                     new IMethodCallback<HashMap<UUID, String>>() {
 
                 @Override

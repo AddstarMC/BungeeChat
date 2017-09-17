@@ -48,7 +48,7 @@ public class StandardServMethods implements SyncMethod
 				return kickPlayer((UUID) arguments[0], (String) arguments[1]);
 			case "bchat:setSkin":
 				return setSkin((UUID) arguments[0], arguments[1]);
-			case "bchat:getSubScribed":
+			case "bchat:getSubscribed":
 				return getSubscribed();
 			default:
 				return null;
