@@ -18,7 +18,7 @@ public class ListSubscribedCommand implements CommandExecutor {
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if(commandSender.hasPermission("bungeechat.chatwho")) {
             if(commandSender instanceof Player) {
-                BungeeChat.getSyncManager().callSyncMethod("bchat:getSubScribed",
+                BungeeChat.getSyncManager().callSyncMethod("bchat:getSubscribed",
                         new IMethodCallback<HashMap<UUID, String>>() {
 
                             @Override
