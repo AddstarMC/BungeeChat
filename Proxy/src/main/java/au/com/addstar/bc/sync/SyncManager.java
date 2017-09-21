@@ -31,7 +31,6 @@ public class SyncManager implements Listener, IPacketHandler
 	
 	private WeakHashMap<ProxiedPlayer, HashMap<String, Object>> mPlayerProperties;
 	
-	@SuppressWarnings( "unchecked" )
 	public SyncManager(Plugin plugin)
 	{
 		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
@@ -92,6 +91,7 @@ public class SyncManager implements Listener, IPacketHandler
 			catch(Exception e)
 			{
 				BungeeChat.instance.getPacketManager().send(new CallFailedResponsePacket(id, e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage()), caller);
+				e.printStackTrace();
 			}
 		}
 		else

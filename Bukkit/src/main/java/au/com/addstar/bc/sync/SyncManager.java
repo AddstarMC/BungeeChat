@@ -39,8 +39,7 @@ public class SyncManager implements IPacketHandler
 		else if(packet instanceof CallSuccessResponsePacket)
 			onCallSuccess((CallSuccessResponsePacket)packet);
 	}
-	
-	@SuppressWarnings( "unchecked" )
+
 	public void callSyncMethod(String method, IMethodCallback<?> callback, Object... args)
 	{
 		int id = mNextId++;
