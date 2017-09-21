@@ -36,7 +36,11 @@ public class SubscriptionHandler {
         return result;
     }
 
-    Map<UUID, String> getAllSubscriptions() {
-        return subscriptions;
+    Map<String, String> getAllSubscriptions() {
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<UUID,String> e : subscriptions.entrySet()){
+            result.put(e.getKey().toString(),e.getValue());
+        }
+        return result;
     }
 }

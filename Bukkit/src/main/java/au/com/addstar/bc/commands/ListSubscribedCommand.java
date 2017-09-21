@@ -2,6 +2,7 @@ package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.sync.IMethodCallback;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -19,19 +20,19 @@ public class ListSubscribedCommand implements CommandExecutor {
         if(commandSender.hasPermission("bungeechat.chatwho")) {
             if(commandSender instanceof Player) {
                 BungeeChat.getSyncManager().callSyncMethod("bchat:getSubscribed",
-                        new IMethodCallback<HashMap<UUID, String>>() {
+                        new IMethodCallback<HashMap<String, String>>() {
 
                             @Override
-                            public void onFinished(HashMap<UUID, String> data) {
+                            public void onFinished(HashMap<String, String> data) {
                                 if(data.size() == 0){
                                     BungeeChat.getInstance().getLogger().info("No Data returned");
                                     return;
                                 }
                                 List<String> result = new ArrayList<>();
                                 String subscribed = BungeeChat.getPlayerManager().getDefaultChatChannel((Player)commandSender);
-                                for (Map.Entry<UUID, String> entry : data.entrySet()) {
+                                for (Map.Entry<String, String> entry : data.entrySet()) {
                                     if (entry.getValue().equals(subscribed)) {
-                                        UUID uid = entry.getKey();
+                                        UUID uid = UUID.fromString(entry.getKey());
                                         CommandSender target = BungeeChat.getPlayerManager().getPlayer(uid);
                                         StringBuilder name = new StringBuilder();
                                         if(target != null){
@@ -39,18 +40,19 @@ public class ListSubscribedCommand implements CommandExecutor {
                                                 if(((Player)commandSender).canSee((Player)target))
                                                     name.append(((Player)target).getDisplayName());
                                             }
-                                        }else {
+                                        else {
                                             String chatName = BungeeChat.getPlayerManager().getPlayerNickname(target);
                                             if(chatName != null && !chatName.isEmpty())name.append(" [").append(chatName).append("] ");
+                                        }
                                         }
                                         String finalName = name.toString();
                                         if(!(finalName.isEmpty()))result.add(finalName);
                                     }
                                 }
                                 List<String> message = new ArrayList<>();
-                                message.add("&6***Players Currently Subscribed to "+ subscribed +  " ***&f");
+                                message.add(ChatColor.translateAlternateColorCodes('&',"&6***Players Currently Subscribed to "+ subscribed +  " ***&f"));
                                 message.addAll(result);
-                                message.add("&6-----------------------&f");
+                                message.add(ChatColor.translateAlternateColorCodes('&',"&6-----------------------&f"));
                                 String[] messages = new String[message.size()];
                                 message.toArray(messages);
                                 commandSender.sendMessage(messages);

@@ -23,7 +23,6 @@ public class SyncUtil
 		mClassMappingsInverse.put(typename, clazz);
 	}
 	
-	@SuppressWarnings( "unchecked" )
 	public static void writeObject(DataOutput output, Object value) throws IOException
 	{
 		if(value == null)
