@@ -1,6 +1,7 @@
 package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -22,9 +23,14 @@ public class SetChatNameCommand implements CommandExecutor {
 
         } else {
                 String prefix = args[0];
+            if (prefix.length() > 25)
+            {
+                commandSender.sendMessage(ChatColor.RED + "Nickname cannot be longer than 25 characters");
+                return true;
+            }
                 String colorprefix = BungeeChat.colorize(prefix,commandSender);
                 BungeeChat.getPlayerManager().setPlayerChatName(player, colorprefix);
-                commandSender.sendMessage(" Your chat name is set to" + colorprefix);
+                commandSender.sendMessage(" Your chat name is set to " + colorprefix);
                 return true;
             }
         }else{

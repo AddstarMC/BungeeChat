@@ -118,9 +118,17 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 
 				String name;
 				if (target != null) {
-						name = BungeeChat.getPlayerManager().getPlayerNickname(target);
-				} else
-					name = address.getHostAddress();
+					name = BungeeChat.getPlayerManager().getPlayerNickname(target);
+					if(name == null || name.length() < 1) {
+						if (target instanceof Player ) {
+							name = ((Player) target).getDisplayName();
+						}else if(target instanceof RemotePlayer){
+							name = ((RemotePlayer)target).getDisplayName();
+						}
+					}
+				} else{
+					name= address.getHostAddress();
+				}
 				switch (command.getName()){
 
 				case "mute":

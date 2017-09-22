@@ -39,10 +39,9 @@ public class ListSubscribedCommand implements CommandExecutor {
                                             if(target instanceof Player){
                                                 if(((Player)commandSender).canSee((Player)target))
                                                     name.append(((Player)target).getDisplayName());
-                                            }
-                                        else {
-                                            String chatName = BungeeChat.getPlayerManager().getPlayerNickname(target);
-                                            if(chatName != null && !chatName.isEmpty())name.append(" [").append(chatName).append("] ");
+                                            }else {
+                                                String chatName = BungeeChat.getPlayerManager().getPlayerNickname(target);
+                                                if(chatName != null && !chatName.isEmpty())name.append(" [").append(chatName).append("] ");
                                         }
                                         }
                                         String finalName = name.toString();

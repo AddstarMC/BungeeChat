@@ -171,9 +171,9 @@ commands:
     description: Subcribes to an rp channel
     permission: bungeechat.subscribe
   chatlist:
-    usage: /<command> [all]
+    usage: /<command> [all]/
     description: List RP Channels;
-    permission: bungeechat.chanlist
+    permission: bungeechat.chatlist
   chatname:
     usage: /<command> <name>
     description: set a chat name

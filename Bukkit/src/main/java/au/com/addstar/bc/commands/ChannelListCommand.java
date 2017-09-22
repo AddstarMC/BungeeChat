@@ -38,7 +38,7 @@ public class ChannelListCommand implements CommandExecutor {
         return false;
     }
 
-    private class Subscribed  implements IMethodCallback<HashMap<UUID,String>> {
+    private class Subscribed  implements IMethodCallback<HashMap<String,String>> {
 
         private CommandSender sender;
         private boolean sub;
@@ -48,14 +48,14 @@ public class ChannelListCommand implements CommandExecutor {
             this.sub = sub;
         }
 
-        public void onFinished(HashMap<UUID, String> data) {
+        public void onFinished(HashMap<String, String> data) {
             HashMap<String, Integer> result = new HashMap<>();
             ChatChannelManager manager = instance.getChatChannelsManager();
             List<String> existChannels = manager.getChannelNames(sub);
             for (String c: existChannels){
                 result.put(c,0);
             }
-            for(Map.Entry<UUID, String> entry: data.entrySet()){
+            for(Map.Entry<String, String> entry: data.entrySet()){
                 if(result.containsKey(entry.getValue())){
                     Integer current = result.get(entry.getValue());
                     current++;
