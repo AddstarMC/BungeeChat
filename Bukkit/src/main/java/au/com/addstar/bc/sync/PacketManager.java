@@ -179,14 +179,14 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 			}
 			else
 			{
-				Bukkit.getScheduler().runTask(BungeeChat.getInstance(), new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						handleDataPacket(in);
-					}
-				});
+				if(BungeeChat.getInstance().isEnabled()) {
+					Bukkit.getScheduler().runTask(BungeeChat.getInstance(), new Runnable() {
+						@Override
+						public void run() {
+							handleDataPacket(in);
+						}
+					});
+				}
 			}
 		}
 		else if(channel.equals("BCState"))
