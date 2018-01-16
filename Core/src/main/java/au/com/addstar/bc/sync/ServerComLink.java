@@ -215,8 +215,14 @@ public abstract class ServerComLink
 				int source = in.readUnsignedShort();
 				int dest = in.readUnsignedShort();
 				
-				if(source != getServerId() && (dest == 0xFFFF || dest == getServerId()))
-					mReceiver.onReceive(channelName, in, getSender(source));
+				if(source != getServerId() && (dest == 0xFFFF || dest == getServerId())) {
+					MessageSender sender = getSender(source);
+					if (sender != null) {
+						mReceiver.onReceive(channelName, in, sender);
+					} else {
+						System.out.println("[BungeeChat] Warning: A server has sent a message that Bungee could not identify its source. Server Port:" + source);
+					}
+				}
 			}
 			catch(IOException e)
 			{
