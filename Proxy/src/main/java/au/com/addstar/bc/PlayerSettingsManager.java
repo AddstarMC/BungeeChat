@@ -58,7 +58,7 @@ public class PlayerSettingsManager
 			getSettings(player).save();
 			Debugger.log("Saved player settings %s", player.getName());
 		}
-		catch(InvalidConfigurationException e)
+		catch(InvalidConfigurationException ignored)
 		{
 		}
 	}

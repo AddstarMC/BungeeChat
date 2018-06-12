@@ -102,7 +102,7 @@ public class BungeeChat extends Plugin implements Listener
 		{
 			setupWait.await();
 		}
-		catch(InterruptedException e)
+		catch(InterruptedException ignored)
 		{
 		}
 		
@@ -306,7 +306,7 @@ public class BungeeChat extends Plugin implements Listener
 					output.close();
 				input.close();
 			}
-			catch ( IOException e )
+			catch ( IOException ignored)
 			{
 			}
 		}

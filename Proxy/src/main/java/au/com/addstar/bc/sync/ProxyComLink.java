@@ -109,7 +109,7 @@ public class ProxyComLink extends ServerComLink
 					publish(item.getKey(), item.getValue());
 				}
 			}
-			catch(InterruptedException e)
+			catch(InterruptedException ignored)
 			{
 			}
 		}

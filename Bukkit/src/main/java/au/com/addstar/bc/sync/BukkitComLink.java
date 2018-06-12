@@ -106,7 +106,7 @@ public class BukkitComLink extends ServerComLink
 					publish(item.getKey(), item.getValue());
 				}
 			}
-			catch(InterruptedException e)
+			catch(InterruptedException ignored)
 			{
 			}
 		}

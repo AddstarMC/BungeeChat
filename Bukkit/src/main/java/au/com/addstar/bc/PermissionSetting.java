@@ -16,7 +16,7 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 			{
 				Bukkit.getPluginManager().addPermission(new Permission(permission, PermissionDefault.FALSE));
 			}
-			catch(IllegalArgumentException e)
+			catch(IllegalArgumentException ignored)
 			{
 			}
 		}

@@ -86,7 +86,7 @@ public class Formatter
 			{
 				Bukkit.getPluginManager().addPermission(new org.bukkit.permissions.Permission(keywordPerm, PermissionDefault.OP));
 			}
-			catch(IllegalArgumentException e)
+			catch(IllegalArgumentException ignored)
 			{
 			}
 		}

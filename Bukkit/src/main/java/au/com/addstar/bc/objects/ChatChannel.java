@@ -44,14 +44,14 @@ public class ChatChannel
 			if(listenPermission != null)
 				Bukkit.getPluginManager().addPermission(new Permission(listenPermission, PermissionDefault.OP));
 		}
-		catch(IllegalArgumentException e) {}
+		catch(IllegalArgumentException ignored) {}
 		
 		try
 		{
 			if(permission != null)
 				Bukkit.getPluginManager().addPermission(new Permission(permission, PermissionDefault.OP));
 		}
-		catch(IllegalArgumentException e) {}
+		catch(IllegalArgumentException ignored) {}
 	}
 	
 	public void unregisterChannel()

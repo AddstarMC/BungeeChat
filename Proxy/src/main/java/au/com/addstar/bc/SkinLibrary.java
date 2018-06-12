@@ -118,7 +118,7 @@ public class SkinLibrary
 		{
 			e.getCause().printStackTrace();
 		}
-		catch(InterruptedException e)
+		catch(InterruptedException ignored)
 		{
 		}
 		
@@ -199,7 +199,7 @@ public class SkinLibrary
 		{
 			e.getCause().printStackTrace();
 		}
-		catch(InterruptedException e)
+		catch(InterruptedException ignored)
 		{
 		}
 		
