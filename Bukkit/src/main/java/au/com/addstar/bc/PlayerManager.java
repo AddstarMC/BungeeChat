@@ -27,6 +27,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.StringUtil;
+import org.jetbrains.annotations.Nullable;
 
 import au.com.addstar.bc.event.ProxyJoinEvent;
 import au.com.addstar.bc.event.ProxyLeaveEvent;
@@ -39,8 +40,6 @@ import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
-
-import javax.annotation.Nullable;
 
   public class PlayerManager implements Listener, IPacketHandler
 {

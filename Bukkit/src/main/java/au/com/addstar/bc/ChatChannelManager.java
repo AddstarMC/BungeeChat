@@ -18,12 +18,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
+import org.jetbrains.annotations.Nullable;
 
 import au.com.addstar.bc.config.ChatChannelConfig;
 import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.sync.SyncConfig;
 
-import javax.annotation.Nullable;
 
 
 public class ChatChannelManager implements Listener, CommandExecutor
