@@ -124,9 +124,8 @@ public class MuteHandler implements Listener
 			return true;
 		else if(settings.muteTime > System.currentTimeMillis())
 			return true;
-		else if(mIPMuteTime.containsKey(address) && mIPMuteTime.get(address) > System.currentTimeMillis())
-			return true;
-		return false;
+		else
+			return mIPMuteTime.containsKey(address) && mIPMuteTime.get(address) > System.currentTimeMillis();
 	}
 	
 	public boolean isMutedCommand(String commandString)

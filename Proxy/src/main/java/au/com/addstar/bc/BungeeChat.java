@@ -82,19 +82,14 @@ public class BungeeChat extends Plugin implements Listener
 		mComLink = new ProxyComLink();
 		// This setup is needed as the redis connection cannot be established on the main thread, but we need it to be established before continuing
 		final CountDownLatch setupWait = new CountDownLatch(1);
-		getProxy().getScheduler().runAsync(this, new Runnable()
-		{
-			@Override
-			public void run()
+		getProxy().getScheduler().runAsync(this, () -> {
+			try
 			{
-				try
-				{
-					mComLink.init(mConfig.redis.host, mConfig.redis.port, mConfig.redis.password);
-				}
-				finally
-				{
-					setupWait.countDown();
-				}
+				mComLink.init(mConfig.redis.host, mConfig.redis.port, mConfig.redis.password);
+			}
+			finally
+			{
+				setupWait.countDown();
 			}
 		});
 		

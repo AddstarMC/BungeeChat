@@ -39,7 +39,7 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 		if(args.length == 2)
 		{
 			player = manager.getPlayer(args[0]);
-			if(player == null || !(player instanceof Player || player instanceof RemotePlayer))
+			if(!(player instanceof Player || player instanceof RemotePlayer))
 			{
 				sender.sendMessage(ChatColor.RED + "Unknown player " + args[0]);
 				return true;

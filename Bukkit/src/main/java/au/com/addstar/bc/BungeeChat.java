@@ -81,14 +81,9 @@ public class BungeeChat extends JavaPlugin implements Listener
 		mPacketManager.addHandler(new PacketHandler(), MirrorPacket.class, SendPacket.class, UpdateNamePacket.class);
 		mPacketManager.addHandler(mPlayerManager, (Class<? extends Packet>[])null);
 		
-		Bukkit.getScheduler().runTask(this, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				mPacketManager.initialize();
-				requestUpdate();
-			}
+		Bukkit.getScheduler().runTask(this, () -> {
+			mPacketManager.initialize();
+			requestUpdate();
 		});
 		
 		MessageCommand cmd = new MessageCommand();

@@ -180,12 +180,7 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 			else
 			{
 				if(BungeeChat.getInstance().isEnabled()) {
-					Bukkit.getScheduler().runTask(BungeeChat.getInstance(), new Runnable() {
-						@Override
-						public void run() {
-							handleDataPacket(in);
-						}
-					});
+					Bukkit.getScheduler().runTask(BungeeChat.getInstance(), () -> handleDataPacket(in));
 				}
 			}
 		}
@@ -245,15 +240,10 @@ public class PacketManager implements IDataReceiver, ConnectionStateNotify
 	@Override
 	public void onConnectionRestored()
 	{
-		Bukkit.getScheduler().runTask(BungeeChat.getInstance(), new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				System.out.println("[BungeeChat] Redis connection restored");
-				sendInitPackets();
-				BungeeChat.getInstance().requestUpdate();
-			}
+		Bukkit.getScheduler().runTask(BungeeChat.getInstance(), () -> {
+			System.out.println("[BungeeChat] Redis connection restored");
+			sendInitPackets();
+			BungeeChat.getInstance().requestUpdate();
 		});
 	}
 

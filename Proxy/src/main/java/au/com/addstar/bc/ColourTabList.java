@@ -157,7 +157,7 @@ public class ColourTabList extends TabListAdapter
 		
 		if (items != null)
 		{
-			final Item[] array = items.toArray(new Item[items.size()]);
+			final Item[] array = items.toArray(new Item[0]);
 			packet.setItems(array);
 			getPlayer().unsafe().sendPacket(packet);
 		}
@@ -194,21 +194,16 @@ public class ColourTabList extends TabListAdapter
 		
 		if (items != null)
 		{
-			final Item[] array = items.toArray(new Item[items.size()]);
+			final Item[] array = items.toArray(new Item[0]);
 			packet.setItems(array);
 			getPlayer().unsafe().sendPacket(packet);
 			// Remove them so they dont really show in tab
-			ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					PlayerListItem packetRemove = new PlayerListItem();
-					packetRemove.setAction(Action.REMOVE_PLAYER);
-					packetRemove.setItems(array);
-					getPlayer().unsafe().sendPacket(packetRemove);
-				}
-			}, 50, TimeUnit.MILLISECONDS);
+			ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, () -> {
+                PlayerListItem packetRemove = new PlayerListItem();
+                packetRemove.setAction(Action.REMOVE_PLAYER);
+                packetRemove.setItems(array);
+                getPlayer().unsafe().sendPacket(packetRemove);
+            }, 50, TimeUnit.MILLISECONDS);
 		}
 	}
 	
@@ -254,8 +249,8 @@ public class ColourTabList extends TabListAdapter
 		{
 			if (!toAdd.isEmpty())
 			{
-				PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, toAdd.toArray(new Item[toAdd.size()]));
-				PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, toAdd.toArray(new Item[toAdd.size()]));
+				PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, toAdd.toArray(new Item[0]));
+				PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, toAdd.toArray(new Item[0]));
 				
 				sendPacket(packetAdd, getPlayer());
 				sendPacket(packetUpdate, getPlayer());
@@ -263,7 +258,7 @@ public class ColourTabList extends TabListAdapter
 			
 			if (!toRemove.isEmpty())
 			{
-				PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, toRemove.toArray(new Item[toRemove.size()]));
+				PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, toRemove.toArray(new Item[0]));
 				
 				sendPacket(packetRemove, getPlayer());
 			}

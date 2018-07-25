@@ -28,14 +28,7 @@ public class BukkitComLink extends ServerComLink
 	public Future<Void> listenToChannel( final String channel, final IDataReceiver receiver )
 	{
 		final SubscribeFuture future = new SubscribeFuture();
-		Thread thread = new Thread(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				subscribeChannel(channel, receiver, future);
-			}
-		});
+		Thread thread = new Thread(() -> subscribeChannel(channel, receiver, future));
 		
 		thread.start();
 		

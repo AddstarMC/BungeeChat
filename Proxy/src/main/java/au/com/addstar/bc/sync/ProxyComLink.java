@@ -18,7 +18,7 @@ public class ProxyComLink extends ServerComLink
 	{
 		mServers = new HashMap<>();
 		mRevServers = new HashMap<>();
-		for(ServerInfo server : ProxyServer.getInstance().getServers().values())
+		for(ServerInfo server : ProxyServer.getInstance().getServersCopy().values())
 		{
 			int id = server.getAddress().getPort();
 			BukkitMessageSender sender = new BukkitMessageSender(id, server.getName()); 
@@ -49,14 +49,7 @@ public class ProxyComLink extends ServerComLink
 	public Future<Void> listenToChannel( final String channel, final IDataReceiver receiver )
 	{
 		final SubscribeFuture future = new SubscribeFuture();
-		ProxyServer.getInstance().getScheduler().runAsync(BungeeChat.instance, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				subscribeChannel(channel, receiver, future);
-			}
-		});
+		ProxyServer.getInstance().getScheduler().runAsync(BungeeChat.instance, () -> subscribeChannel(channel, receiver, future));
 		return future;
 	}
 	

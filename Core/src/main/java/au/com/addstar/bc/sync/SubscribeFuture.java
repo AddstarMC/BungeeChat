@@ -1,5 +1,7 @@
 package au.com.addstar.bc.sync;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -46,7 +48,7 @@ public class SubscribeFuture implements Future<Void>
 	}
 
 	@Override
-	public Void get( long timeout, TimeUnit unit ) throws InterruptedException, ExecutionException, TimeoutException
+	public Void get(long timeout, @NotNull TimeUnit unit ) throws InterruptedException, ExecutionException, TimeoutException
 	{
 		if (!mLatch.await(timeout, unit))
 			throw new TimeoutException();

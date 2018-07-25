@@ -56,8 +56,7 @@ public class StandardServMethods implements SyncMethod
 	}
 
 	private HashMap<String, String> getSubscribed() {
-		HashMap<String, String> result = new HashMap<>();
-		result.putAll(BungeeChat.instance.getSubHandler().getAllSubscriptions());
+		HashMap<String, String> result = new HashMap<>(BungeeChat.instance.getSubHandler().getAllSubscriptions());
 		return result;
 	}
 

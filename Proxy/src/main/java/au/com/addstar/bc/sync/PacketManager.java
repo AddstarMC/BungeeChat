@@ -247,14 +247,9 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 	@Override
 	public void onConnectionRestored()
 	{
-		ProxyServer.getInstance().getScheduler().runAsync(BungeeChat.instance, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				System.out.println("[BungeeChat] Redis connection restored");
-				BungeeChat.instance.getSyncManager().sendConfig("bungeechat");
-			}
+		ProxyServer.getInstance().getScheduler().runAsync(BungeeChat.instance, () -> {
+			System.out.println("[BungeeChat] Redis connection restored");
+			BungeeChat.instance.getSyncManager().sendConfig("bungeechat");
 		});
 	}
 }
