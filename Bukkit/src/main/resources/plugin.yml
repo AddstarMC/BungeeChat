@@ -1,7 +1,6 @@
 name: BungeeChatBukkit
 version: ${plugin.version}
 main: au.com.addstar.bc.BungeeChat
-api-version:${spigot.api.version}
 author: Schmoller, Narimm
 softdepend: [Vault]
 loadbefore: [Essentials]
