@@ -125,7 +125,7 @@
                 <goal>shade</goal>
               </goals>
                 <configuration>
-                    <minimizeJar>true</minimizeJar>
+                    <minimizeJar>false</minimizeJar>
                     <artifactSet>
                         <excludes>
                             <exclude>org.jetbrains:annotations</exclude>
