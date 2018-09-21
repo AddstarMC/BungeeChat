@@ -49,6 +49,7 @@ public class BungeeChat extends Plugin implements Listener
 	private PlayerSettingsManager mSettings;
 	
 	public static BungeeChat instance;
+	private String channelName = "bungeechat:chat";
 	
 	private SyncManager mSyncManager;
 	private PacketManager mPacketManager;
@@ -129,7 +130,7 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:setSkin", methods);
 		mSyncManager.addMethod("bchat:getSubscribed", methods);
 		
-		getProxy().registerChannel("BungeeChat");
+		getProxy().registerChannel(channelName);
 		getProxy().getPluginManager().registerListener(this, this);
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 		getProxy().getPluginManager().registerCommand(this, new Debugger());
@@ -336,7 +337,7 @@ public class BungeeChat extends Plugin implements Listener
 	@EventHandler
 	public void onOldMessage(PluginMessageEvent event)
 	{
-		if (event.getTag().equals("BungeeChat") && event.getSender() instanceof Server)
+		if (event.getTag().equals(channelName) && event.getSender() instanceof Server)
 		{
 			ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
 			DataInput input = new DataInputStream(stream);
