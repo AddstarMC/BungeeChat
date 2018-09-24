@@ -21,6 +21,8 @@ import au.com.addstar.bc.config.Config;
 import au.com.addstar.bc.config.KeywordHighlighterSettings;
 import au.com.addstar.bc.config.PermissionSetting;
 import au.com.addstar.bc.config.ServerConfig;
+import au.com.addstar.bc.listeners.BungeeListener;
+import au.com.addstar.bc.listeners.PlayerHandler;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.ProxyComLink;
@@ -40,7 +42,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 
-public class BungeeChat extends Plugin implements Listener
+public class BungeeChat extends Plugin
 {
 	private Config mConfig;
 	private SyncConfig mConfigSync;
@@ -49,6 +51,7 @@ public class BungeeChat extends Plugin implements Listener
 	private PlayerSettingsManager mSettings;
 	
 	public static BungeeChat instance;
+	private String channelName = "bungeechat:chat";
 	
 	private SyncManager mSyncManager;
 	private PacketManager mPacketManager;
@@ -82,19 +85,14 @@ public class BungeeChat extends Plugin implements Listener
 		mComLink = new ProxyComLink();
 		// This setup is needed as the redis connection cannot be established on the main thread, but we need it to be established before continuing
 		final CountDownLatch setupWait = new CountDownLatch(1);
-		getProxy().getScheduler().runAsync(this, new Runnable()
-		{
-			@Override
-			public void run()
+		getProxy().getScheduler().runAsync(this, () -> {
+			try
 			{
-				try
-				{
-					mComLink.init(mConfig.redis.host, mConfig.redis.port, mConfig.redis.password);
-				}
-				finally
-				{
-					setupWait.countDown();
-				}
+				mComLink.init(mConfig.redis.host, mConfig.redis.port, mConfig.redis.password);
+			}
+			finally
+			{
+				setupWait.countDown();
 			}
 		});
 		
@@ -134,8 +132,9 @@ public class BungeeChat extends Plugin implements Listener
 		mSyncManager.addMethod("bchat:setSkin", methods);
 		mSyncManager.addMethod("bchat:getSubscribed", methods);
 		
-		getProxy().registerChannel("BungeeChat");
-		getProxy().getPluginManager().registerListener(this, this);
+		getProxy().registerChannel(channelName);
+		
+		getProxy().getPluginManager().registerListener(this, new BungeeListener(channelName,this));
 		getProxy().getPluginManager().registerCommand(this, new ManagementCommand(this));
 		getProxy().getPluginManager().registerCommand(this, new Debugger());
 		getProxy().getPluginManager().registerListener(this, new PlayerHandler());
@@ -336,50 +335,6 @@ public class BungeeChat extends Plugin implements Listener
 			mPacketManager.send(packet, server);
 		else
 			mPacketManager.broadcast(packet);
-	}
-
-	@EventHandler
-	public void onOldMessage(PluginMessageEvent event)
-	{
-		if (event.getTag().equals("BungeeChat") && event.getSender() instanceof Server)
-		{
-			ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
-			DataInput input = new DataInputStream(stream);
-			
-			try
-			{
-				String subChannel = input.readUTF();
-				if(subChannel.equals("Mirror"))
-				{
-					String chatChannel = input.readUTF();
-					String message = input.readUTF();
-					
-					mPacketManager.broadcast(new MirrorPacket(chatChannel, message));
-				}
-				else if (subChannel.equals("Send"))
-				{
-					String idString = input.readUTF();
-					UUID id;
-					try
-					{
-						id = UUID.fromString(idString);
-					}
-					catch(IllegalArgumentException e)
-					{
-						ProxiedPlayer player = getProxy().getPlayer(idString);
-						if(player == null)
-							return;
-						id = player.getUniqueId();
-					}
-					
-					mPacketManager.broadcast(new SendPacket(id, input.readUTF()));
-				}
-			}
-			catch(IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
 	}
 	
 	public String getTabHeaderString(ProxiedPlayer player)

@@ -1,8 +1,9 @@
-package au.com.addstar.bc;
+package au.com.addstar.bc.listeners;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import au.com.addstar.bc.*;
 import au.com.addstar.bc.event.BCPlayerJoinEvent;
 import au.com.addstar.bc.event.BCPlayerQuitEvent;
 import au.com.addstar.bc.sync.PacketManager;
@@ -52,7 +53,7 @@ public class PlayerHandler implements Listener
 				
 				if (settings.skin != null && !settings.skin.isEmpty())
 				{
-					ColourTabList tablist = ((ColourTabList)player.getTabListHandler()); 
+					ColourTabList tablist = ((ColourTabList)player.getTabListHandler());
 					tablist.setOverrideSkin(BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(UUID.fromString(settings.skin)));
 					
 					if (tablist.hasInited())

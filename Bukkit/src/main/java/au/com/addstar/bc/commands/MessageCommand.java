@@ -60,113 +60,99 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 	@Override
 	public boolean onCommand( final CommandSender sender, Command command, String label, String[] args )
 	{
-		if(command.getName().equals("tell"))
-		{
-			if(args.length < 2)
-				return false;
+		switch (command.getName()) {
+			case "tell": {
+				if (args.length < 2)
+					return false;
 
-			if(BungeeChat.getPlayerManager().isPlayerMuted(sender))
-			{
-				sender.sendMessage(ChatColor.AQUA + "You are muted. You may not talk");
-				return true;
-			}
-			
-			final CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
-			if(player == null)
-			{
-				sender.sendMessage(ChatColor.RED + "Cannot find player " + args[0]);
-				return true;
-			}
-			
-			final String message = BungeeChat.colorize(StringUtils.join(args, ' ', 1, args.length), sender);
-			
-			if(ChatColor.stripColor(message).trim().isEmpty())
-				return false;
-			
-			if((sender instanceof Player) && !sender.hasPermission("bungeechat.message.override"))
-			{
-				if(player instanceof RemotePlayer)
-				{
-					BungeeChat.getSyncManager().callSyncMethod("bchat:canMsg", new IMethodCallback<Boolean>()
-					{
-						@Override
-						public void onError( String type, String message )
-						{
-							throw new RuntimeException(type + ": " + message);
-						}
-						
-						@Override
-						public void onFinished( Boolean data )
-						{
-							if(!data)
-								sender.sendMessage(ChatColor.RED + "That player has messaging disabled.");
-							else
-								doSendMessage(player, sender, message);
-						}
-						
-					}, PlayerManager.getUniqueId(player));
+				if (BungeeChat.getPlayerManager().isPlayerMuted(sender)) {
+					sender.sendMessage(ChatColor.AQUA + "You are muted. You may not talk");
 					return true;
 				}
-				else if(player instanceof Player)
-				{
-					if(!BungeeChat.getPlayerManager().getPlayerSettings(player).msgEnabled)
-					{
-						sender.sendMessage(ChatColor.RED + "That player has messaging disabled.");
+
+				final CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
+				if (player == null) {
+					sender.sendMessage(ChatColor.RED + "Cannot find player " + args[0]);
+					return true;
+				}
+
+				final String message = BungeeChat.colorize(StringUtils.join(args, ' ', 1, args.length), sender);
+
+				if (ChatColor.stripColor(message).trim().isEmpty())
+					return false;
+
+				if ((sender instanceof Player) && !sender.hasPermission("bungeechat.message.override")) {
+					if (player instanceof RemotePlayer) {
+						BungeeChat.getSyncManager().callSyncMethod("bchat:canMsg", new IMethodCallback<Boolean>() {
+							@Override
+							public void onError(String type, String message) {
+								throw new RuntimeException(type + ": " + message);
+							}
+
+							@Override
+							public void onFinished(Boolean data) {
+								if (!data)
+									sender.sendMessage(ChatColor.RED + "That player has messaging disabled.");
+								else
+									doSendMessage(player, sender, message);
+							}
+
+						}, PlayerManager.getUniqueId(player));
 						return true;
+					} else if (player instanceof Player) {
+						if (!BungeeChat.getPlayerManager().getPlayerSettings(player).msgEnabled) {
+							sender.sendMessage(ChatColor.RED + "That player has messaging disabled.");
+							return true;
+						}
 					}
 				}
-			}
-			
-			doSendMessage(player, sender, message);
-			
-			return true;
-		}
-		else if(command.getName().equals("reply"))
-		{
-			if(args.length == 0)
-				return false;
-			
-			if(BungeeChat.getPlayerManager().isPlayerMuted(sender))
-			{
-				sender.sendMessage(ChatColor.AQUA + "You are muted. You may not talk");
+
+				doSendMessage(player, sender, message);
+
 				return true;
 			}
-			
-			CommandSender player = BungeeChat.getPlayerManager().getPlayerSettings(sender).getLastMsgTarget();
-			if(player == null)
-			{
-				sender.sendMessage(ChatColor.RED + "You have nobody to reply to");
+			case "reply": {
+				if (args.length == 0)
+					return false;
+
+				if (BungeeChat.getPlayerManager().isPlayerMuted(sender)) {
+					sender.sendMessage(ChatColor.AQUA + "You are muted. You may not talk");
+					return true;
+				}
+
+				CommandSender player = BungeeChat.getPlayerManager().getPlayerSettings(sender).getLastMsgTarget();
+				if (player == null) {
+					sender.sendMessage(ChatColor.RED + "You have nobody to reply to");
+					return true;
+				}
+
+				String message = StringUtils.join(args, ' ', 0, args.length);
+				message = BungeeChat.colorize(message, sender);
+
+				if (ChatColor.stripColor(message).trim().isEmpty())
+					return false;
+
+				doSendMessage(player, sender, message);
+
 				return true;
 			}
-			
-			String message = StringUtils.join(args, ' ', 0, args.length);
-			message = BungeeChat.colorize(message, sender);
-			
-			if(ChatColor.stripColor(message).trim().isEmpty())
-				return false;
-			
-			doSendMessage(player, sender, message);
-			
-			return true;
-		}
-		else if(command.getName().equals("msgtoggle"))
-		{
-			if(args.length != 0)
-				return false;
-			
-			if(!(sender instanceof Player))
-				return false;
-			
-			PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(sender);
-			settings.msgEnabled = !settings.msgEnabled;
-			
-			if(settings.msgEnabled)
-				sender.sendMessage(ChatColor.GREEN + "Incoming Messaging Enabled");
-			else
-				sender.sendMessage(ChatColor.GOLD + "Incoming Messaging Disabled");
-			
-			BungeeChat.getPlayerManager().updatePlayerSettings(sender);
-			return true;
+			case "msgtoggle":
+				if (args.length != 0)
+					return false;
+
+				if (!(sender instanceof Player))
+					return false;
+
+				PlayerSettings settings = BungeeChat.getPlayerManager().getPlayerSettings(sender);
+				settings.msgEnabled = !settings.msgEnabled;
+
+				if (settings.msgEnabled)
+					sender.sendMessage(ChatColor.GREEN + "Incoming Messaging Enabled");
+				else
+					sender.sendMessage(ChatColor.GOLD + "Incoming Messaging Disabled");
+
+				BungeeChat.getPlayerManager().updatePlayerSettings(sender);
+				return true;
 		}
 		return false;
 	}

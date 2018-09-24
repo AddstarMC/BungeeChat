@@ -35,12 +35,18 @@ public abstract class ServerComLink
 	
 	public void init(String host, int port, String password)
 	{
-		if (password == null || password.isEmpty())
-			mPool = new JedisPool(new JedisPoolConfig(), host, port, 0);
-		else
-			mPool = new JedisPool(new JedisPoolConfig(), host, port, 0, password);
+		try {
+			if (password == null || password.isEmpty())
+				mPool = new JedisPool(new JedisPoolConfig(), host, port, 0);
+			else
+				mPool = new JedisPool(new JedisPoolConfig(), host, port, 0, password);
+			if(mPool == null || mPool.getResource() == null)throw new ExceptionInInitializerError(
+					"Jedis Pool did  not load");
+			initializeQueueHandler(mWaitingData);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 		
-		initializeQueueHandler(mWaitingData);
 	}
 	
 	protected abstract void initializeQueueHandler(BlockingQueue<Entry<String, byte[]>> queue);
@@ -75,8 +81,6 @@ public abstract class ServerComLink
 			catch(JedisConnectionException e)
 			{
 				notifyFailure(e);
-				mPool.returnBrokenResource(jedis);
-				jedis = null;
 				try
 				{
 					Thread.sleep(2000);
@@ -93,7 +97,7 @@ public abstract class ServerComLink
 			}
 			finally
 			{
-				mPool.returnResource(jedis);
+				if(jedis!=null)jedis.close();
 			}
 		}
 	}
@@ -142,8 +146,6 @@ public abstract class ServerComLink
 		catch(JedisConnectionException e)
 		{
 			notifyFailure(e);
-			mPool.returnBrokenResource(jedis);
-			jedis = null;
 		}
 		catch(Throwable e)
 		{
@@ -151,7 +153,7 @@ public abstract class ServerComLink
 		}
 		finally
 		{
-			mPool.returnResource(jedis);
+			if(jedis!=null)jedis.close();
 		}
 	}
 	public void broadcastMessage(String channel, byte[] data)

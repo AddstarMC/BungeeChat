@@ -14,7 +14,7 @@ public class SubscriptionHandler {
         this.subscriptions = new HashMap<>();
     }
 
-    void setSubscribed(UUID uuid, String channel){
+    public void setSubscribed(UUID uuid, String channel){
         if(channel != null && !channel.isEmpty()) {
             subscriptions.put(uuid, channel);
         }else{
@@ -22,7 +22,7 @@ public class SubscriptionHandler {
         }
     }
 
-    void unSubscribe(UUID uuid){
+    public void unSubscribe(UUID uuid){
         subscriptions.remove(uuid);
     }
 

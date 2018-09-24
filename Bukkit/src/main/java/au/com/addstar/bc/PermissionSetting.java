@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+import org.jetbrains.annotations.NotNull;
 
 public class PermissionSetting implements Comparable<PermissionSetting>
 {
@@ -40,7 +41,7 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 	public String permission;
 	
 	@Override
-	public int compareTo( PermissionSetting o )
+	public int compareTo(@NotNull PermissionSetting o )
 	{
 		return Integer.compare(priority, o.priority);
 	}

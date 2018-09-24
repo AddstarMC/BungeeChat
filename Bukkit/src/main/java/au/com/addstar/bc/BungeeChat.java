@@ -57,9 +57,11 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public void onEnable()
 	{
 		mInstance = this;
-		RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(Permission.class);
-		if (permissionProvider != null)
-			permissionManager = permissionProvider.getProvider();
+		if(Bukkit.getPluginManager().getPlugin("Vault") != null) {
+			RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(Permission.class);
+			if (permissionProvider != null)
+				permissionManager = permissionProvider.getProvider();
+		}
 		else
 			permissionManager = null;
 		

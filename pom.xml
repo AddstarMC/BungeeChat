@@ -34,7 +34,27 @@
     <module>Bukkit</module>
     <module>Core</module>
   </modules>
+  <repositories>
+    <!-- Addstar repos -->
+    <repository>
+      <id>addstar-repo</id>
+      <url>http://maven.addstar.com.au/artifactory/all-release</url>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+    <repository>
+      <id>addstar-snapshot-repo</id>
+      <url>http://maven.addstar.com.au/artifactory/all-snapshot</url>
+      <snapshots><enabled>true</enabled></snapshots>
+      <releases><enabled>false</enabled></releases>
+    </repository>
+  </repositories>
   <dependencies>
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.12</version>
+          <scope>test</scope>
+      </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
@@ -97,27 +117,7 @@
           <artifactId>maven-release-plugin</artifactId>
           <version>2.5.3</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>3.1.1</version>
-          <executions>
-            <execution>
-              <phase>package</phase>
-              <goals>
-                <goal>shade</goal>
-              </goals>
-                <configuration>
-                    <minimizeJar>true</minimizeJar>
-                    <artifactSet>
-                        <excludes>
-                            <exclude>org.jetbrains:annotations</exclude>
-                        </excludes>
-                    </artifactSet>
-                </configuration>
-            </execution>
-          </executions>
-        </plugin>
+
       </plugins>
     </pluginManagement>
     <plugins>
@@ -129,6 +129,30 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
       </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.1.1</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                        <minimizeJar>true</minimizeJar>
+                        <filters>
+                            <filter>
+                                <artifact>org.apache.commons:commons-pool2</artifact>
+                                <includes>
+                                    <include>**/**</include>
+                                </includes>
+                            </filter>
+                        </filters>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
   </build>
 </project>
