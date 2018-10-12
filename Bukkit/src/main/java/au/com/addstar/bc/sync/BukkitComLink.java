@@ -8,10 +8,13 @@ import java.util.concurrent.Future;
 import org.bukkit.Bukkit;
 
 import au.com.addstar.bc.BungeeChat;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scheduler.BukkitTask;
 
 public class BukkitComLink extends ServerComLink
 {
 	private HashMap<Integer, RemoteServer> mServers;
+	private BukkitTask task;
 	
 	public BukkitComLink()
 	{
@@ -21,7 +24,8 @@ public class BukkitComLink extends ServerComLink
 	@Override
 	protected void initializeQueueHandler( BlockingQueue<Entry<String, byte[]>> queue )
 	{
-		Bukkit.getScheduler().runTaskAsynchronously(BungeeChat.getInstance(), new DataSender(queue));
+		task = Bukkit.getScheduler().runTaskAsynchronously(BungeeChat.getInstance(),
+				new DataSender(queue));
 	}
 	
 	@Override
@@ -44,6 +48,11 @@ public class BukkitComLink extends ServerComLink
 		RemoteServer server = mServers.computeIfAbsent(id, RemoteServer::new);
 
 		return server;
+	}
+	@Override
+	public void disable(){
+		super.disable();
+		Bukkit.getScheduler().cancelTask(task.getTaskId());
 	}
 
 	@Override

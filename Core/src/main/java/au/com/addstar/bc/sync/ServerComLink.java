@@ -49,6 +49,10 @@ public abstract class ServerComLink
 		
 	}
 	
+	public void disable(){
+		mPool.close();
+	}
+	
 	protected abstract void initializeQueueHandler(BlockingQueue<Entry<String, byte[]>> queue);
 	
 	public void setNotifyHandle(ConnectionStateNotify handler)

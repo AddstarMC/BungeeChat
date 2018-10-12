@@ -137,6 +137,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public void onDisable()
 	{
 		mChatChannels.unregisterAll();
+		mComLink.disable();
 	}
 	
 	private BukkitComLink setupComLink()

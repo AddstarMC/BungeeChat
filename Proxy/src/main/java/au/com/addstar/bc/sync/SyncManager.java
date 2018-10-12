@@ -100,7 +100,7 @@ public class SyncManager implements Listener, IPacketHandler
 		}
 	}
 	
-	public void sendConfig(String name, ServerInfo server)
+	public void  sendConfig(String name, ServerInfo server)
 	{
 		SyncConfig config = mConfigs.get(name);
 		if(config == null)
@@ -140,6 +140,10 @@ public class SyncManager implements Listener, IPacketHandler
 		
 		return values.get(property);
 	}
+	
+	public Map<String, Object> getProperties(ProxiedPlayer player){
+        return mPlayerProperties.get(player);
+    }
 	
 	public Map<String, Object> getProperties(String property)
 	{
