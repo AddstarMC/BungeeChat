@@ -132,24 +132,19 @@ public class PlayerHandler implements Listener
 		mPackets.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
 		
 		// Give 1 second for plugins on the server to apply tab groups to this player
-		mProxy.getScheduler().schedule(BungeeChat.instance, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (!isOnline(player))
-				{
-					Debugger.log("ServerConnected-task player not online %s", player.getName());
-					return;
-				}
-				
-				if(player.getTabListHandler() instanceof ColourTabList)
-				{
-					((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
-					BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
-				}
-			}
-		}, 1, TimeUnit.SECONDS);
+		mProxy.getScheduler().schedule(BungeeChat.instance, () -> {
+            if (!isOnline(player))
+            {
+                Debugger.log("ServerConnected-task player not online %s", player.getName());
+                return;
+            }
+            
+            if(player.getTabListHandler() instanceof ColourTabList)
+            {
+                ((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
+                BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
+            }
+        }, 1, TimeUnit.SECONDS);
 	}
 	
 	// Post login request, still before actual server login
@@ -162,17 +157,12 @@ public class PlayerHandler implements Listener
 			return;
 		}
 		
-		mProxy.getScheduler().schedule(BungeeChat.instance, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				if (!isOnline(event.getPlayer()))
-					return;
-				
-				mSettings.updateSettings(event.getPlayer());
-			}
-		}, 10, TimeUnit.MILLISECONDS);
+		mProxy.getScheduler().schedule(BungeeChat.instance, () -> {
+            if (!isOnline(event.getPlayer()))
+                return;
+            
+            mSettings.updateSettings(event.getPlayer());
+        }, 10, TimeUnit.MILLISECONDS);
 		
 		ColourTabList.updateAll();
 	}

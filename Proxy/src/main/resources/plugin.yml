@@ -2,6 +2,6 @@ name: BungeeChat
 main: au.com.addstar.bc.BungeeChat
 version: ${plugin.version}
 
-author: Schmoller
+author: Schmoller, Narimm
 
 depends: [Yamler]

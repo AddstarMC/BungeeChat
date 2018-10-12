@@ -43,6 +43,7 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 
   public class PlayerManager implements Listener, IPacketHandler
 {
+	private BungeeChat plugin;
 	private HashMap<UUID, CommandSender> mAllProxied = new HashMap<>();
 	private HashSet<UUID> mProxied = new HashSet<>();
 	private HashMap<UUID, String> mNicknames = new HashMap<>();
@@ -51,6 +52,7 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 	
 	public PlayerManager(BungeeChat plugin)
 	{
+		this.plugin = plugin;
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 	
@@ -297,25 +299,13 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 	
 	public void refreshPlayer(final Player player)
 	{
-		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
-		{
-			@Override
-			public void run()
+		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> {
+			for (final Player other : player.getWorld().getPlayers())
 			{
-				for (final Player other : player.getWorld().getPlayers())
+				if (other.canSee(player))
 				{
-					if (other.canSee(player))
-					{
-						other.hidePlayer(player);
-						Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
-						{
-							@Override
-							public void run()
-							{
-								other.showPlayer(player);
-							}
-						}, 1);
-					}
+					other.hidePlayer(plugin,player);
+					Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> other.showPlayer(plugin,player), 1);
 				}
 			}
 		}, 10);
@@ -418,14 +408,7 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 				event.getPlayer().recalculatePermissions();
 			}
 		}
-		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				updateTabColor(current);
-			}
-		}, 2L);
+		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> updateTabColor(current), 2L);
 	}
 
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
@@ -560,7 +543,7 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 		BungeeChat.getPacketManager().sendNoQueue(settings.toPacket(getUniqueId(player)));
 	}
 	
-	protected void onPlayerNameChange(UUID uuid, String newName)
+	private void onPlayerNameChange(UUID uuid, String newName)
 	{
 		if (newName.isEmpty())
 			mNicknames.remove(uuid);

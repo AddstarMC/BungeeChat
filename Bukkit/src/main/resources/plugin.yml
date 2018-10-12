@@ -1,8 +1,7 @@
 name: BungeeChatBukkit
 version: ${plugin.version}
-
 main: au.com.addstar.bc.BungeeChat
-
+author: Schmoller, Narimm
 softdepend: [Vault]
 loadbefore: [Essentials]
 
