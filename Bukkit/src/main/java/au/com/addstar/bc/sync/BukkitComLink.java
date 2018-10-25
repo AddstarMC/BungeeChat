@@ -8,7 +8,6 @@ import java.util.concurrent.Future;
 import org.bukkit.Bukkit;
 
 import au.com.addstar.bc.BungeeChat;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
 public class BukkitComLink extends ServerComLink

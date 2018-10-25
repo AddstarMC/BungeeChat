@@ -1,7 +1,6 @@
 package au.com.addstar.bc;
 
 import au.com.addstar.bc.config.ChatChannel;
-import au.com.addstar.bc.sync.SyncManager;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -25,6 +24,8 @@ public class ManagementCommand extends Command
         if(args.length != 1)
         {
             sender.sendMessage(new TextComponent("Usage: /bungeechat reload"));
+            sender.sendMessage(new TextComponent("Usage: /bungeechat listchannel"));
+            sender.sendMessage(new TextComponent("Usage: /bungeechat playerproperties <player>"));
             return;
         }
 

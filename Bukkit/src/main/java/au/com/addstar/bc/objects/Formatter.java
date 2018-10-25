@@ -174,24 +174,7 @@ public class Formatter
 		string = string.replace("{MESSAGE}", "%2$s");
 		string = string.replace("{SERVER}", BungeeChat.serverName);
 		
-		if(sender instanceof Player)
-		{
-			Player player = (Player)sender;
-			String prefix = getChatName(sender);
-			if(prefix == null){
-				prefix = "";
-			}
-			string = string.replace("{CHATNAME}", prefix );
-			String group = BungeeChat.getPrimaryGroup(player);
-			string = string.replace("{GROUP}", (group != null ? group : "Default"));
-			string = string.replace("{WORLD}", player.getWorld().getName());
-		}
-		else
-		{
-			string = string.replace("{CHATNAME}", "" );
-			string = string.replace("{GROUP}", "Server");
-			string = string.replace("{WORLD}", "");
-		}
+		string = updateIfPlayer(sender,string);
 		
 		return string;
 	}
@@ -204,6 +187,12 @@ public class Formatter
 		string = string.replace("{MESSAGE}", "%1$s");
 		string = string.replace("{SERVER}", BungeeChat.serverName);
 		
+		string = updateIfPlayer(sender,string);
+		
+		return string;
+	}
+	
+	public static String updateIfPlayer(CommandSender sender, String message){
 		if(sender instanceof Player)
 		{
 			Player player = (Player)sender;
@@ -211,19 +200,18 @@ public class Formatter
 			if(prefix == null){
 				prefix = "";
 			}
-			string = string.replace("{CHATNAME}", prefix );
+			message = message.replace("{CHATNAME}", prefix );
 			String group = BungeeChat.getPrimaryGroup(player);
-			string = string.replace("{GROUP}", (group != null ? group : "Default"));
-			string = string.replace("{WORLD}", player.getWorld().getName());
+			message = message.replace("{GROUP}", (group != null ? group : "Default"));
+			message = message.replace("{WORLD}", player.getWorld().getName());
 		}
 		else
 		{
-			string = string.replace("{CHATNAME}", "" );
-			string = string.replace("{GROUP}", "Server");
-			string = string.replace("{WORLD}", "");
+			message = message.replace("{CHATNAME}", "" );
+			message = message.replace("{GROUP}", "Server");
+			message = message.replace("{WORLD}", "");
 		}
-		
-		return string;
+		return message;
 	}
 	
 	public static String getPMFormat(CommandSender to, boolean inbound)

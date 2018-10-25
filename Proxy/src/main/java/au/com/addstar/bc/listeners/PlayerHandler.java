@@ -68,7 +68,7 @@ public class PlayerHandler implements Listener
 	{
 		Debugger.log("PP join %s", event.getPlayer().getName());
 		
-		event.getPlayer().setTabListHandler(new ColourTabList());
+		event.getPlayer().setTabListHandler(new ColourTabList(event.getPlayer()));
 		loadSettingsAsync(event.getPlayer());
 	}
 	

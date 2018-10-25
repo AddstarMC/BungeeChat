@@ -18,7 +18,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
-import net.md_5.bungee.api.tab.TabListAdapter;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
@@ -45,9 +44,10 @@ public class ColourTabList extends TabListAdapter
 	// ==== 1.7 compat ====
 	private String mLastName;
 
-	public ColourTabList()
+	public ColourTabList(ProxiedPlayer player)
 	{
-		synchronized(mTabLists)
+        super(player);
+        synchronized(mTabLists)
 		{
 			mTabLists.add(this);
 		}
@@ -169,41 +169,40 @@ public class ColourTabList extends TabListAdapter
 		// Fake players do not need to be handled pre 1.8
 		if (!isNewTab(getPlayer()))
 			return;
-		
-		// Allow gamemode changes to be sent correctly through the proxy
-		if (packet.getAction() == Action.UPDATE_GAMEMODE)
-		{
-			onUpdateGamemode(packet);
-			return;
-		}
-		
-		if (packet.getAction() != Action.ADD_PLAYER)
-			return;
-		
-		ArrayList<Item> items = null;
-		for(Item item : packet.getItems())
-		{
-			// Only fake players will be allowed to pass through. This should allow citizens to work
-			if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null)
-			{
-				if (items == null)
-					items = new ArrayList<>(packet.getItems().length);
-				items.add(item);
-			}
-		}
-		
-		if (items != null)
-		{
-			final Item[] array = items.toArray(new Item[0]);
-			packet.setItems(array);
-			getPlayer().unsafe().sendPacket(packet);
-			// Remove them so they dont really show in tab
-			ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, () -> {
-                PlayerListItem packetRemove = new PlayerListItem();
-                packetRemove.setAction(Action.REMOVE_PLAYER);
-                packetRemove.setItems(array);
-                getPlayer().unsafe().sendPacket(packetRemove);
-            }, 50, TimeUnit.MILLISECONDS);
+		switch(packet.getAction()){
+			case UPDATE_GAMEMODE:
+				onUpdateGamemode(packet);
+				return;
+			case ADD_PLAYER:
+			    // THis is really just a fudge to remove citizens fake players from the TabList,
+                // but it adds them quickly to ensure citizens doesnt get confused.
+				ArrayList<Item> items = null;
+				for(Item item : packet.getItems())
+				{
+					// Only fake players will be allowed to pass through. This should allow citizens to work
+					if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null)
+					{
+						if (items == null)
+							items = new ArrayList<>(packet.getItems().length);
+						items.add(item);
+					}
+				}
+				
+				if (items != null)
+				{
+					final Item[] array = items.toArray(new Item[0]);
+					packet.setItems(array);
+					getPlayer().unsafe().sendPacket(packet);
+					// Remove them so they dont really show in tab
+					ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, () -> {
+						PlayerListItem packetRemove = new PlayerListItem();
+						packetRemove.setAction(Action.REMOVE_PLAYER);
+						packetRemove.setItems(array);
+						getPlayer().unsafe().sendPacket(packetRemove);
+					}, 50, TimeUnit.MILLISECONDS);
+				}
+				return;
+				default:
 		}
 	}
 	

@@ -17,7 +17,7 @@ import au.com.addstar.bc.util.Utilities;
 public class StandardServMethods implements SyncMethod
 {
 	@Override
-	public Object run( String name, ServerInfo server, Object... arguments )
+	public Object run( String name, ServerInfo server, Object... arguments ) throws IllegalArgumentException
 	{
 		switch (name) {
 			case "bungee:getServerName":
@@ -65,41 +65,41 @@ public class StandardServMethods implements SyncMethod
 		return server.getName();
 	}
 	
-	public boolean isAFK(UUID player)
+	public boolean isAFK(UUID player) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":isAFK()."+player);
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
 		return settings.isAFK;
 	}
 	
-	public boolean canMsg(UUID player)
+	public boolean canMsg(UUID player) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":canMsg()."+player);
 		
 		return BungeeChat.instance.getManager().getSettings(pplayer).msgEnabled;
 	}
 	
-	public Void setAFK(UUID player, boolean afk)
+	public Void setAFK(UUID player, boolean afk) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setAFK()."+player);
 		
 		BungeeChat.instance.getManager().getSettings(pplayer).isAFK = afk;
 		
 		return null;
 	}
 	
-	public Void toggleAFK(UUID player)
+	public Void toggleAFK(UUID player) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":toggleAFK()."+player);
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer); 
 		settings.isAFK = !settings.isAFK;
@@ -107,11 +107,11 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void setTabColor(UUID player, String color)
+	public Void setTabColor(UUID player, String color) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setTabColor()."+player);
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
 		settings.tabColor = color;
@@ -120,11 +120,11 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void setMute(UUID player, long muteEnd)
+	public Void setMute(UUID player, long muteEnd) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setMute()."+player);
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
 		settings.muteTime = muteEnd;
@@ -135,7 +135,7 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public boolean setMuteIP(Object who, long muteLength)
+	public boolean setMuteIP(Object who, long muteLength) throws IllegalArgumentException
 	{
 		InetAddress address;
 		ProxiedPlayer player = null;
@@ -143,7 +143,7 @@ public class StandardServMethods implements SyncMethod
 		{
 			player = ProxyServer.getInstance().getPlayer((UUID)who);
 			if(player == null)
-				throw new IllegalArgumentException("That player is not online");
+				throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setMuteIP()."+who);
 			
 			address = player.getAddress().getAddress();
 		}
@@ -200,11 +200,11 @@ public class StandardServMethods implements SyncMethod
 		return null;
 	}
 	
-	public Void setMsgTarget(UUID player, UUID target)
+	public Void setMsgTarget(UUID player, UUID target) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setMsgTarget()."+player);
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer); 
 		settings.lastMsgTarget = target;
@@ -227,21 +227,21 @@ public class StandardServMethods implements SyncMethod
 		return muted;
 	}
 	
-	public Void kickPlayer(UUID player, String reason)
+	public Void kickPlayer(UUID player, String reason) throws IllegalArgumentException
 	{
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":kickPlayer()."+player);
 		pplayer.disconnect(TextComponent.fromLegacyText(reason));
 		
 		return null;
 	}
 	
-	public Void setSkin(UUID player, Object skin)
+	public Void setSkin(UUID player, Object skin) throws IllegalArgumentException
 	{
 		final ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online");
+			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setSkin()."+player);
 		
 		if (skin == null)
 		{

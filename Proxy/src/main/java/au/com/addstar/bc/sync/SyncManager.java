@@ -88,6 +88,10 @@ public class SyncManager implements Listener, IPacketHandler
 				
 				BungeeChat.instance.getPacketManager().send(new CallSuccessResponsePacket(id, result), caller);
 			}
+			catch (IllegalArgumentException e){
+				BungeeChat.instance.getPacketManager().send(new CallFailedResponsePacket(id, e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage()), caller);
+				BungeeChat.instance.getLogger().warning(e.getMessage());
+			}
 			catch(Exception e)
 			{
 				BungeeChat.instance.getPacketManager().send(new CallFailedResponsePacket(id, e.getClass().getSimpleName(), e.getMessage() == null ? "" : e.getMessage()), caller);
