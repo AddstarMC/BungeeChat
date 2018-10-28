@@ -76,19 +76,19 @@ public class Debugger extends Command
 		{
 			String name = item.getUsername();
 			if (!newTab)
-				name = BaseComponent.toLegacyText(item.getDisplayName());
+				name = item.getDisplayName();
 			
 			String message = null;
 			switch(packet.getAction())
 			{
 			case ADD_PLAYER:
-				message = String.format("%d,%d,%s", item.getPing(), item.getGamemode(), BaseComponent.toLegacyText(item.getDisplayName()));
+				message = String.format("%d,%d,%s", item.getPing(), item.getGamemode(), item.getDisplayName());
 				break;
 			case REMOVE_PLAYER:
 				message = item.getUuid().toString();
 				break;
 			case UPDATE_DISPLAY_NAME:
-				message = BaseComponent.toLegacyText(item.getDisplayName());
+				message = item.getDisplayName();
 				break;
 			case UPDATE_GAMEMODE:
 				message = String.valueOf(item.getGamemode());

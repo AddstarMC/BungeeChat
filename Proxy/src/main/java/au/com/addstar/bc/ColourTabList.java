@@ -1,30 +1,32 @@
 package au.com.addstar.bc;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import com.google.common.collect.Sets;
 
 import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
+import au.com.addstar.bc.util.ReflectionUtil;
+
+import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.GameProfile;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.GameProfile.Property;
-import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.connection.LoginResult;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
 import net.md_5.bungee.protocol.packet.PlayerListItem.Action;
 import net.md_5.bungee.protocol.packet.PlayerListItem.Item;
+import net.md_5.bungee.tab.TabList;
 
-public class ColourTabList extends TabListAdapter
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+public class ColourTabList extends TabList
 {
 	private static final int PING_THRESHOLD = 20;
 	private static ListUpdater mUpdater = new ListUpdater();
@@ -46,8 +48,8 @@ public class ColourTabList extends TabListAdapter
 
 	public ColourTabList(ProxiedPlayer player)
 	{
-        super(player);
-        synchronized(mTabLists)
+		super(player);
+		synchronized(mTabLists)
 		{
 			mTabLists.add(this);
 		}
@@ -59,9 +61,9 @@ public class ColourTabList extends TabListAdapter
 		return settings.tabColor + ChatColor.stripColor(player.getDisplayName());
 	}
 	
-	private static BaseComponent[] getDispName(ProxiedPlayer player)
+	private static String getDispName(ProxiedPlayer player)
 	{
-		return TextComponent.fromLegacyText(getName(player));
+		return getName(player);
 	}
 	
 	public static boolean isNewTab(ProxiedPlayer player)
@@ -72,26 +74,27 @@ public class ColourTabList extends TabListAdapter
 	public void setOverrideSkin(SkinData skin)
 	{
 		mForcedSkinData = skin;
-		PlayerListItem packet = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
+		PlayerListItem packet = createPacket(Action.ADD_PLAYER, createItem(player));
 		
 		for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
-			if(isVisible(p, getPlayer()) && isNewTab(p))
+			if(isVisible(p, player) && isNewTab(p))
 				p.unsafe().sendPacket(packet);
+
 		}
 	}
 	
 	@Override
 	public void onConnect()
 	{
-		mLastName = getName(getPlayer());
-		Debugger.logt("Connect %s with %s", getPlayer().getName(), mLastName);
+		mLastName = getName(player);
+		Debugger.logt("Connect %s with %s", player.getName(), mLastName);
 		updateAll();
 	}
 	
 	public void onJoinPeriodComplete()
 	{
-		Debugger.logt("Join over %s", getPlayer().getName());
+		Debugger.logt("Join over %s", player.getName());
 		mHasInited = true;
 		updateAll();
 	}
@@ -102,27 +105,32 @@ public class ColourTabList extends TabListAdapter
 		if ( ping - PING_THRESHOLD > lastPing && ping + PING_THRESHOLD < lastPing )
 		{
 			lastPing = ping;
-			PlayerListItem packet = createPacket(Action.UPDATE_LATENCY, createItem(getPlayer()));
+			PlayerListItem packet = createPacket(Action.UPDATE_LATENCY, createItem(player));
             
 			for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 			{
-				if(isVisible(player, getPlayer()))
+				if(isVisible(player, super.player))
 					sendPacket(packet, player);
 			}
 		}
 	}
 
 	@Override
+	public void onServerChange() {
+
+	}
+
+	@Override
 	public void onDisconnect()
 	{
-		Debugger.logt("Disconnect %s", getPlayer().getName());
-		Item item = createItem(getPlayer(), mLastName);
+		Debugger.logt("Disconnect %s", player.getName());
+		Item item = createItem(player, mLastName);
 		
 		PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, item);
 		
 		for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 		{
-			if(isVisible(player, getPlayer()))
+			if(isVisible(player, super.player))
 				sendPacket(packet, player);
 		}
 		
@@ -133,7 +141,7 @@ public class ColourTabList extends TabListAdapter
 		
 		synchronized(mTabLists) {
 			for (ColourTabList tablist : mTabLists) {
-				tablist.mVisiblePlayers.remove(getPlayer());
+				tablist.mVisiblePlayers.remove(player);
 			}
 		}
 	}
@@ -147,7 +155,7 @@ public class ColourTabList extends TabListAdapter
 			if (other == null)
 				continue;
 			
-			if (isVisible(getPlayer(), other))
+			if (isVisible(player, other))
 			{
 				if (items == null)
 					items = new ArrayList<>(packet.getItems().length);
@@ -159,7 +167,7 @@ public class ColourTabList extends TabListAdapter
 		{
 			final Item[] array = items.toArray(new Item[0]);
 			packet.setItems(array);
-			getPlayer().unsafe().sendPacket(packet);
+            player.unsafe().sendPacket(packet);
 		}
 	}
 	
@@ -167,56 +175,56 @@ public class ColourTabList extends TabListAdapter
 	public void onUpdate( PlayerListItem packet )
 	{
 		// Fake players do not need to be handled pre 1.8
-		if (!isNewTab(getPlayer()))
+		if (!isNewTab(player))
 			return;
-		switch(packet.getAction()){
-			case UPDATE_GAMEMODE:
-				onUpdateGamemode(packet);
-				return;
-			case ADD_PLAYER:
-			    // THis is really just a fudge to remove citizens fake players from the TabList,
+		switch(packet.getAction()) {
+            case UPDATE_GAMEMODE:
+                onUpdateGamemode(packet);
+                return;
+            case ADD_PLAYER:
+                // THis is really just a fudge to remove citizens fake players from the TabList,
                 // but it adds them quickly to ensure citizens doesnt get confused.
-				ArrayList<Item> items = null;
-				for(Item item : packet.getItems())
-				{
-					// Only fake players will be allowed to pass through. This should allow citizens to work
-					if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null)
-					{
-						if (items == null)
-							items = new ArrayList<>(packet.getItems().length);
-						items.add(item);
-					}
-				}
-				
-				if (items != null)
-				{
-					final Item[] array = items.toArray(new Item[0]);
-					packet.setItems(array);
-					getPlayer().unsafe().sendPacket(packet);
-					// Remove them so they dont really show in tab
-					ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, () -> {
-						PlayerListItem packetRemove = new PlayerListItem();
-						packetRemove.setAction(Action.REMOVE_PLAYER);
-						packetRemove.setItems(array);
-						getPlayer().unsafe().sendPacket(packetRemove);
-					}, 50, TimeUnit.MILLISECONDS);
-				}
-				return;
-				default:
-		}
+                ArrayList<Item> items = null;
+                for (Item item : packet.getItems()) {
+                    // Only fake players will be allowed to pass through. This should allow citizens to work
+                    if (ProxyServer.getInstance().getPlayer(item.getUuid()) == null) {
+                        if (items == null)
+                            items = new ArrayList<>(packet.getItems().length);
+                        items.add(item);
+                    }
+                }
+
+                if (items != null) {
+                    final Item[] array = items.toArray(new Item[items.size()]);
+                    packet.setItems(array);
+                    player.unsafe().sendPacket(packet);
+                    // Remove them so they dont really show in tab
+                    ProxyServer.getInstance().getScheduler().schedule(BungeeChat.instance, new Runnable() {
+                        @Override
+                        public void run() {
+                            PlayerListItem packetRemove = new PlayerListItem();
+                            packetRemove.setAction(Action.REMOVE_PLAYER);
+                            packetRemove.setItems(array);
+                            player.unsafe().sendPacket(packetRemove);
+                        }
+                    }, 50, TimeUnit.MILLISECONDS);
+                }
+                return;
+            default:
+        }
 	}
 	
 	public void updateTabHeaders()
 	{
-		if (!isNewTab(getPlayer()))
+		if (!isNewTab(player))
 			return;
 		
-		String headerString = BungeeChat.instance.getTabHeaderString(getPlayer());
-		String footerString = BungeeChat.instance.getTabFooterString(getPlayer());
+		String headerString = BungeeChat.instance.getTabHeaderString(player);
+		String footerString = BungeeChat.instance.getTabFooterString(player);
 		
 		if (!headerString.equals(mHeaderContents) || !footerString.equals(mFooterContents))
 		{
-			getPlayer().setTabHeader(TextComponent.fromLegacyText(headerString), TextComponent.fromLegacyText(footerString));
+            player.setTabHeader(TextComponent.fromLegacyText(headerString), TextComponent.fromLegacyText(footerString));
 			mHeaderContents = headerString;
 			mFooterContents = footerString;
 		}
@@ -229,7 +237,7 @@ public class ColourTabList extends TabListAdapter
 		
 		for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
-			if(isVisible(getPlayer(), p))
+			if(isVisible(player, p))
 			{
 				if(!mVisiblePlayers.contains(p))
 				{
@@ -244,22 +252,22 @@ public class ColourTabList extends TabListAdapter
 			}
 		}
 		
-		if (isNewTab(getPlayer()))
+		if (isNewTab(player))
 		{
 			if (!toAdd.isEmpty())
 			{
 				PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, toAdd.toArray(new Item[0]));
 				PlayerListItem packetUpdate = createPacket(Action.UPDATE_DISPLAY_NAME, toAdd.toArray(new Item[0]));
 				
-				sendPacket(packetAdd, getPlayer());
-				sendPacket(packetUpdate, getPlayer());
+				sendPacket(packetAdd, player);
+				sendPacket(packetUpdate, player);
 			}
 			
 			if (!toRemove.isEmpty())
 			{
 				PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, toRemove.toArray(new Item[0]));
 				
-				sendPacket(packetRemove, getPlayer());
+				sendPacket(packetRemove, player);
 			}
 		}
 		else
@@ -267,13 +275,13 @@ public class ColourTabList extends TabListAdapter
 			for (Item item : toAdd)
 			{
 				PlayerListItem packet = createPacket(Action.ADD_PLAYER, item);
-				sendPacket(packet, getPlayer());
+				sendPacket(packet, player);
 			}
 			
 			for (Item item : toRemove)
 			{
 				PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, item);
-				sendPacket(packet, getPlayer());
+				sendPacket(packet,player);
 			}
 		}
 		
@@ -287,24 +295,18 @@ public class ColourTabList extends TabListAdapter
 	{
 		if(to == player)
 			return true;
-		
-		if (player.getTabListHandler() instanceof ColourTabList)
-		{
-			if(!((ColourTabList)player.getTabListHandler()).mHasInited)
-				return false;
-		}
-		
+        TabList tab  = ReflectionUtil.getTabListHandler(player) ;
+            if (tab  instanceof ColourTabList && tab != null) {
+                if (!((ColourTabList) ReflectionUtil.getTabListHandler(player)).mHasInited)
+                    return false;
+            }
 		SyncManager manager = BungeeChat.instance.getSyncManager();
-		
 		boolean canSeeAll = manager.getPropertyBoolean(to, "TL:seeall", false);
 		if(canSeeAll)
 			return true;
-		
 		Collection<String> names = manager.getPropertyNames(player, "TL:group:");
-		
 		if(names.isEmpty())
 			return true;
-		
 		for(String name : names)
 		{
 			String group = name.split(":")[2];
@@ -332,25 +334,24 @@ public class ColourTabList extends TabListAdapter
 				list.updateTabHeaders();
 		}
 	}
-	
-	@Override
+
 	public void onUpdateName()
 	{
-		Debugger.logt("UpdateName %s from %s to %s", getPlayer().getName(), mLastName, getName(getPlayer()));
+		Debugger.logt("UpdateName %s from %s to %s", player.getName(), mLastName, getName(player));
 		if (mLastName == null)
 		{
-			Debugger.logt("Update name cancelled %s", getPlayer().getName());
+			Debugger.logt("Update name cancelled %s", player.getName());
 			return;
 		}
 		
-		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), mLastName));
-		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
-		mLastName = getName(getPlayer());
+		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(player, mLastName));
+		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(player));
+		mLastName = getName(player);
 	
 		for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
 			// Can only update for other players if the init period is over, and the other player can see me
-			if((mHasInited && isVisible(p, getPlayer())) || p == getPlayer())
+			if((mHasInited && isVisible(p, player)) || p == player)
 			{
 				if (isNewTab(p))
 					sendPacket(packetAdd, p);
@@ -374,32 +375,31 @@ public class ColourTabList extends TabListAdapter
 		player.unsafe().sendPacket(packet);
 	}
 	
-	private static void setProfile(Item item, ProxiedPlayer player)
-	{
-		GameProfile profile = player.getProfile();
-		item.setUsername(ChatColor.stripColor(player.getDisplayName()));
-		item.setUuid(profile.getUniqueId());
-		
-		ColourTabList tab = (ColourTabList)player.getTabListHandler();
-		
-		String[][] properties = new String[profile.getProperties().length][];
-		for(int i = 0; i < properties.length; ++i)
-		{
-			Property prop = profile.getProperties()[i];
-			if (prop.getName().equals("textures"))
-			{
-				if (tab.mForcedSkinData != null)
-					prop = new Property("textures", tab.mForcedSkinData.value, tab.mForcedSkinData.signature);
-			}
-			
-			if (prop.getSignature() != null)
-				properties[i] = new String[] { prop.getName(), prop.getValue(), prop.getSignature() };
-			else
-				properties[i] = new String[] { prop.getName(), prop.getValue() };
-		}
-		
-		item.setProperties(properties);
-	}
+	private static void setProfile(Item item, ProxiedPlayer player) {
+        LoginResult profile = ((UserConnection)player).getPendingConnection().getLoginProfile();
+        item.setUsername(ChatColor.stripColor(player.getDisplayName()));
+        item.setUuid(player.getUniqueId());
+            TabList t = ReflectionUtil.getTabListHandler(player);
+            if(t instanceof ColourTabList) {
+                ColourTabList tab = (ColourTabList) t;
+                String[][] properties = new String[profile.getProperties().length][];
+                for (int i = 0; i < properties.length; ++i) {
+                    LoginResult.Property prop = profile.getProperties()[i];
+                    if (prop.getName().equals("textures")) {
+                        if (tab.mForcedSkinData != null)
+                            prop = new LoginResult.Property("textures", tab.mForcedSkinData.value, tab.mForcedSkinData.signature);
+                    }
+
+                    if (prop.getSignature() != null)
+                        properties[i] = new String[]{prop.getName(), prop.getValue(), prop.getSignature()};
+                    else
+                        properties[i] = new String[]{prop.getName(), prop.getValue()};
+                }
+
+                item.setProperties(properties);
+            }
+
+    }
 	
 	private static Item createItem(ProxiedPlayer player)
 	{
@@ -419,9 +419,9 @@ public class ColourTabList extends TabListAdapter
 		setProfile(item, player);
 		
 		if (name != null)
-			item.setDisplayName(TextComponent.fromLegacyText(name));
+			item.setDisplayName(name);
 		else
-			item.setDisplayName(TextComponent.fromLegacyText(player.getName()));
+			item.setDisplayName(player.getName());
 
 		item.setGamemode(0);
 		item.setPing(player.getPing());

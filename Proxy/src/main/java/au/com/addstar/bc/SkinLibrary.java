@@ -22,9 +22,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import net.md_5.bungee.UserConnection;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.GameProfile.Property;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.connection.LoginResult;
 
 public class SkinLibrary
 {
@@ -42,7 +43,7 @@ public class SkinLibrary
 		SkinData skin = mSkins.get(player.getUniqueId());
 		if (skin == null)
 		{
-			for (Property prop : player.getProfile().getProperties())
+			for (LoginResult.Property prop : ((UserConnection)player).getPendingConnection().getLoginProfile().getProperties())
 			{
 				if (prop.getName().equals("textures"))
 				{
@@ -64,7 +65,7 @@ public class SkinLibrary
 			ProxiedPlayer player = ProxyServer.getInstance().getPlayer(id);
 			if (player != null)
 			{
-				for (Property prop : player.getProfile().getProperties())
+				for (LoginResult.Property prop : ((UserConnection)player).getPendingConnection().getLoginProfile().getProperties())
 				{
 					if (prop.getName().equals("textures"))
 					{

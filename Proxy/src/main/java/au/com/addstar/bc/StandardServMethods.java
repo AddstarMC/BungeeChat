@@ -12,7 +12,10 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 import au.com.addstar.bc.sync.SyncMethod;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
+import au.com.addstar.bc.util.ReflectionUtil;
 import au.com.addstar.bc.util.Utilities;
+import net.md_5.bungee.tab.TabList;
+
 
 public class StandardServMethods implements SyncMethod
 {
@@ -115,8 +118,9 @@ public class StandardServMethods implements SyncMethod
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
 		settings.tabColor = color;
-		pplayer.getTabListHandler().onUpdateName();
-		
+		TabList tab = ReflectionUtil.getTabListHandler(pplayer);
+		if(tab instanceof ColourTabList)
+			((ColourTabList)tab).onUpdateName();
 		return null;
 	}
 	
@@ -245,7 +249,9 @@ public class StandardServMethods implements SyncMethod
 		
 		if (skin == null)
 		{
-			((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(null);
+			TabList tab = ReflectionUtil.getTabListHandler(pplayer);
+			if(tab instanceof ColourTabList)
+				((ColourTabList)tab).setOverrideSkin(null);
 			BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
 			BungeeChat.instance.getManager().getSettings(pplayer).skin = null;
 			BungeeChat.instance.getManager().savePlayer(pplayer);
@@ -260,7 +266,9 @@ public class StandardServMethods implements SyncMethod
 		
 		if (data != null)
 		{
-			((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(data);
+			TabList tab = ReflectionUtil.getTabListHandler(pplayer);
+			if(tab instanceof ColourTabList)
+				((ColourTabList)tab).setOverrideSkin(data);
 			BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
 			BungeeChat.instance.getManager().getSettings(pplayer).skin = data.id.toString();
 			BungeeChat.instance.getManager().savePlayer(pplayer);

@@ -11,6 +11,8 @@ import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
+import au.com.addstar.bc.util.ReflectionUtil;
+
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -20,6 +22,7 @@ import net.md_5.bungee.api.event.ServerConnectedEvent;
 import net.md_5.bungee.api.event.ServerSwitchEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.tab.TabList;
 
 public class PlayerHandler implements Listener
 {
@@ -53,11 +56,14 @@ public class PlayerHandler implements Listener
 				
 				if (settings.skin != null && !settings.skin.isEmpty())
 				{
-					ColourTabList tablist = ((ColourTabList)player.getTabListHandler());
-					tablist.setOverrideSkin(BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(UUID.fromString(settings.skin)));
-					
-					if (tablist.hasInited())
-						BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
+
+					TabList tablist = ReflectionUtil.getTabListHandler(player);
+					if(tablist != null && tablist instanceof ColourTabList) {
+						((ColourTabList)tablist).setOverrideSkin(BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(UUID.fromString(settings.skin)));
+
+						if (((ColourTabList)tablist).hasInited())
+							BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
+					}
 				}
 			}
 		});
@@ -67,8 +73,11 @@ public class PlayerHandler implements Listener
 	public void onFinishLogin(final PostLoginEvent event)
 	{
 		Debugger.log("PP join %s", event.getPlayer().getName());
-		
-		event.getPlayer().setTabListHandler(new ColourTabList(event.getPlayer()));
+		try {
+			ReflectionUtil.setTablistHandler(event.getPlayer(), new ColourTabList(event.getPlayer()));
+		}catch (IllegalAccessException | NoSuchFieldException e){
+			BungeeChat.instance.getLogger().warning("Could not set ColourTabList for: " + event.getPlayer());
+		}
 		loadSettingsAsync(event.getPlayer());
 	}
 	
@@ -132,19 +141,24 @@ public class PlayerHandler implements Listener
 		mPackets.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
 		
 		// Give 1 second for plugins on the server to apply tab groups to this player
-		mProxy.getScheduler().schedule(BungeeChat.instance, () -> {
-            if (!isOnline(player))
-            {
-                Debugger.log("ServerConnected-task player not online %s", player.getName());
-                return;
-            }
-            
-            if(player.getTabListHandler() instanceof ColourTabList)
-            {
-                ((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
-                BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
-            }
-        }, 1, TimeUnit.SECONDS);
+		mProxy.getScheduler().schedule(BungeeChat.instance, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if (!isOnline(player))
+				{
+					Debugger.log("ServerConnected-task player not online %s", player.getName());
+					return;
+				}
+				TabList tabList = ReflectionUtil.getTabListHandler(player);
+				if(tabList instanceof ColourTabList)
+				{
+					((ColourTabList)tabList).onJoinPeriodComplete();
+					BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
+				}
+			}
+		}, 1, TimeUnit.SECONDS);
 	}
 	
 	// Post login request, still before actual server login
@@ -160,7 +174,7 @@ public class PlayerHandler implements Listener
 		mProxy.getScheduler().schedule(BungeeChat.instance, () -> {
             if (!isOnline(event.getPlayer()))
                 return;
-            
+
             mSettings.updateSettings(event.getPlayer());
         }, 10, TimeUnit.MILLISECONDS);
 		
