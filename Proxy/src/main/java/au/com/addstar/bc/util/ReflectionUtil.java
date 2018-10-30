@@ -21,7 +21,7 @@ public class ReflectionUtil {
     public static TabList getTabListHandler(ProxiedPlayer player) {
         TabList result;
         try{
-            result = getField(UserConnection.class,player,"tablistHandler",5);
+            result = getField(UserConnection.class,player,"tabListHandler",5);
         }catch (NoSuchFieldException| IllegalAccessException e){
             BungeeChat.instance.getLogger().warning("Could Not retrieve TablistHandler");
             result = null;
