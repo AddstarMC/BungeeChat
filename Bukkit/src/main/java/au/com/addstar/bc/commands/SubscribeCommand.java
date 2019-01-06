@@ -2,6 +2,8 @@ package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.objects.ChatChannel;
+import au.com.addstar.bc.utils.Utilities;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -25,34 +27,34 @@ public class SubscribeCommand implements CommandExecutor {
         }
         Player player = (Player) commandSender;
         if (args.length == 0) {
-            player.sendMessage("Usage: /chat <channel>");
+            player.sendMessage(Utilities.colorize("&3Usage: &6/chat <channel>"));
             return false;
         } else {
-            String channel = args[0];
-            if (channel.toLowerCase().equals("global")) {
+            String channelName = args[0];
+            if (channelName.equalsIgnoreCase("global")) {
                 String subscribed = BungeeChat.getPlayerManager().getDefaultChatChannel(player);
-                if (subscribed !=null  && instance.getChatChannelsManager().hasChannel(subscribed)) {
+                if (subscribed != null  && instance.getChatChannelsManager().hasChannel(subscribed)) {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(subscribed);
                     BungeeChat.getPlayerManager().unsubscribeAll(player);
                     if (!player.hasPermission(perm)) {
-                        commandSender.sendMessage("Unsubscribed from "+ subscribed);
-                    }else{
-                        commandSender.sendMessage("Could not unsubscribe from " + subscribed);
+                        player.sendMessage(Utilities.colorize("&3Unsubscribed from &a" + subscribed));
+                    } else {
+                        player.sendMessage(Utilities.colorize("&cCould not unsubscribe from &a" + subscribed));
                     }
-                }else{
+                } else {
                     BungeeChat.getPlayerManager().unsubscribeAll(player);
-                    commandSender.sendMessage("You are not subscribed to any channels.");
+                    player.sendMessage(Utilities.colorize("&3You are not subscribed to any channels."));
                 }
                 return true;
             }
-            if (commandSender.hasPermission("bungeechat.subscribe." + channel)) {
+            if (commandSender.hasPermission("bungeechat.subscribe." + channelName)) {
                 String prefix = BungeeChat.getPlayerManager().getPlayerSettings(player).chatName;
-                final ChatChannel chatChannel = instance.getChatChannelsManager().getChatChannel(channel);
+                final ChatChannel chatChannel = instance.getChatChannelsManager().getChatChannel(channelName);
                 if (chatChannel != null) {
                     String perm = chatChannel.permission;
                     if (perm == null) {
-                        instance.getLogger().warning("The speak permission for " + channel + " is null");
-                        player.sendMessage("Error with Channel permission please contact admin");
+                        instance.getLogger().warning("The speak permission for " + chatChannel.name + " is null");
+                        player.sendMessage(Utilities.colorize("&cError with Channel permission please contact admin"));
                         return false;
                     }
                     BungeeChat.getPlayerManager().unsubscribeAll(player);
@@ -61,33 +63,35 @@ public class SubscribeCommand implements CommandExecutor {
                         player.recalculatePermissions();
                         if (player.hasPermission(perm)) {
                             BungeeChat.getPlayerManager().setDefaultChannel(player, chatChannel.name);
-                            player.sendMessage("You have subcribed to " + chatChannel.name);
-                            player.sendMessage("Your chat will default to this channel.");
-                            player.sendMessage("Use ! before your message to send to public chat");
-                            if (instance.getChatChannelsManager().isRolePlay(channel)) {
+                            player.sendMessage(Utilities.colorize("&3You have subscribed to &a" + chatChannel.name));
+                            player.sendMessage(Utilities.colorize("&3Your chat will default to this channel."));
+                            player.sendMessage(Utilities.colorize("&3Use &6! &3before your message to send to public chat"));
+                            player.sendMessage(Utilities.colorize("&3Use &6/chat global &3to leave &a" + chatChannel.name + " &3chat"));
+                            if (instance.getChatChannelsManager().isRolePlay(channelName)) {
                                 if (prefix != null) {
-                                    commandSender.sendMessage("Your roleplay prefix is " +prefix);
+                                    player.sendMessage(Utilities.colorize("&3Your roleplay prefix is &b" + prefix));
+                                    player.sendMessage(Utilities.colorize("&3Set your roleplay name using &6/chatname <RolePlayName>"));
                                 }
                             }
                         }
                     } else {
-                        if (!instance.getChatChannelsManager().isSubscribable(channel)) {
-                            commandSender.sendMessage("That channel is either not available or not subscribable.");
+                        if (!instance.getChatChannelsManager().isSubscribable(channelName)) {
+                            player.sendMessage(Utilities.colorize("&cThat channel is either not available or you do not have permission."));
                             return false;
                         }
                         if (commandSender.hasPermission(perm)) {
-                            commandSender.sendMessage("You are already subcribed to " + channel + "with perm " +perm);
-                            BungeeChat.getPlayerManager().setDefaultChannel(player, channel);
+                            player.sendMessage(Utilities.colorize("&3You are already subscribed to &a" + channelName + " &3 with perm &a" + perm));
+                            BungeeChat.getPlayerManager().setDefaultChannel(player, channelName);
                             return true;
                         }
                     }
                     return true;
                 } else {
-                    commandSender.sendMessage(channel + " does not exist.");
+                    player.sendMessage(Utilities.colorize("&cChannel &a" + channelName + " &cdoes not exist."));
                     return false;
                 }
             } else {
-                commandSender.sendMessage("&c No Permission for that command");
+                player.sendMessage(Utilities.colorize("&cNo Permission for that command"));
                 return false;
             }
         }

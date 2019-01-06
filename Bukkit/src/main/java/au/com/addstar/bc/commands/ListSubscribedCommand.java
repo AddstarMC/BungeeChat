@@ -2,6 +2,7 @@ package au.com.addstar.bc.commands;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.sync.IMethodCallback;
+import au.com.addstar.bc.utils.Utilities;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -49,9 +50,9 @@ public class ListSubscribedCommand implements CommandExecutor {
                                     }
                                 }
                                 List<String> message = new ArrayList<>();
-                                message.add(ChatColor.translateAlternateColorCodes('&',"&6***Players Currently Subscribed to "+ subscribed +  " ***&f"));
+                                message.add(Utilities.colorize("&6***Players Currently Subscribed to "+ subscribed +  " ***&f"));
                                 message.addAll(result);
-                                message.add(ChatColor.translateAlternateColorCodes('&',"&6-----------------------&f"));
+                                message.add(Utilities.colorize("&6-----------------------&f"));
                                 String[] messages = new String[message.size()];
                                 message.toArray(messages);
                                 commandSender.sendMessage(messages);

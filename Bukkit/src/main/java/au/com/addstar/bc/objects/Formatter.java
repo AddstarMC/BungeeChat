@@ -41,12 +41,12 @@ public class Formatter
 	public static void load(SyncConfig config)
 	{
 		if(!config.getString("consolename", "").isEmpty())
-			consoleOverride = ChatColor.translateAlternateColorCodes('&', config.getString("consolename", ""));
+			consoleOverride = Utilities.colorize(config.getString("consolename", ""));
 		else
 			consoleOverride = null;
 		
-		mPMFormatInbound = ChatColor.translateAlternateColorCodes('&', config.getString("pm-format-in", "[{DISPLAYNAME} -> Me]: {MESSAGE}"));
-		mPMFormatOutbound = ChatColor.translateAlternateColorCodes('&', config.getString("pm-format-out", "[Me -> {DISPLAYNAME}]: {MESSAGE}"));
+		mPMFormatInbound = Utilities.colorize(config.getString("pm-format-in", "[{DISPLAYNAME} -> Me]: {MESSAGE}"));
+		mPMFormatOutbound = Utilities.colorize(config.getString("pm-format-out", "[Me -> {DISPLAYNAME}]: {MESSAGE}"));
 		
 		permissionLevels.clear();
 		

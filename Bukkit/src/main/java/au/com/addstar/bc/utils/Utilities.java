@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permissible;
 
@@ -45,7 +46,17 @@ public class Utilities
 				((CommandSender)perm).sendMessage(message);
 		}
 	}
-	
+
+	/**
+	 * Converts color place-holders.
+	 *
+	 * @param text
+	 * @return
+	 */
+	public static String colorize(String text) {
+		return ChatColor.translateAlternateColorCodes('&', text);
+	}
+
 	public static long parseDateDiff(String dateDiff)
 	{
 		if(dateDiff == null)

@@ -3,7 +3,7 @@ package au.com.addstar.bc.commands;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.ChatChannelManager;
 import au.com.addstar.bc.sync.IMethodCallback;
-import org.bukkit.ChatColor;
+import au.com.addstar.bc.utils.Utilities;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -64,15 +64,15 @@ public class ChannelListCommand implements CommandExecutor {
             }
             List<String> message = new ArrayList<>();
             if(!sub){
-                message.add(ChatColor.translateAlternateColorCodes('&',"&6***List of Channels**"));
+                message.add(Utilities.colorize("&6***List of Channels**"));
             }else {
-                message.add(ChatColor.translateAlternateColorCodes('&',"&6***List of Subscribable Channels**"));
+                message.add(Utilities.colorize("&6***List of Available Channels**"));
             }
-            message.add(ChatColor.translateAlternateColorCodes('&',"&6-Channel Name-:-Total Subscribed-&f"));
+            message.add(Utilities.colorize("&6-Channel Name-:-Total Subscribed-&f"));
             for(Map.Entry<String, Integer> res: result.entrySet()){
-                message.add(ChatColor.translateAlternateColorCodes('&',res.getKey() + "&6 : &f " + res.getValue()));
+                message.add(Utilities.colorize(res.getKey() + "&6 : &f " + res.getValue()));
             }
-            message.add(ChatColor.translateAlternateColorCodes('&',"&6-----------------------&f"));
+            message.add(Utilities.colorize("&6-----------------------&f"));
             String[] messages = new String[message.size()];
             message.toArray(messages);
             sender.sendMessage(messages);
@@ -84,16 +84,17 @@ public class ChannelListCommand implements CommandExecutor {
             List<String> failure = new ArrayList<>();
             sender.sendMessage("Error: " + type +" : " + message);
             if(!sub){
-                failure.add(ChatColor.translateAlternateColorCodes('&',"&6***List of Channels**"));
+                failure.add(Utilities.colorize("&6***List of Channels**"));
             }else {
-                failure.add(ChatColor.translateAlternateColorCodes('&',"&6***List of Subscribable Channels**"));
+                failure.add(Utilities.colorize("&6***List of Available Channels**"));
             }
-            failure.add(ChatColor.translateAlternateColorCodes('&',"-----------------------"));
+            failure.add(Utilities.colorize("-----------------------"));
             failure.addAll(manager.getChannelNames(sub));
-            failure.add(ChatColor.translateAlternateColorCodes('&',"&6-----------------------&f"));
+            failure.add(Utilities.colorize("&6-----------------------&f"));
             String[] messages = new String[failure.size()];
             failure.toArray(messages);
             sender.sendMessage(messages);
         }
+
     }
 }
