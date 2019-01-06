@@ -115,7 +115,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		for(ChatChannel channel : mChannels.values())
 		{
 			if(!channel.command.isEmpty() && channel.command.equalsIgnoreCase(channelCmd)) {
-				BungeeChat.getInstance().getLogger().info("Command: " +channelCmd +" matched");
+				BungeeChat.getInstance().getLogger().info("Command: " + channelCmd + " matched");
 				if (channel.permission != null)
 					if (sender.hasPermission(channel.permission)) {
                         channel.say(sender, message);
@@ -157,7 +157,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		
 		SyncConfig channels = config.getSection("channels");
 		
-		for(String key : channels.getKeys())
+		for (String key : channels.getKeys())
 		{
 			ChatChannelConfig setting = (ChatChannelConfig) channels.get(key, null);
 			register(key, setting.command, setting.format, setting.permission, setting.listenPermission, setting.subscribe, setting.isRP);
@@ -171,7 +171,7 @@ public class ChatChannelManager implements Listener, CommandExecutor
 				if (channel.getValue().subscribe) {
 					channels.add(channel.getKey());
 				}
-			}else{
+			} else {
 				channels.add(channel.getKey());
 			}
 		}
@@ -182,27 +182,44 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		return mChannels;
 	}
 
-	public boolean isSubscribable(String channel) {
-        return hasChannel(channel) && mChannels.get(channel).subscribe;
+	public boolean isSubscribable(String channelName) {
+		String channelNameToFind = getChannelNameIgnoreCase(channelName);
+		return hasChannel(channelNameToFind) && mChannels.get(channelNameToFind).subscribe;
     }
 
-	public boolean isRolePlay(String channel) {
-		return hasChannel(channel) && mChannels.get(channel).isRP;
+	public boolean isRolePlay(String channelName) {
+		String channelNameToFind = getChannelNameIgnoreCase(channelName);
+		return hasChannel(channelNameToFind) && mChannels.get(channelNameToFind).isRP;
 	}
 
-    public String getChannelSpeakPerm(String channel){
-		if(mChannels.containsKey(channel)) {
-			return mChannels.get(channel).permission;
+    public String getChannelSpeakPerm(String channelName) {
+		String channelNameToFind = getChannelNameIgnoreCase(channelName);
+
+		if(mChannels.containsKey(channelNameToFind)) {
+			return mChannels.get(channelNameToFind).permission;
 		}
 		return null;
     }
-	public boolean hasChannel(String channel){
-		return mChannels.containsKey(channel);
+
+    private String getChannelNameIgnoreCase(String channelName) {
+		for (Map.Entry<String, ChatChannel> channel: mChannels.entrySet()) {
+			String capitalizedChannelName = channel.getKey();
+			if (capitalizedChannelName.equalsIgnoreCase(channelName)) {
+				return capitalizedChannelName;
+			}
+		}
+		return channelName;
+	}
+
+	public boolean hasChannel(String channelName) {
+		String channelNameToFind = getChannelNameIgnoreCase(channelName);
+		return mChannels.containsKey(channelNameToFind);
 	}
 
 	@Nullable
-	public ChatChannel getChatChannel(String name){
-		return mChannels.getOrDefault(name, null);
+	public ChatChannel getChatChannel(String channelName) {
+		String channelNameToFind = getChannelNameIgnoreCase(channelName);
+		return mChannels.getOrDefault(channelNameToFind, null);
 	}
 
 }
