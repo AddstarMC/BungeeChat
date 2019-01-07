@@ -18,6 +18,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.tab.TabListAdapter;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.protocol.ProtocolConstants;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
@@ -46,7 +47,7 @@ public class ColourTabList extends TabListAdapter
 
 	public ColourTabList(ProxiedPlayer player)
 	{
-        super(player);
+		init(player);
         synchronized(mTabLists)
 		{
 			mTabLists.add(this);
