@@ -289,35 +289,39 @@ public class ColourTabList extends TabListAdapter
 	/**
 	 * To be visible, the to player must either have TL:seeall set, or be able to see all the groups player is in
 	 */
-	public static boolean isVisible(ProxiedPlayer to, ProxiedPlayer player)
-	{
-		if(to == player)
+	public static boolean isVisible(ProxiedPlayer to, ProxiedPlayer player) {
+		if (to == player)
 			return true;
-		
-		if (player.getTabListHandler() instanceof ColourTabList)
-		{
-			if(!((ColourTabList)player.getTabListHandler()).mHasInited)
+
+		if (player.getTabListHandler() instanceof ColourTabList) {
+			if (!((ColourTabList) player.getTabListHandler()).mHasInited)
 				return false;
 		}
-		
+
 		SyncManager manager = BungeeChat.instance.getSyncManager();
-		
+
 		boolean canSeeAll = manager.getPropertyBoolean(to, "TL:seeall", false);
-		if(canSeeAll)
+		if (canSeeAll){
+			Debugger.logt(player.getDisplayName() + " visible because " + to.getDisplayName() + " can SEEALL...");
 			return true;
-		
+		}
 		Collection<String> names = manager.getPropertyNames(player, "TL:group:");
 		
-		if(names.isEmpty())
+		if(names.isEmpty()) {
+			Debugger.logt(player.getDisplayName() + " visible to "+to.getDisplayName()+" because TL group is empty");
+
 			return true;
+		}
 		
 		for(String name : names)
 		{
 			String group = name.split(":")[2];
-			if(manager.getPropertyBoolean(player, "TL:group:" + group, false) && !manager.getPropertyBoolean(to, "TL:see:" + group, false))
+			if(manager.getPropertyBoolean(player, "TL:group:" + group, false) && !manager.getPropertyBoolean(to, "TL:see:" + group, false)){
+				Debugger.logt(player.getDisplayName() + " hidden to "+to.getDisplayName()+" because they cant see "+ group);
 				return false;
+			}
 		}
-		
+		Debugger.logt(player.getDisplayName() + " visible to "+to.getDisplayName()+" because no group hides the player ");
 		return true;
 	}
 	
@@ -358,6 +362,7 @@ public class ColourTabList extends TabListAdapter
 			// Can only update for other players if the init period is over, and the other player can see me
 			if((mHasInited && isVisible(p, getPlayer())) || p == getPlayer())
 			{
+				Debugger.logt("Update name proceeding as %s has a full init and is visible or self", getPlayer().getName());
 				if (isNewTab(p))
 					sendPacket(packetAdd, p);
 				else
