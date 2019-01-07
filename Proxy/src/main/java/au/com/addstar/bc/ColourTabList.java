@@ -67,6 +67,9 @@ public class ColourTabList extends TabListAdapter
 	
 	public static boolean isNewTab(ProxiedPlayer player)
 	{
+		if(player == null){
+			return true;
+		}
 		return player.getPendingConnection().getVersion() >= ProtocolConstants.MINECRAFT_1_8;
 	}
 	
@@ -80,12 +83,6 @@ public class ColourTabList extends TabListAdapter
 			if(isVisible(p, getPlayer()) && isNewTab(p))
 				p.unsafe().sendPacket(packet);
 		}
-	}
-
-
-	@Override
-	public void init(ProxiedPlayer player) {
-		// ToDo: Implement this, possibly copying code from the constructor
 	}
 
 	@Override
@@ -233,7 +230,9 @@ public class ColourTabList extends TabListAdapter
 	{
 		ArrayList<Item> toAdd = new ArrayList<>();
 		ArrayList<Item> toRemove = new ArrayList<>();
-		
+		if(getPlayer() == null){
+
+		}
 		for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
 			if(isVisible(getPlayer(), p))
