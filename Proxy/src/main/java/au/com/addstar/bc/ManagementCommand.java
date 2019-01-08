@@ -21,7 +21,7 @@ public class ManagementCommand extends Command
     @Override
     public void execute( CommandSender sender, String[] args )
     {
-        if(args.length != 1)
+        if(args.length < 1)
         {
             sender.sendMessage(new TextComponent("Usage: /bungeechat reload"));
             sender.sendMessage(new TextComponent("Usage: /bungeechat listchannel"));
