@@ -243,7 +243,7 @@ public class ColourTabList extends TabListAdapter
 					mVisiblePlayers.add(p);
 				}
 			}
-			else if(mVisiblePlayers.contains(p))
+			else
 			{
 				mVisiblePlayers.remove(p);
 				toRemove.add(createItem(p));
@@ -264,7 +264,6 @@ public class ColourTabList extends TabListAdapter
 			if (!toRemove.isEmpty())
 			{
 				PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, toRemove.toArray(new Item[0]));
-				
 				sendPacket(packetRemove, getPlayer());
 			}
 		}
