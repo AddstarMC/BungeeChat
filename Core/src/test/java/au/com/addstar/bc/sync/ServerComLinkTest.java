@@ -23,14 +23,12 @@ public class ServerComLinkTest {
         link = new TestServerComLink();
     }
     
-    @Test
     public void init() {
         setup();
         link.init("localhost",6379,null);
     }
     
-    @Test
-        public void publish() {
+    public void publish() {
         setup();
         link.init("localhost",6379,null);
         byte[] b = "Test".getBytes();

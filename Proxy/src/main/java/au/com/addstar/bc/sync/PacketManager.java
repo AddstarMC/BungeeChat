@@ -27,7 +27,7 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 	private ProxyComLink mComLink;
 	
 	// Packets that arrived before the schema did
-	private LinkedList<SimpleEntry<ServerInfo, DataInput>> mPendingPackets;
+	private final LinkedList<SimpleEntry<ServerInfo, DataInput>> mPendingPackets;
 	
 	public PacketManager(Plugin plugin)
 	{

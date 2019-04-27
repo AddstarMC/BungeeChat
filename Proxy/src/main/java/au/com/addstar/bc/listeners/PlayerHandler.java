@@ -36,29 +36,24 @@ public class PlayerHandler implements Listener
 	
 	private void loadSettingsAsync(final ProxiedPlayer player)
 	{
-		mProxy.getScheduler().runAsync(BungeeChat.instance, new Runnable()
-		{
-			@Override
-			public void run()
+		mProxy.getScheduler().runAsync(BungeeChat.instance, () -> {
+			// Load this players settings
+			PlayerSettings settings = mSettings.getSettings(player);
+
+			if(settings.nickname.isEmpty())
+				player.setDisplayName(player.getName());
+			else
+				player.setDisplayName(settings.nickname);
+
+			Debugger.log("Applying nickname to PP %s: '%s'", player.getName(), settings.nickname);
+
+			if (settings.skin != null && !settings.skin.isEmpty())
 			{
-				// Load this players settings
-				PlayerSettings settings = mSettings.getSettings(player);
-				
-				if(settings.nickname.isEmpty())
-					player.setDisplayName(player.getName());
-				else
-					player.setDisplayName(settings.nickname);
-				
-				Debugger.log("Applying nickname to PP %s: '%s'", player.getName(), settings.nickname);
-				
-				if (settings.skin != null && !settings.skin.isEmpty())
-				{
-					ColourTabList tablist = ((ColourTabList)player.getTabListHandler());
-					tablist.setOverrideSkin(BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(UUID.fromString(settings.skin)));
-					
-					if (tablist.hasInited())
-						BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
-				}
+				ColourTabList tablist = ((ColourTabList)player.getTabListHandler());
+				tablist.setOverrideSkin(BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(UUID.fromString(settings.skin)));
+
+				if (tablist.hasInited())
+					BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
 			}
 		});
 	}

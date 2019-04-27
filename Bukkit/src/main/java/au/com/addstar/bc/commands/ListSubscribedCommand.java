@@ -3,7 +3,7 @@ package au.com.addstar.bc.commands;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.sync.IMethodCallback;
 import au.com.addstar.bc.utils.Utilities;
-import org.bukkit.ChatColor;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

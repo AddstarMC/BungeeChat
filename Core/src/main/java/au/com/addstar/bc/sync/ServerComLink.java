@@ -73,35 +73,21 @@ public abstract class ServerComLink
 		boolean err = true;
 		while(err)
 		{
-			Jedis jedis = null;
-			try
-			{
-				jedis = mPool.getResource();
+			try (Jedis jedis = mPool.getResource()) {
 				jedis.clientSetname("BungeeChat-" + getServerId() + "-" + channel);
 				notifyOnline();
 				jedis.subscribe(new ListenerWrapper(receiver, future), channel.getBytes(UTF_8));
 				err = false;
-			}
-			catch(JedisConnectionException e)
-			{
+			} catch (JedisConnectionException e) {
 				notifyFailure(e);
-				try
-				{
+				try {
 					Thread.sleep(2000);
-				}
-				catch (InterruptedException ex)
-				{
+				} catch (InterruptedException ex) {
 					err = false;
 				}
-			}
-			catch(JedisException e)
-			{
+			} catch (JedisException e) {
 				e.printStackTrace();
 				err = false;
-			}
-			finally
-			{
-				if(jedis!=null)jedis.close();
 			}
 		}
 	}
@@ -140,24 +126,13 @@ public abstract class ServerComLink
 	
 	protected void publish(String channel, byte[] data)
 	{
-		Jedis jedis = null;
-		try
-		{
-			jedis = mPool.getResource();
+		try (Jedis jedis = mPool.getResource()) {
 			jedis.publish(channel.getBytes(UTF_8), data);
 			notifyOnline();
-		}
-		catch(JedisConnectionException e)
-		{
+		} catch (JedisConnectionException e) {
 			notifyFailure(e);
-		}
-		catch(Throwable e)
-		{
+		} catch (Throwable e) {
 			e.printStackTrace();
-		}
-		finally
-		{
-			if(jedis!=null)jedis.close();
 		}
 	}
 	public void broadcastMessage(String channel, byte[] data)

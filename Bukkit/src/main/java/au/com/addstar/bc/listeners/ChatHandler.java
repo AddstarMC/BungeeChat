@@ -12,7 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerChatTabCompleteEvent;
+import org.bukkit.event.server.TabCompleteEvent;
 import org.bukkit.permissions.Permissible;
 
 import au.com.addstar.bc.event.ChatChannelEvent;
@@ -100,10 +100,9 @@ public class ChatHandler implements Listener{
 	}
 	
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
-	private void onTabComplete(PlayerChatTabCompleteEvent event)
+	private void onTabComplete(TabCompleteEvent event)
 	{
-		event.getTabCompletions().clear();
-		event.getTabCompletions().addAll(BungeeChat.getPlayerManager().matchNames(event.getLastToken().toLowerCase()));
+		event.getCompletions().addAll(BungeeChat.getPlayerManager().matchNames(event.getBuffer().toLowerCase()));
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
