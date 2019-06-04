@@ -5,7 +5,17 @@
   <version>1.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>BungeeChat</name>
-
+  <organization>
+    <name>AddstarMC</name>
+    <url>www.addstar.com.au</url>
+  </organization>
+  <inceptionYear>2015</inceptionYear>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
   <properties>
     <build.number />
     <plugin.version>${project.version}-${build.number}</plugin.version>
@@ -13,6 +23,7 @@
     <spigot.version>1.12.2-R0.1-SNAPSHOT</spigot.version>
     <bungee.version>1.13-SNAPSHOT</bungee.version>
     <spigot.api.version>1.13</spigot.api.version>
+    <license.dir>${basedir}</license.dir>
   </properties>
   <scm>
     <connection>scm:git:git@github.com:AddstarMC/BungeeChat.git</connection>
@@ -32,10 +43,12 @@
       <timezone>10</timezone>
     </developer>
   </developers>
+
   <modules>
     <module>Proxy</module>
     <module>Bukkit</module>
     <module>Core</module>
+      <module>Velocity</module>
   </modules>
   <repositories>
     <!-- Addstar repos -->
@@ -120,8 +133,28 @@
           <artifactId>maven-release-plugin</artifactId>
           <version>2.5.3</version>
         </plugin>
-
+          <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>license-maven-plugin</artifactId>
+              <version>1.20</version>
+            <configuration>
+              <licenseName>mit</licenseName>
+              <inceptionYear>${project.inceptionYear}</inceptionYear>
+              <canUpdateCopyright>true</canUpdateCopyright>
+            </configuration>
+            <executions>
+              <execution>
+                <id>process</id>
+                <goals>
+                  <goal>update-file-header</goal>
+                  <goal>update-project-license</goal>
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
       </plugins>
+
     </pluginManagement>
     <plugins>
       <plugin>
@@ -156,6 +189,11 @@
                 </execution>
             </executions>
         </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.20</version>
+      </plugin>
     </plugins>
   </build>
 </project>
