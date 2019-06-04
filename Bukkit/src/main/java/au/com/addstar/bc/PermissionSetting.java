@@ -56,8 +56,9 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 		{
 			char c = color.charAt(i);
 			ChatColor col = ChatColor.getByChar(c);
-			if(col != null)
+			if(col != null) {
 				this.color += col.toString();
+			}
 		}
 	}
 	

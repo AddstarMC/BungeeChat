@@ -55,7 +55,7 @@ public class ColourTabList extends TabListAdapter
 {
 	private static final int PING_THRESHOLD = 20;
 	private static ListUpdater mUpdater = new ListUpdater();
-	private static Set<ColourTabList> mTabLists = Sets.newConcurrentHashSet();
+	private final static Set<ColourTabList> mTabLists = Sets.newConcurrentHashSet();
 
 	public static void initialize(Plugin plugin)
 	{

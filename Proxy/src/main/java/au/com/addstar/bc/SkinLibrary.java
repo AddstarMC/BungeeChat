@@ -52,6 +52,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.GameProfile.Property;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
+@SuppressWarnings("UnstableApiUsage")
 public class SkinLibrary
 {
 	private Map<UUID, SkinData> mSkins;
@@ -173,7 +174,6 @@ public class SkinLibrary
             Reader reader = null;
             try
             {
-                reader = new InputStreamReader(con.getInputStream(), CharsetUtil.UTF_8);
 
                 // Parse the response
                 JsonParser parser = new JsonParser();

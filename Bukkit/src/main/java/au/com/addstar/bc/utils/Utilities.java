@@ -76,8 +76,8 @@ public class Utilities
 	/**
 	 * Converts color place-holders.
 	 *
-	 * @param text
-	 * @return
+	 * @param text text to color
+	 * @return A String
 	 */
 	public static String colorize(String text) {
 		return ChatColor.translateAlternateColorCodes('&', text);

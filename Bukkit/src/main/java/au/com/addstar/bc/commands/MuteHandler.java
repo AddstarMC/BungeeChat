@@ -105,7 +105,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 				if (args.length != 0 && args.length != 1)
 					return false;
 
-				long time = -1;
+				long time;
 
 				if (args.length == 1) {
 					time = Utilities.parseDateDiff(args[0]);
