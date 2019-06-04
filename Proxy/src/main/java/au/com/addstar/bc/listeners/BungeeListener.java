@@ -39,6 +39,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -63,7 +64,7 @@ public class BungeeListener implements Listener {
         {
             ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
             DataInput input = new DataInputStream(stream);
-            
+            plugin.getSLF4JLogger().debug("BungeeChat recieved a message on a pluginChannel Data:"+ Arrays.toString(event.getData()));
             try
             {
                 String subChannel = input.readUTF();
