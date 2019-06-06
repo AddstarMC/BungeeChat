@@ -69,7 +69,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 
-public class SyncManager implements Listener, IPacketHandler
+public class  SyncManager implements Listener, IPacketHandler
 {
 	private HashMap<String, SyncMethod> mMethods;
 	private HashMap<String, SyncConfig> mConfigs;

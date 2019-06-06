@@ -62,10 +62,9 @@ import com.google.common.collect.HashMultimap;
 
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
-import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 
-public class PacketManager implements Listener, IDataReceiver, ConnectionStateNotify
+public class PacketManager implements  IDataReceiver, ConnectionStateNotify
 {
 	private HashMap<ServerInfo, PacketCodec> mCodecs;
 	private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
@@ -82,7 +81,6 @@ public class PacketManager implements Listener, IDataReceiver, ConnectionStateNo
 		mComLink = BungeeChat.instance.getComLink();
 		mComLink.listenToChannel("BungeeChat", this);
 		mComLink.listenToChannel("BCState", this);
-		ProxyServer.getInstance().getPluginManager().registerListener(plugin, this);
 		BungeeChat.instance.getComLink().setNotifyHandle(this);
 	}
 	
