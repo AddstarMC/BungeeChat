@@ -29,22 +29,25 @@ import com.google.inject.Inject;
 
 import au.com.addstar.bc.config.ChatChannel;
 import au.com.addstar.bc.config.Config;
+import au.com.addstar.bc.sync.Packet;
+import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.ProxyComLink;
+import au.com.addstar.bc.sync.SyncManager;
 
+import com.sun.org.glassfish.external.statistics.annotations.Reset;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.kyori.text.TextComponent;
+
 import net.kyori.text.format.TextColor;
+import net.kyori.text.format.TextDecoration;
 import net.kyori.text.format.TextFormat;
-import net.kyori.text.serializer.ComponentSerializer;
 import net.kyori.text.serializer.legacy.LegacyComponentSerializer;
 
 import org.slf4j.Logger;
-
-import sun.security.provider.DSAKeyPairGenerator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -56,9 +59,14 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+
+import javax.xml.soap.Text;
 
 /**
  * Created for the AddstarMC IT Project.
@@ -68,10 +76,20 @@ import java.util.regex.PatternSyntaxException;
         description = "A centralized Chat Plugin", authors = {"Me"})
 public class BungeeChat {
     private Config mConfig;
-    private HashMap<String, String> mKeywordSettings = new HashMap<>();
+    private HashMap<String, List<TextFormat>> mKeywordSettings = new HashMap<>();
 
-    private static BungeeChat instance;
+    protected static BungeeChat instance;
+    private PacketManager mPacketManager;
+    public ProxyServer getServer() {
+        return server;
+    }
+
     private final ProxyServer server;
+
+    public Logger getLogger() {
+        return logger;
+    }
+
     private final Logger logger;
     private ProxyComLink mComLink;
     private Path dataFolder;
@@ -83,6 +101,7 @@ public class BungeeChat {
     @Inject
     public BungeeChat(ProxyServer server, Logger logger, @DataDirectory Path dataFolder) {
         this.server = server;
+        String name;
         this.logger = logger;
         this.dataFolder = dataFolder;
         Path configPath = Paths.get(dataFolder.toString(),"config.yml");
@@ -94,16 +113,33 @@ public class BungeeChat {
             }
         }
         saveResource(dataFolder,"keyword.txt",false);
+        ColourTabList.initialize(this);
         mConfig = new Config(configPath.toFile());
         loadConfig();
         instance =  this;
         mComLink = new ProxyComLink(server);
-        server.getScheduler().buildTask(this, new Runnable() {
-            @Override
-            public void run() {
+        final CountDownLatch setupWait = new CountDownLatch(1);
+        server.getScheduler().buildTask(this, () -> {
+            try
+            {
                 mComLink.init(mConfig.redis.host, mConfig.redis.port, mConfig.redis.password);
             }
+            finally
+            {
+                setupWait.countDown();
+            }
         });
+
+        try
+        {
+            setupWait.await();
+        }
+        catch(InterruptedException ignored)
+        {
+        }
+        mPacketManager = new PacketManager(this);
+        mPacketManager.initialize();
+        mPacketManager.addHandler(new PacketHandler(this), (Class<? extends Packet>[])null);
 
     }
 
@@ -167,7 +203,7 @@ public class BungeeChat {
                     colourString = line.substring(pos + 1).trim();
                 } else {
                     regex = line.trim();
-                    colourString = "e";
+                    colourString = "c";
                 }
                 try {
                     Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
@@ -175,25 +211,81 @@ public class BungeeChat {
                     logger.warn("[" + file + "] Invalid regex: \"" + regex + "\" at line " + lineNo);
                     continue;
                 }
-
-                StringBuilder colour = new StringBuilder();
-                for (int i = 0; i < colourString.length(); ++i) {
-                    char c = colourString.charAt(i);
-                    TextComponent comp = LegacyComponentSerializer.
-
-                    if (format == null) {
-                        logger.warning("[" + file + "] Invalid colour code: \'" + c + "\' at line " + lineNo);
-                        continue;
-                    }
-
-                    colour.append(component.toString());
-                }
-
-                mKeywordSettings.put(regex, component.toString());
+                List<TextFormat> formats = fromCharArray(colourString.toCharArray());
+                mKeywordSettings.put(regex,formats);
             }
             reader.close();
         }
     }
+
+    protected List<TextFormat> fromCharArray(char[] string){
+        List<TextFormat> formats = new ArrayList<>();
+        for (int i = 0; i < string.length; ++i) {
+            char c = string[i];
+            TextFormat form = TextFormatConverter.getByChar(c);
+            formats.add(form);
+            if (form == null) {
+                logger.warn("[CONVERTER] Invalid colour code: \'" + c + "\' at position " + i);
+                continue;
+            }
+        }
+        return formats;
+    };
+    static enum TextFormatConverter{
+        BLACK('0',TextColor.BLACK),
+        DARK_GRAY('8',TextColor.DARK_GRAY),
+        GRAY('7',TextColor.GRAY),
+        GREEN('a',TextColor.GREEN),
+        DARK_GREEN('2',TextColor.DARK_GREEN),
+        GOLD('6',TextColor.GOLD),
+        YELLOW('e',TextColor.YELLOW),
+        WHITE('f',TextColor.WHITE),
+        RED('c',TextColor.RED),
+        DARK_RED('4',TextColor.DARK_RED),
+        BLUE('9',TextColor.BLUE),
+        DARK_BLUE('1',TextColor.DARK_BLUE),
+        AQUA('b',TextColor.AQUA),
+        DARK_AQUA('3',TextColor.DARK_AQUA),
+        DARK_PURPLE('5',TextColor.DARK_PURPLE),
+        LIGHT_PURPLE('d',TextColor.LIGHT_PURPLE),
+        BOLD('l', TextDecoration.BOLD),
+        OBFUSCATED('k',TextDecoration.OBFUSCATED),
+        ITALIC('o',TextDecoration.ITALIC),
+        STRIKETHROUGH('m',TextDecoration.STRIKETHROUGH),
+        UNDERLINED('n',TextDecoration.UNDERLINED);
+        private char oldchar;
+        private net.kyori.text.format.TextFormat format;
+        private final static HashMap<Character,TextFormat> chartoFormat = new HashMap<>();
+        static{
+            int i = 0;
+            while(i<values().length){
+                chartoFormat.put(values()[i].oldchar,values()[i].format);
+                i++;
+            }
+        }
+        private static void add(char c,TextFormat format){
+            chartoFormat.put(c,format);
+        }
+
+
+        TextFormatConverter(char oldchar, TextFormat format) {
+            this.oldchar = oldchar;
+            this.format = format;
+            add(oldchar,format);
+        }
+        public static TextFormat getByChar(char c){
+            return chartoFormat.get(c);
+        }
+
+        public char getOldchar() {
+            return oldchar;
+        }
+
+        public TextFormat getFormat() {
+            return format;
+        }
+    }
+
 
     private void saveResource(Path dataFolder,String resource, boolean overwrite)  {
         Path path = Paths.get(dataFolder.toString(),resource);
@@ -227,5 +319,39 @@ public class BungeeChat {
                     output.close();
                 }catch (IOException ignored){};
         }
+    }
+    public ChatChannel getChannel(String name)
+    {
+        return mConfig.channels.get(name);
+    }
+
+    public PacketManager getPacketManager()
+    {
+        return mPacketManager;
+    }
+
+    public PlayerSettingsManager getManager()
+    {
+        return mSettings;
+    }
+
+    public SyncManager getSyncManager()
+    {
+        return mSyncManager;
+    }
+
+    public ProxyComLink getComLink()
+    {
+        return mComLink;
+    }
+
+    public MuteHandler getMuteHandler()
+    {
+        return mMuteHandler;
+    }
+
+    public SkinLibrary getSkinLibrary()
+    {
+        return mSkins;
     }
 }
