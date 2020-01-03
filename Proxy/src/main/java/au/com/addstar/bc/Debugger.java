@@ -19,6 +19,32 @@
 
 package au.com.addstar.bc;
 
+/*-
+ * #%L
+ * BungeeChat-Proxy
+ * %%
+ * Copyright (C) 2015 - 2020 AddstarMC
+ * %%
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * #L%
+ */
+
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -162,7 +188,7 @@ public class Debugger extends Command
 			if (args.length != 2)
 				return false;
 			
-			boolean on = Boolean.valueOf(args[1]);
+			boolean on = Boolean.parseBoolean(args[1]);
 			setGeneralDebugState(on);
 			
 			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "General debug is now " + (on ? "on" : "off")));
@@ -172,7 +198,7 @@ public class Debugger extends Command
 			if (args.length != 2)
 				return false;
 			
-			boolean on = Boolean.valueOf(args[1]);
+			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
 			
 			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Packet debug is now " + (on ? "on" : "off")));
@@ -182,7 +208,7 @@ public class Debugger extends Command
 			if (args.length != 2)
 				return false;
 			
-			boolean on = Boolean.valueOf(args[1]);
+			boolean on = Boolean.parseBoolean(args[1]);
 			setTabDebugState(on);
 			
 			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "TabList debug is now " + (on ? "on" : "off")));
