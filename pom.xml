@@ -39,7 +39,7 @@
     <build.number />
     <plugin.version>${project.version}-${build.number}</plugin.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <spigot.version>1.14-pre5-SNAPSHOT</spigot.version>
+    <spigot.version>1.15-R0.1-SNAPSHOT</spigot.version>
     <bungee.version>1.14-SNAPSHOT</bungee.version>
     <spigot.api.version>1.13</spigot.api.version>
     <license.dir>${basedir}</license.dir>

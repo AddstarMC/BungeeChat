@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/BungeeChat.iml" filepath="$PROJECT_DIR$/BungeeChat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Bukkit/BungeeChat-Bukkit.iml" filepath="$PROJECT_DIR$/Bukkit/BungeeChat-Bukkit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Core/BungeeChat-Core.iml" filepath="$PROJECT_DIR$/Core/BungeeChat-Core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Proxy/BungeeChat-Proxy.iml" filepath="$PROJECT_DIR$/Proxy/BungeeChat-Proxy.iml" />
+    </modules>
+  </component>
+</project>
