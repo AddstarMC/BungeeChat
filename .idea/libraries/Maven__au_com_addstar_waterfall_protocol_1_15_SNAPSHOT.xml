@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: au.com.addstar:waterfall-protocol:1.15-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-protocol/1.15-SNAPSHOT/waterfall-protocol-1.15-20200122.033700-2.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-protocol/1.15-SNAPSHOT/waterfall-protocol-1.15-20200122.033700-2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-protocol/1.15-SNAPSHOT/waterfall-protocol-1.15-20200122.033700-2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
