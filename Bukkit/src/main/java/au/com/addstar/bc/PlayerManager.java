@@ -45,13 +45,7 @@ package au.com.addstar.bc;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.objects.ChatChannel;
@@ -90,7 +84,7 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 {
 	private BungeeChat plugin;
 	private HashMap<UUID, CommandSender> mAllProxied = new HashMap<>();
-	private HashSet<UUID> mProxied = new HashSet<>();
+	private Set<UUID> mProxied = new HashSet<>();
 	private HashMap<UUID, String> mNicknames = new HashMap<>();
 	private HashMap<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
 	private HashMap<UUID, String> mDefaultChannel = new HashMap<>();
@@ -655,7 +649,7 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 	private void unsubscribeAll(CommandSender sender, boolean offline){
 		if(sender instanceof Player){
 			unsubscribeAll(((Player) sender).getUniqueId());
-			unsubscribeAll(((Player) sender).getUniqueId(),((Player) sender).getWorld().getName());
+			unsubscribeAllAsync(((Player) sender).getUniqueId(),((Player) sender).getWorld().getName());
 			PlayerSettings settings = getPlayerSettings(sender);
 			settings.defaultChannel = "";
 			if(!offline)updatePlayerSettings(sender);
@@ -665,29 +659,34 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 		}
 
 	}
-	private void unsubscribeAll(UUID uuid){
-    	unsubscribeAll(uuid, null);
+	private void unsubscribeAll(UUID uuid) {
+		if (Bukkit.isPrimaryThread()) {
+			unsubscribeAllAsync(uuid, null);
+		} else {
+			unsubscribeAll0(uuid, null);
+		}
 	}
 
+	private void unsubscribeAllAsync(final UUID uuid, final String world) {
+			Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
+				unsubscribeAll0(uuid, world);
+		});
+	}
 
-
-	private void unsubscribeAll(UUID uuid, String world){
-    	OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-    	if(player !=null) {
-			for (ChatChannel channels : BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()) {
-				if (channels.subscribe) {
-					if(BungeeChat.permissionManager.playerHas(world, player, channels.permission)) {
-						if(BungeeChat.permissionManager.playerRemove(world, player, channels.permission)){
-							Debugger.log(channels.permission + " was removed ");
-						}else{
-							Debugger.log(channels.permission + " removal failed ");
-						}
+	private void unsubscribeAll0 (UUID uuid, String world) {
+		OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+		for (ChatChannel channels : BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()) {
+			if (channels.subscribe) {
+				if (BungeeChat.permissionManager.playerHas(world, player, channels.permission)) {
+					if (BungeeChat.permissionManager.playerRemove(world, player, channels.permission)) {
+						Debugger.log(channels.permission + " was removed ");
+					} else {
+						Debugger.log(channels.permission + " removal failed ");
 					}
 				}
 			}
 		}
 		mDefaultChannel.remove(uuid);
 	}
-
 
 }
