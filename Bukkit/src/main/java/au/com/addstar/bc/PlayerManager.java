@@ -83,22 +83,31 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
   public class PlayerManager implements Listener, IPacketHandler
 {
 	private BungeeChat plugin;
-	private HashMap<UUID, CommandSender> mAllProxied = new HashMap<>();
-	private Set<UUID> mProxied = new HashSet<>();
-	private HashMap<UUID, String> mNicknames = new HashMap<>();
-	private HashMap<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
-	private HashMap<UUID, String> mDefaultChannel = new HashMap<>();
+	private Map<UUID, CommandSender> mAllProxied = new HashMap<>();
+	private Set<UUID> uuidProxied = new HashSet<>();
+	private Map<UUID, String> mNicknames = new HashMap<>();
+	private Map<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
+	private Map<UUID, String> mDefaultChannel = new HashMap<>();
 
 	public PlayerManager(BungeeChat plugin)
 	{
 		this.plugin = plugin;
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
+
+    public static UUID getUniqueId(CommandSender sender) {
+        if (sender instanceof Player)
+            return ((Player) sender).getUniqueId();
+        else if (sender instanceof RemotePlayer)
+            return ((RemotePlayer) sender).getUniqueId();
+        return null;
+    }
 
 	public CommandSender getPlayer(UUID id)
 	{

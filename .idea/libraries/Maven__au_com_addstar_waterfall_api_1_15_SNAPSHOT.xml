@@ -1,13 +1,13 @@
 <component name="libraryTable">
-  <library name="Maven: au.com.addstar:waterfall-api:1.14-SNAPSHOT">
+  <library name="Maven: au.com.addstar:waterfall-api:1.15-SNAPSHOT">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-api/1.14-SNAPSHOT/waterfall-api-1.14-20200103.025241-11.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-api/1.15-SNAPSHOT/waterfall-api-1.15-20200122.033700-2.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-api/1.14-SNAPSHOT/waterfall-api-1.14-20200103.025241-11-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-api/1.15-SNAPSHOT/waterfall-api-1.15-20200122.033700-2-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-api/1.14-SNAPSHOT/waterfall-api-1.14-20200103.025241-11-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-api/1.15-SNAPSHOT/waterfall-api-1.15-20200122.033700-2-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
