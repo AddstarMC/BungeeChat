@@ -31,10 +31,10 @@ package au.com.addstar.bc;
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -45,31 +45,13 @@ package au.com.addstar.bc;
  * #L%
  */
 
-import java.util.*;
-
 import au.com.addstar.bc.commands.Debugger;
+import au.com.addstar.bc.event.ProxyJoinEvent;
+import au.com.addstar.bc.event.ProxyLeaveEvent;
 import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.PlayerSettings;
 import au.com.addstar.bc.objects.RemotePlayer;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.util.StringUtil;
-import org.jetbrains.annotations.Nullable;
-
-import au.com.addstar.bc.event.ProxyJoinEvent;
-import au.com.addstar.bc.event.ProxyLeaveEvent;
 import au.com.addstar.bc.sync.IPacketHandler;
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.packet.FireEventPacket;
@@ -79,6 +61,29 @@ import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
   public class PlayerManager implements Listener, IPacketHandler
 {
@@ -88,38 +93,38 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 	private HashMap<UUID, String> mNicknames = new HashMap<>();
 	private HashMap<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
 	private HashMap<UUID, String> mDefaultChannel = new HashMap<>();
-	
+
 	public PlayerManager(BungeeChat plugin)
 	{
 		this.plugin = plugin;
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
-	
+
 	public CommandSender getPlayer(UUID id)
 	{
 		CommandSender player;
 		player = Bukkit.getPlayer(id);
 		if (player != null)
 			return player;
-		
+
 		player = mAllProxied.get(id);
 		if (player != null)
 			Debugger.logCorrect(player);
 		return player;
 	}
-	
+
 	public CommandSender getPlayer(String name)
 	{
 		return getPlayer(name, true);
 	}
-	
+
 	public CommandSender getPlayer(String name, boolean includeAliases)
 	{
 		int best = Integer.MAX_VALUE;
 		UUID bestId = null;
-		
+
 		name = name.toLowerCase();
-		
+
 		for(CommandSender player : mAllProxied.values())
 		{
 			if(StringUtils.containsIgnoreCase(player.getName(), name))
@@ -131,12 +136,12 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 					bestId = getUniqueId(player);
 				}
 			}
-			
+
 			if (!includeAliases)
 				continue;
-			
+
 			String nick = mNicknames.get(getUniqueId(player));
-			
+
 			if (StringUtils.isNotBlank(nick))
 			{
 				if(StringUtils.containsIgnoreCase(nick, name))
@@ -150,18 +155,18 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 				}
 			}
 		}
-		
+
 		CommandSender player = mAllProxied.get(bestId);
 		if (player != null)
 			Debugger.logCorrect(player);
 		return player;
 	}
-	
+
 	public CommandSender getPlayerExact(String name)
 	{
 		return getPlayerExact(name, true);
 	}
-	
+
 	public CommandSender getPlayerExact(String name, boolean includeAliases)
 	{
 		if(name.equalsIgnoreCase("console"))
@@ -174,12 +179,12 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 				Debugger.logCorrect(player);
 				return player;
 			}
-			
+
 			if (!includeAliases)
 				continue;
-			
+
 			String nick = mNicknames.get(getUniqueId(player));
-			
+
 			if (StringUtils.isNotBlank(nick))
 			{
 				if (nick.equalsIgnoreCase(name))
@@ -189,42 +194,42 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public Collection<CommandSender> getPlayers()
 	{
 		return Collections.unmodifiableCollection(mAllProxied.values());
 	}
-	
+
 	public List<String> matchNames(String name)
 	{
 		return matchNames(name, true);
 	}
-	
+
 	public List<String> matchNames(String name, boolean includeAliases)
 	{
 		name = name.toLowerCase();
 		ArrayList<String> matches = new ArrayList<>();
-		
+
 		for(CommandSender player : mAllProxied.values())
 		{
 			if(StringUtil.startsWithIgnoreCase(player.getName(), name))
 				matches.add(player.getName());
-			
+
 			if (!includeAliases)
 				continue;
-			
+
 			String nick = mNicknames.get(getUniqueId(player));
-			
+
 			if (StringUtils.isNotBlank(nick))
 			{
 				if(StringUtil.startsWithIgnoreCase(nick, name))
 					matches.add(nick);
 			}
 		}
-		
+
 		return matches;
 	}
 
@@ -256,7 +261,7 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 		}
 
 	}
-	
+
 	public String getPlayerNickname(CommandSender player)
 	{
 		return mNicknames.get(getUniqueId(player));
@@ -267,33 +272,33 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 		if(player instanceof Player)
 		{
 			setPlayerNickname0(player, name);
-			
+
 			updatePlayerSettings(player);
 		}
 		else
 		{
 			BungeeChat.getPacketManager().broadcast(new UpdateNamePacket(getUniqueId(player), name));
 			Debugger.log("Setting nickname remote %s to '%s'", player.getName(), name);
-			
+
 			onPlayerNameChange(getUniqueId(player), name);
 		}
 	}
-	
+
 	public void setPlayerNickname0(CommandSender player, String name)
 	{
 		if (!(player instanceof Player))
 			return;
-		
+
 		PlayerSettings settings = getPlayerSettings(player);
 		settings.nickname = name;
-		
+
 		if(name.isEmpty())
 			((Player)player).setDisplayName(player.getName());
 		else
 			((Player)player).setDisplayName(name);
-		
+
 		Debugger.log("Setting nickname local %s to '%s'", player.getName(), name);
-		
+
 		onPlayerNameChange(getUniqueId(player), name);
 	}
 
@@ -301,24 +306,23 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 		return getPlayerSettings(player, false);
 	}
 
-	public PlayerSettings getPlayerSettings(CommandSender player, boolean noValidation)
-	{
-		if(!noValidation)Validate.isTrue(player instanceof Player, "Cannot get player settings of non local player");
-		
-		UUID id = getUniqueId(player);
-		PlayerSettings settings = mPlayerSettings.get(id);
-		if (noValidation) return settings;
-		if(settings == null)
-		{
-			settings = new PlayerSettings();
-			mPlayerSettings.put(id, settings);
-			if(settings.defaultChannel != null){
-			    mDefaultChannel.put(id,settings.defaultChannel);
+    private PlayerSettings getPlayerSettings(CommandSender player, boolean noValidation) {
+        if (!noValidation)
+            Validate.isTrue(player instanceof Player, "Cannot get player settings of non local player");
+
+        UUID id = getUniqueId(player);
+        PlayerSettings settings = mPlayerSettings.get(id);
+        if (noValidation) return settings;
+        if (settings == null) {
+            settings = new PlayerSettings();
+            mPlayerSettings.put(id, settings);
+            if (settings.defaultChannel != null) {
+                mDefaultChannel.put(id, settings.defaultChannel);
             }
 		}
 		return settings;
 	}
-	
+
 	public void setPlayerMuteTime(CommandSender player, long endTime)
 	{
 		if(player instanceof Player)
@@ -330,300 +334,256 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 		else
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setMute", null, PlayerManager.getUniqueId(player), endTime);
 	}
-	
+
 	public boolean isPlayerMuted(CommandSender player) {
 		return player instanceof Player && System.currentTimeMillis() < getPlayerSettings(player).muteTime;
 
-	}
-	
-	public void refreshPlayer(final Player player)
-	{
-		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> {
-			for (final Player other : player.getWorld().getPlayers())
-			{
-				if (other.canSee(player))
-				{
-					other.hidePlayer(plugin,player);
-					Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> other.showPlayer(plugin,player), 1);
-				}
-			}
-		}, 10);
-	}
-	
-	private void onPlayerJoin(PlayerJoinPacket packet)
-	{
-		mProxied.add(packet.getID());
-		if(!packet.getDefaultChannel().isEmpty())
-			mDefaultChannel.put(packet.getID(),packet.getDefaultChannel());
+    }
 
-		if(!packet.getNickname().isEmpty())
-			mNicknames.put(packet.getID(), packet.getNickname());
-		
-		Player local = Bukkit.getPlayer(packet.getID());
-		if (local == null)
-		{
-			RemotePlayer current = new RemotePlayer(packet.getID(), packet.getName());
-			Debugger.log("Proxy join %s. Add as remote player", packet.getName());
-			mAllProxied.put(packet.getID(), current);
-		}
-		else
-		{
-			Debugger.log("Proxy join %s. Add as local player", packet.getName());
-			mAllProxied.put(packet.getID(), local);
-			
-			if (!packet.getNickname().isEmpty())
-				local.setDisplayName(packet.getNickname());
-		}
-	}
-	
-	private void onPlayerLeave(PlayerLeavePacket packet)
-	{
-		CommandSender player = mAllProxied.remove(packet.getID());
-		mProxied.remove(packet.getID());
-		mNicknames.remove(packet.getID());
-		unsubscribeAll(packet.getID());
-		mDefaultChannel.remove(packet.getID());
-		Debugger.log("Proxy leave %s. Remove as local/remote", (player != null ? player.getName() : packet.getID()));
-	}
-	
-	private void onFireEvent(FireEventPacket packet)
-	{
-		Player player = Bukkit.getPlayer(packet.getID());
-		String message = packet.getMessage();
-		
-		if(message.isEmpty())
-			message = null;
-		
-		if(player != null)
-		{
-			switch(packet.getEvent())
-			{
-			case FireEventPacket.EVENT_JOIN:
-			{
-				ProxyJoinEvent event = new ProxyJoinEvent(player, message);
-				Bukkit.getPluginManager().callEvent(event);
-				
-				message = event.getJoinMessage();
-				break;
-			}
-			case FireEventPacket.EVENT_QUIT:
-			{
-				ProxyLeaveEvent event = new ProxyLeaveEvent(player, message);
-				Bukkit.getPluginManager().callEvent(event);
-				
-				message = event.getQuitMessage();
-				break;
-			}
-			}
-		}
-		
-		if (message != null)
-			BungeeChat.broadcast(message);
-	}
-	
-	private void onRefresh(PlayerRefreshPacket packet)
-	{
-		Player player = Bukkit.getPlayer(packet.getID());
-		if (player != null)
-			refreshPlayer(player);
-	}
-	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerJoinServer(PlayerLoginEvent event)
-	{
-		final Player current = event.getPlayer();
-		Debugger.log("Server join %s. Add as local", event.getPlayer().getName());
-		mAllProxied.put(current.getUniqueId(), current);
-		
-		String nickname = mNicknames.get(current.getUniqueId());
-		if (nickname != null)
-			current.setDisplayName(nickname);
-		String chan = mDefaultChannel.get(current.getUniqueId());
-		if(chan != null){
-			if(BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)){
-				mDefaultChannel.put(current.getUniqueId(),chan);
-				BungeeChat.permissionManager.playerAdd(null,current,
-						BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan));
-				event.getPlayer().recalculatePermissions();
-			}
-		}
-		Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> updateTabColor(current), 2L);
-	}
+    private void refreshPlayer(final Player player) {
+        Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> {
+            for (final Player other : player.getWorld().getPlayers()) {
+                if (other.canSee(player)) {
+                    other.hidePlayer(plugin, player);
+                    Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> other.showPlayer(plugin, player), 1);
+                }
+            }
+        }, 10);
+    }
 
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerLeaveServer(PlayerQuitEvent event)
-	{
-		Player player = event.getPlayer();
-		mPlayerSettings.remove(player.getUniqueId());
-		String channel = mDefaultChannel.get(player.getUniqueId());
-		if(BungeeChat.getInstance().getChatChannelsManager().hasChannel(channel)){
-			BungeeChat.permissionManager.playerRemove(null,player,
-					BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(channel));
-		}
+    private void onPlayerJoin(PlayerJoinPacket packet) {
+        uuidProxied.add(packet.getID());
+        if (!packet.getDefaultChannel().isEmpty())
+            mDefaultChannel.put(packet.getID(), packet.getDefaultChannel());
 
-		// Prevent re-adding the player when they leave the proxy
-		if (mProxied.contains(player.getUniqueId()))
-		{
-			RemotePlayer current = new RemotePlayer(player.getUniqueId(), player.getName());
-			mAllProxied.put(player.getUniqueId(), current);
-			Debugger.log("Server leave %s. Add as remote", event.getPlayer().getName());
-		}
-		else
-		{
-			mAllProxied.remove(player.getUniqueId());
-			mDefaultChannel.remove(player.getUniqueId());
-			unsubscribeAll(player,true);
-			Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
-		}
-	}
-	
-	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-	private void onPlayerChat(AsyncPlayerChatEvent event)
-	{
-		updateTabColor(event.getPlayer());
-	}
-	
-	private void updateTabColor(Player player)
-	{
-		PermissionSetting level = Formatter.getPermissionLevel(player);
-		String colour = "";
-		if(level != null)
-			colour = level.color;
-		
-		PlayerSettings settings = getPlayerSettings(player);
-		
-		if(!settings.tabFormat.equals(colour))
-		{
-			Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat.replace(ChatColor.COLOR_CHAR, '&'), colour.replace(ChatColor.COLOR_CHAR, '&'));
-			settings.tabFormat = colour;
-			BungeeChat.getSyncManager().callSyncMethod("bchat:setTabColor", null, player.getUniqueId(), settings.tabFormat);
-		}
-	}
-	
-	private void onUpdatePlayers(PlayerListPacket packet)
-	{
-		mAllProxied.clear();
-		mNicknames.clear();
-		
-		Debugger.log("Resetting online players:");
-		
-		List<UUID> ids = packet.getIDs();
-		List<String> names = packet.getNames();
-		List<String> nicknames = packet.getNicknames();
-		
-		for(Player player : Bukkit.getOnlinePlayers())
-		{
-			mAllProxied.put(player.getUniqueId(), player);
-			Debugger.log("Add %s as local", player.getName());
-			
-			PlayerSettings settings = getPlayerSettings(player);
-			if(!settings.nickname.isEmpty())
-			{
-				mNicknames.put(player.getUniqueId(), settings.nickname);
-				player.setDisplayName(settings.nickname);
-			}
-			else
-				player.setDisplayName(player.getName());
-		}
-		
-		for(int i = 0; i < ids.size(); ++i)
-		{
-			UUID id = ids.get(i);
-			String name = names.get(i);
-			String nickname = nicknames.get(i);
-			
-			if(mAllProxied.containsKey(id))
-				continue;
-			
-			RemotePlayer player = new RemotePlayer(id, name);
-			mAllProxied.put(id, player);
-			
-			Debugger.log("Add %s as remote", player.getName());
-			
-			if(!nickname.isEmpty())
-				mNicknames.put(id, nickname);
+        if (!packet.getNickname().isEmpty())
+            mNicknames.put(packet.getID(), packet.getNickname());
 
-		}
-	}
-	
-	private void onPlayerSettings(PlayerSettingsPacket packet)
-	{
-		Player player = Bukkit.getPlayer(packet.getID());
-		if(player != null)
-		{
-			Debugger.log("Updating settings for %s", player.getName());
-			PlayerSettings settings = getPlayerSettings(player);
-			settings.read(packet);
-			
-			if(settings.nickname.isEmpty())
-			{
-				player.setDisplayName(player.getName());
-				onPlayerNameChange(player.getUniqueId(), "");
-			}
-			else
-			{
-				player.setDisplayName(settings.nickname);
-				onPlayerNameChange(player.getUniqueId(), settings.nickname);
-			}
-			if(settings.defaultChannel.isEmpty()){
-				unsubscribeAll(player.getUniqueId());
-			}else{
-				mDefaultChannel.put(player.getUniqueId(),settings.defaultChannel);
-			}
-		}
-	}
-	
-	public void updatePlayerSettings(CommandSender player)
-	{
-		if(!(player instanceof Player))
-			return;
-		
-		PlayerSettings settings = getPlayerSettings(player);
-		BungeeChat.getPacketManager().sendNoQueue(settings.toPacket(getUniqueId(player)));
-	}
-	
-	private void onPlayerNameChange(UUID uuid, String newName)
-	{
-		if (newName.isEmpty())
-			mNicknames.remove(uuid);
-		else
-			mNicknames.put(uuid, newName);
-		
-		// Force the player to spawn again so that the name will update
-		Player player = Bukkit.getPlayer(uuid);
-		if (player != null)
-			refreshPlayer(player);
-	}
-	
-	@Override
-	public void handle( Packet packet )
-	{
-		if(packet instanceof PlayerJoinPacket)
-			onPlayerJoin((PlayerJoinPacket)packet);
-		else if(packet instanceof PlayerLeavePacket)
-			onPlayerLeave((PlayerLeavePacket)packet);
-		else if(packet instanceof PlayerListPacket)
-			onUpdatePlayers((PlayerListPacket)packet);
-		else if(packet instanceof UpdateNamePacket)
-			onPlayerNameChange(((UpdateNamePacket) packet).getID(), ((UpdateNamePacket) packet).getName());
-		else if(packet instanceof PlayerSettingsPacket)
-			onPlayerSettings((PlayerSettingsPacket)packet);
-		else if(packet instanceof FireEventPacket)
-			onFireEvent((FireEventPacket)packet);
-		else if(packet instanceof PlayerRefreshPacket)
-			onRefresh((PlayerRefreshPacket)packet);
-	}
-	
-	public static UUID getUniqueId(CommandSender sender)
-	{
-		if(sender instanceof Player)
-			return ((Player)sender).getUniqueId();
-		else if(sender instanceof RemotePlayer)
-			return ((RemotePlayer)sender).getUniqueId();
-		return null;
-	}
+        Player local = Bukkit.getPlayer(packet.getID());
+        if (local == null) {
+            RemotePlayer current = new RemotePlayer(packet.getID(), packet.getName());
+            Debugger.log("Proxy join %s. Add as remote player", packet.getName());
+            mAllProxied.put(packet.getID(), current);
+        } else {
+            Debugger.log("Proxy join %s. Add as local player", packet.getName());
+            mAllProxied.put(packet.getID(), local);
 
-	public void setDefaultChannel(Player sender, String channel){
+            if (!packet.getNickname().isEmpty())
+                local.setDisplayName(packet.getNickname());
+        }
+    }
+
+    private void onPlayerLeave(PlayerLeavePacket packet) {
+        CommandSender player = mAllProxied.remove(packet.getID());
+        uuidProxied.remove(packet.getID());
+        mNicknames.remove(packet.getID());
+        unsubscribeAll(packet.getID());
+        mDefaultChannel.remove(packet.getID());
+        Debugger.log("Proxy leave %s. Remove as local/remote", (player != null ? player.getName() : packet.getID()));
+    }
+
+    private void onFireEvent(FireEventPacket packet) {
+        Player player = Bukkit.getPlayer(packet.getID());
+        String message = packet.getMessage();
+
+        if (message.isEmpty())
+            message = null;
+
+        if (player != null) {
+            switch (packet.getEvent()) {
+                case FireEventPacket.EVENT_JOIN: {
+                    ProxyJoinEvent event = new ProxyJoinEvent(player, message);
+                    Bukkit.getPluginManager().callEvent(event);
+
+                    message = event.getJoinMessage();
+                    break;
+                }
+                case FireEventPacket.EVENT_QUIT: {
+                    ProxyLeaveEvent event = new ProxyLeaveEvent(player, message);
+                    Bukkit.getPluginManager().callEvent(event);
+
+                    message = event.getQuitMessage();
+                    break;
+                }
+            }
+        }
+
+        if (message != null)
+            BungeeChat.broadcast(message);
+    }
+
+    private void onRefresh(PlayerRefreshPacket packet) {
+        Player player = Bukkit.getPlayer(packet.getID());
+        if (player != null)
+            refreshPlayer(player);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onPlayerJoinServer(PlayerLoginEvent event) {
+        final Player current = event.getPlayer();
+        Debugger.log("Server join %s. Add as local", event.getPlayer().getName());
+        mAllProxied.put(current.getUniqueId(), current);
+
+        String nickname = mNicknames.get(current.getUniqueId());
+        if (nickname != null)
+            current.setDisplayName(nickname);
+        String chan = mDefaultChannel.get(current.getUniqueId());
+        if (chan != null) {
+            if (BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)) {
+                mDefaultChannel.put(current.getUniqueId(), chan);
+                BungeeChat.permissionManager.playerAdd(null, current,
+                        BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(chan));
+                event.getPlayer().recalculatePermissions();
+            }
+        }
+        Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> updateTabColor(current), 2L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onPlayerLeaveServer(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        mPlayerSettings.remove(player.getUniqueId());
+        String channel = mDefaultChannel.get(player.getUniqueId());
+        if (BungeeChat.getInstance().getChatChannelsManager().hasChannel(channel)) {
+            BungeeChat.permissionManager.playerRemove(null, player,
+                    BungeeChat.getInstance().getChatChannelsManager().getChannelSpeakPerm(channel));
+        }
+
+        // Prevent re-adding the player when they leave the proxy
+        if (uuidProxied.contains(player.getUniqueId())) {
+            CommandSender current = new RemotePlayer(player.getUniqueId(), player.getName());
+            mAllProxied.put(player.getUniqueId(), current);
+            Debugger.log("Server leave %s. Add as remote", event.getPlayer().getName());
+        } else {
+            mAllProxied.remove(player.getUniqueId());
+            mDefaultChannel.remove(player.getUniqueId());
+            unsubscribeAll(player, true);
+            Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private void onPlayerChat(AsyncPlayerChatEvent event) {
+        updateTabColor(event.getPlayer());
+    }
+
+    private void updateTabColor(Player player) {
+        PermissionSetting level = Formatter.getPermissionLevel(player);
+        String colour = "";
+        if (level != null)
+            colour = level.color;
+
+        PlayerSettings settings = getPlayerSettings(player);
+
+        if (!settings.tabFormat.equals(colour)) {
+            Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat.replace(ChatColor.COLOR_CHAR, '&'), colour.replace(ChatColor.COLOR_CHAR, '&'));
+            settings.tabFormat = colour;
+            BungeeChat.getSyncManager().callSyncMethod("bchat:setTabColor", null, player.getUniqueId(), settings.tabFormat);
+        }
+    }
+
+    private void onUpdatePlayers(PlayerListPacket packet) {
+        mAllProxied.clear();
+        mNicknames.clear();
+
+        Debugger.log("Resetting online players:");
+
+        List<UUID> ids = packet.getIDs();
+        List<String> names = packet.getNames();
+        List<String> nicknames = packet.getNicknames();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            mAllProxied.put(player.getUniqueId(), player);
+            Debugger.log("Add %s as local", player.getName());
+
+            PlayerSettings settings = getPlayerSettings(player);
+            if (!settings.nickname.isEmpty()) {
+                mNicknames.put(player.getUniqueId(), settings.nickname);
+                player.setDisplayName(settings.nickname);
+            } else
+                player.setDisplayName(player.getName());
+        }
+
+        for (int i = 0; i < ids.size(); ++i) {
+            UUID id = ids.get(i);
+            String name = names.get(i);
+            String nickname = nicknames.get(i);
+
+            if (mAllProxied.containsKey(id))
+                continue;
+
+            RemotePlayer player = new RemotePlayer(id, name);
+            mAllProxied.put(id, player);
+
+            Debugger.log("Add %s as remote", player.getName());
+
+            if (!nickname.isEmpty())
+                mNicknames.put(id, nickname);
+
+        }
+    }
+
+    private void onPlayerSettings(PlayerSettingsPacket packet) {
+        Player player = Bukkit.getPlayer(packet.getID());
+        if (player != null) {
+            Debugger.log("Updating settings for %s", player.getName());
+            PlayerSettings settings = getPlayerSettings(player);
+            settings.read(packet);
+
+            if (settings.nickname.isEmpty()) {
+                player.setDisplayName(player.getName());
+                onPlayerNameChange(player.getUniqueId(), "");
+            } else {
+                player.setDisplayName(settings.nickname);
+                onPlayerNameChange(player.getUniqueId(), settings.nickname);
+            }
+            if (settings.defaultChannel.isEmpty()) {
+                unsubscribeAll(player.getUniqueId());
+            } else {
+                mDefaultChannel.put(player.getUniqueId(), settings.defaultChannel);
+            }
+        }
+    }
+
+    public void updatePlayerSettings(CommandSender player) {
+        if (!(player instanceof Player))
+            return;
+
+        PlayerSettings settings = getPlayerSettings(player);
+        BungeeChat.getPacketManager().sendNoQueue(settings.toPacket(getUniqueId(player)));
+    }
+
+    private void onPlayerNameChange(UUID uuid, String newName) {
+        if (newName.isEmpty())
+            mNicknames.remove(uuid);
+        else
+            mNicknames.put(uuid, newName);
+
+        // Force the player to spawn again so that the name will update
+        Player player = Bukkit.getPlayer(uuid);
+        if (player != null)
+            refreshPlayer(player);
+    }
+
+    @Override
+    public void handle(Packet packet) {
+        if (packet instanceof PlayerJoinPacket)
+            onPlayerJoin((PlayerJoinPacket) packet);
+        else if (packet instanceof PlayerLeavePacket)
+            onPlayerLeave((PlayerLeavePacket) packet);
+        else if (packet instanceof PlayerListPacket)
+            onUpdatePlayers((PlayerListPacket) packet);
+        else if (packet instanceof UpdateNamePacket)
+            onPlayerNameChange(((UpdateNamePacket) packet).getID(), ((UpdateNamePacket) packet).getName());
+        else if (packet instanceof PlayerSettingsPacket)
+            onPlayerSettings((PlayerSettingsPacket) packet);
+        else if (packet instanceof FireEventPacket)
+            onFireEvent((FireEventPacket) packet);
+        else if (packet instanceof PlayerRefreshPacket)
+            onRefresh((PlayerRefreshPacket) packet);
+    }
+
+    public void setDefaultChannel(Player sender, String channel) {
         PlayerSettings settings = getPlayerSettings(sender);
         settings.defaultChannel = channel;
         mPlayerSettings.put(sender.getUniqueId(),settings);
@@ -635,58 +595,55 @@ import au.com.addstar.bc.sync.packet.UpdateNamePacket;
         updatePlayerSettings(sender);
     }
 
-    @Nullable
-	public String getDefaultChatChannel(Player sender){
+    public String getDefaultChatChannel(Player sender) {
         return mDefaultChannel.getOrDefault(sender.getUniqueId(), null);
     }
 
 
+    public void unsubscribeAll(CommandSender sender) {
+        unsubscribeAll(sender, false);
+    }
 
-    public void unsubscribeAll(CommandSender sender){
-				unsubscribeAll(sender,false);
-	}
+    private void unsubscribeAll(CommandSender sender, boolean offline) {
+        if (sender instanceof Player) {
+            unsubscribeAll(((Player) sender).getUniqueId());
+            unsubscribeAllAsync(((Player) sender).getUniqueId(), ((Player) sender).getWorld().getName());
+            PlayerSettings settings = getPlayerSettings(sender);
+            settings.defaultChannel = "";
+            if (!offline) updatePlayerSettings(sender);
+        }
+        if (sender instanceof RemotePlayer) {
+            unsubscribeAll(((RemotePlayer) sender).getUniqueId());
+        }
 
-	private void unsubscribeAll(CommandSender sender, boolean offline){
-		if(sender instanceof Player){
-			unsubscribeAll(((Player) sender).getUniqueId());
-			unsubscribeAllAsync(((Player) sender).getUniqueId(),((Player) sender).getWorld().getName());
-			PlayerSettings settings = getPlayerSettings(sender);
-			settings.defaultChannel = "";
-			if(!offline)updatePlayerSettings(sender);
-		}
-		if(sender instanceof RemotePlayer){
-			unsubscribeAll(((RemotePlayer) sender).getUniqueId());
-		}
+    }
 
-	}
-	private void unsubscribeAll(UUID uuid) {
-		if (Bukkit.isPrimaryThread()) {
-			unsubscribeAllAsync(uuid, null);
-		} else {
-			unsubscribeAll0(uuid, null);
-		}
-	}
+    private void unsubscribeAll(UUID uuid) {
+        if (Bukkit.isPrimaryThread()) {
+            unsubscribeAllAsync(uuid, null);
+        } else {
+            unsubscribeAll0(uuid, null);
+        }
+    }
 
-	private void unsubscribeAllAsync(final UUID uuid, final String world) {
-			Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-				unsubscribeAll0(uuid, world);
-		});
-	}
+    private void unsubscribeAllAsync(final UUID uuid, final String world) {
+        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> unsubscribeAll0(uuid, world));
+    }
 
-	private void unsubscribeAll0 (UUID uuid, String world) {
-		OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
-		for (ChatChannel channels : BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()) {
-			if (channels.subscribe) {
-				if (BungeeChat.permissionManager.playerHas(world, player, channels.permission)) {
-					if (BungeeChat.permissionManager.playerRemove(world, player, channels.permission)) {
-						Debugger.log(channels.permission + " was removed ");
-					} else {
-						Debugger.log(channels.permission + " removal failed ");
-					}
-				}
-			}
-		}
-		mDefaultChannel.remove(uuid);
-	}
+    private void unsubscribeAll0(UUID uuid, String world) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+        for (ChatChannel channels : BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()) {
+            if (channels.subscribe) {
+                if (BungeeChat.permissionManager.playerHas(world, player, channels.permission)) {
+                    if (BungeeChat.permissionManager.playerRemove(world, player, channels.permission)) {
+                        Debugger.log(channels.permission + " was removed ");
+                    } else {
+                        Debugger.log(channels.permission + " removal failed ");
+                    }
+                }
+            }
+        }
+        mDefaultChannel.remove(uuid);
+    }
 
 }
