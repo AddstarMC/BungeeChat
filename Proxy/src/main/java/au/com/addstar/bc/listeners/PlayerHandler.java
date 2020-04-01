@@ -48,7 +48,11 @@ package au.com.addstar.bc.listeners;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import au.com.addstar.bc.*;
+import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.ColourTabList;
+import au.com.addstar.bc.Debugger;
+import au.com.addstar.bc.PlayerSettings;
+import au.com.addstar.bc.PlayerSettingsManager;
 import au.com.addstar.bc.event.BCPlayerJoinEvent;
 import au.com.addstar.bc.event.BCPlayerQuitEvent;
 import au.com.addstar.bc.sync.PacketManager;
