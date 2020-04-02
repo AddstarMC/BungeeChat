@@ -77,17 +77,15 @@ public class ChatHandler implements Listener{
         String channel = BungeeChat.getPlayerManager().getDefaultChatChannel(event.getPlayer());
         if(channel != null){
             if(instance.getChatChannelsManager().hasChannel(channel)){
-                if(BungeeChat.forceGlobalprefix.equals
-                        (event.getMessage().substring(0,1))){
+                if(BungeeChat.forceGlobalprefix.equals(event.getMessage().substring(0,1))){
                     event.setMessage(event.getMessage().substring(1));
                 }else{
-                    for (ChatChannel out : instance.getChatChannelsManager().getChannelObj().values()) {
-                        if (out.name.equals(channel)) {
-                            out.say(event.getPlayer(),event.getMessage());
-                            event.setCancelled(true);
-                            return;
-                        }
-                    }
+                	ChatChannel out = instance.getChatChannelsManager().getChatChannel(channel);
+                	if(out != null) {
+						out.say(event.getPlayer(),event.getMessage());
+						event.setCancelled(true);
+						return;
+					}
                 }
             }else{
                 instance.getLogger().info("Channel Manager did not have the default channel...." + channel);

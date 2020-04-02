@@ -73,6 +73,9 @@ import au.com.addstar.bc.sync.SyncConfig;
 
 public class ChatChannelManager implements Listener, CommandExecutor
 {
+	/**
+	 * A Map of Channel names > Channel
+	 */
 	private HashMap<String, ChatChannel> mChannels = new HashMap<>();
 	public ChatChannelManager(BungeeChat plugin)
 	{
@@ -223,6 +226,10 @@ public class ChatChannelManager implements Listener, CommandExecutor
 		return channels;
 	}
 
+	/**
+	 * Returns a map of channel names > Channels.
+	 * @return Map
+	 */
 	public HashMap<String, ChatChannel> getChannelObj() {
 		return mChannels;
 	}

@@ -220,7 +220,7 @@ import java.util.UUID;
 	public List<String> matchNames(String name, boolean includeAliases)
 	{
 		name = name.toLowerCase();
-		ArrayList<String> matches = new ArrayList<>();
+		List<String> matches = new ArrayList<>();
 
 		for(CommandSender player : mAllProxied.values())
 		{
@@ -315,7 +315,8 @@ import java.util.UUID;
 		return getPlayerSettings(player, false);
 	}
 
-    private PlayerSettings getPlayerSettings(CommandSender player, boolean noValidation) {
+    @SuppressWarnings("WeakerAccess")
+    public PlayerSettings getPlayerSettings(CommandSender player, boolean noValidation) {
         if (!noValidation)
             Validate.isTrue(player instanceof Player, "Cannot get player settings of non local player");
 
