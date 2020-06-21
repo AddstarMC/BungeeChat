@@ -435,7 +435,7 @@ import java.util.UUID;
         String nickname = mNicknames.get(current.getUniqueId());
         if (nickname != null)
             current.setDisplayName(nickname);
-        String chan = mDefaultChannel.get(current.getUniqueId());
+        String chan = mDefaultChannel.getOrDefault(current.getUniqueId(), "");
         if (!chan.isEmpty()) {
             if (BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)) {
                 mDefaultChannel.put(current.getUniqueId(), chan);
