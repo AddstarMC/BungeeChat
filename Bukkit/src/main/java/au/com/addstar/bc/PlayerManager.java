@@ -326,9 +326,7 @@ import java.util.UUID;
         if (settings == null) {
             settings = new PlayerSettings();
             mPlayerSettings.put(id, settings);
-            if (settings.defaultChannel != null) {
-                mDefaultChannel.put(id, settings.defaultChannel);
-            }
+            mDefaultChannel.put(id, settings.defaultChannel);
 		}
 		return settings;
 	}
@@ -438,7 +436,7 @@ import java.util.UUID;
         if (nickname != null)
             current.setDisplayName(nickname);
         String chan = mDefaultChannel.get(current.getUniqueId());
-        if (chan != null) {
+        if (!chan.isEmpty()) {
             if (BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)) {
                 mDefaultChannel.put(current.getUniqueId(), chan);
                 BungeeChat.permissionManager.playerAdd(null, current,
@@ -597,7 +595,7 @@ import java.util.UUID;
         PlayerSettings settings = getPlayerSettings(sender);
         settings.defaultChannel = channel;
         mPlayerSettings.put(sender.getUniqueId(),settings);
-        if ((channel != null)) {
+        if (!channel.isEmpty()) {
             mDefaultChannel.put(sender.getUniqueId(), channel);
         } else {
             mDefaultChannel.remove(sender.getUniqueId());
@@ -606,7 +604,7 @@ import java.util.UUID;
     }
 
     public String getDefaultChatChannel(Player sender) {
-        return mDefaultChannel.getOrDefault(sender.getUniqueId(), null);
+        return mDefaultChannel.getOrDefault(sender.getUniqueId(), "");
     }
 
 

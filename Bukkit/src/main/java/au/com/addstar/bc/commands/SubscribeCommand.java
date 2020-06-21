@@ -78,7 +78,7 @@ public class SubscribeCommand implements CommandExecutor {
             String channelName = args[0];
             if (channelName.equalsIgnoreCase("global")) {
                 String subscribed = BungeeChat.getPlayerManager().getDefaultChatChannel(player);
-                if (subscribed != null  && instance.getChatChannelsManager().hasChannel(subscribed)) {
+                if (!subscribed.isEmpty() && instance.getChatChannelsManager().hasChannel(subscribed)) {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(subscribed);
                     BungeeChat.getPlayerManager().unsubscribeAll(player);
                     if (!player.hasPermission(perm)) {

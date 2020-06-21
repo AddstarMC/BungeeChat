@@ -75,7 +75,7 @@ public class ChatHandler implements Listener{
 	private void onPlayerChatLowest(AsyncPlayerChatEvent event)
 	{
         String channel = BungeeChat.getPlayerManager().getDefaultChatChannel(event.getPlayer());
-        if(channel != null){
+        if(!channel.isEmpty()){
             if(instance.getChatChannelsManager().hasChannel(channel)){
                 if(BungeeChat.forceGlobalprefix.equals(event.getMessage().substring(0,1))){
                     event.setMessage(event.getMessage().substring(1));

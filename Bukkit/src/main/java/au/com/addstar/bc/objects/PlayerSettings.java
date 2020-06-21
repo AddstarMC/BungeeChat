@@ -69,9 +69,9 @@ public class PlayerSettings
 	
 	public boolean isAFK = false;
 
-	public String chatName;
+	public String chatName = "";
 
-	public String defaultChannel;
+	public String defaultChannel = "";
 	
 	public CommandSender getLastMsgTarget()
 	{
@@ -87,7 +87,7 @@ public class PlayerSettings
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
 		chatName = packet.getChatName();
-		defaultChannel =packet.getDefaultChannel();
+		defaultChannel = packet.getDefaultChannel();
 	}
 	
 	public PlayerSettingsPacket toPacket(UUID id)
