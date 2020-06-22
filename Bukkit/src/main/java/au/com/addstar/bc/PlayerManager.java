@@ -326,7 +326,6 @@ import java.util.UUID;
         if (settings == null) {
             settings = new PlayerSettings();
             mPlayerSettings.put(id, settings);
-            mDefaultChannel.put(id, settings.defaultChannel);
 		}
 		return settings;
 	}
@@ -385,7 +384,7 @@ import java.util.UUID;
         CommandSender player = mAllProxied.remove(packet.getID());
         uuidProxied.remove(packet.getID());
         mNicknames.remove(packet.getID());
-        unsubscribeAll(packet.getID());
+        unsubscribeAll(packet.getID(), null, false);
         mDefaultChannel.remove(packet.getID());
         Debugger.log("Proxy leave %s. Remove as local/remote", (player != null ? player.getName() : packet.getID()));
     }
@@ -465,7 +464,7 @@ import java.util.UUID;
         } else {
             mAllProxied.remove(player.getUniqueId());
             mDefaultChannel.remove(player.getUniqueId());
-            unsubscribeAll(player, true);
+            unsubscribeAll(player);
             Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
         }
     }
@@ -531,7 +530,18 @@ import java.util.UUID;
         }
     }
 
-    private void onPlayerSettings(PlayerSettingsPacket packet) {
+    private void onPlayerSettings(final PlayerSettingsPacket packet) {
+        Player player = Bukkit.getPlayer(packet.getID());
+        if (player != null) {
+            // Player is online so handle the packet now
+            doPlayerSettings(packet);
+        } else {
+            // Player is not online so try again in 5 ticks (in case it's sent while joining this server)
+            Bukkit.getScheduler().runTaskLater(this.plugin, () -> doPlayerSettings(packet), 5L);
+        }
+    }
+
+    private void doPlayerSettings(PlayerSettingsPacket packet) {
         Player player = Bukkit.getPlayer(packet.getID());
         if (player != null) {
             Debugger.log("Updating settings for %s", player.getName());
@@ -546,7 +556,7 @@ import java.util.UUID;
                 onPlayerNameChange(player.getUniqueId(), settings.nickname);
             }
             if (settings.defaultChannel.isEmpty()) {
-                unsubscribeAll(player.getUniqueId());
+                unsubscribeAll(player);
             } else {
                 mDefaultChannel.put(player.getUniqueId(), settings.defaultChannel);
             }
@@ -556,7 +566,6 @@ import java.util.UUID;
     public void updatePlayerSettings(CommandSender player) {
         if (!(player instanceof Player))
             return;
-
         PlayerSettings settings = getPlayerSettings(player);
         BungeeChat.getPacketManager().sendNoQueue(settings.toPacket(getUniqueId(player)));
     }
@@ -594,7 +603,7 @@ import java.util.UUID;
     public void setDefaultChannel(Player sender, String channel) {
         PlayerSettings settings = getPlayerSettings(sender);
         settings.defaultChannel = channel;
-        mPlayerSettings.put(sender.getUniqueId(),settings);
+        mPlayerSettings.put(sender.getUniqueId(), settings);
         if (!channel.isEmpty()) {
             mDefaultChannel.put(sender.getUniqueId(), channel);
         } else {
@@ -607,38 +616,36 @@ import java.util.UUID;
         return mDefaultChannel.getOrDefault(sender.getUniqueId(), "");
     }
 
-
     public void unsubscribeAll(CommandSender sender) {
         unsubscribeAll(sender, false);
     }
 
-    private void unsubscribeAll(CommandSender sender, boolean offline) {
+    public void unsubscribeAll(CommandSender sender, boolean forceSync) {
         if (sender instanceof Player) {
-            unsubscribeAll(((Player) sender).getUniqueId());
-            unsubscribeAllAsync(((Player) sender).getUniqueId(), ((Player) sender).getWorld().getName());
+            unsubscribeAll(((Player) sender).getUniqueId(), null, forceSync);
             PlayerSettings settings = getPlayerSettings(sender);
             settings.defaultChannel = "";
-            if (!offline) updatePlayerSettings(sender);
+            if (((Player) sender).isOnline()) {
+                updatePlayerSettings(sender);
+            }
         }
         if (sender instanceof RemotePlayer) {
-            unsubscribeAll(((RemotePlayer) sender).getUniqueId());
+            unsubscribeAll(((RemotePlayer) sender).getUniqueId(), null, false);
         }
-
     }
 
-    private void unsubscribeAll(UUID uuid) {
-        if (Bukkit.isPrimaryThread()) {
-            unsubscribeAllAsync(uuid, null);
+    private void unsubscribeAll(UUID uuid, String world, boolean forceSync) {
+        if (forceSync) {
+            doUnsubscribeAll(uuid, null);
+        }
+	    else if (Bukkit.isPrimaryThread()) {
+            Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> doUnsubscribeAll(uuid, null));
         } else {
-            unsubscribeAll0(uuid, null);
+            doUnsubscribeAll(uuid, null);
         }
     }
 
-    private void unsubscribeAllAsync(final UUID uuid, final String world) {
-        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> unsubscribeAll0(uuid, world));
-    }
-
-    private void unsubscribeAll0(UUID uuid, String world) {
+    private void doUnsubscribeAll(UUID uuid, String world) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
         for (ChatChannel channels : BungeeChat.getInstance().getChatChannelsManager().getChannelObj().values()) {
             if (channels.subscribe) {
@@ -653,5 +660,4 @@ import java.util.UUID;
         }
         mDefaultChannel.remove(uuid);
     }
-
 }

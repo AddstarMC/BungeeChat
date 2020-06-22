@@ -80,14 +80,14 @@ public class SubscribeCommand implements CommandExecutor {
                 String subscribed = BungeeChat.getPlayerManager().getDefaultChatChannel(player);
                 if (!subscribed.isEmpty() && instance.getChatChannelsManager().hasChannel(subscribed)) {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(subscribed);
-                    BungeeChat.getPlayerManager().unsubscribeAll(player);
+                    BungeeChat.getPlayerManager().unsubscribeAll(player, true);
                     if (!player.hasPermission(perm)) {
                         player.sendMessage(Utilities.colorize("&3Unsubscribed from &a" + subscribed));
                     } else {
                         player.sendMessage(Utilities.colorize("&cCould not unsubscribe from &a" + subscribed));
                     }
                 } else {
-                    BungeeChat.getPlayerManager().unsubscribeAll(player);
+                    BungeeChat.getPlayerManager().unsubscribeAll(player, true);
                     player.sendMessage(Utilities.colorize("&3You are not subscribed to any channels."));
                 }
                 return true;
@@ -102,9 +102,9 @@ public class SubscribeCommand implements CommandExecutor {
                         player.sendMessage(Utilities.colorize("&cError with Channel permission please contact admin"));
                         return false;
                     }
-                    BungeeChat.getPlayerManager().unsubscribeAll(player);
+                    BungeeChat.getPlayerManager().unsubscribeAll(player, true);
                     if (chatChannel.subscribe && !player.hasPermission(perm)) {
-                        BungeeChat.permissionManager.playerAdd(null,player, perm);
+                        BungeeChat.permissionManager.playerAdd(null, player, perm);
                         player.recalculatePermissions();
                         if (player.hasPermission(perm)) {
                             BungeeChat.getPlayerManager().setDefaultChannel(player, chatChannel.name);
