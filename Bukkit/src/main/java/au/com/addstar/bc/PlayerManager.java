@@ -632,7 +632,6 @@ import java.util.UUID;
             settings.defaultChannel = "";
             // dont resend the update packet if the player has left the proxy
             if (!(playerOffline) && ((Player) sender).isOnline()) {
-                System.out.println("[unsubscribeAll] Updating player settings");
                 updatePlayerSettings(sender);
             }
         }
