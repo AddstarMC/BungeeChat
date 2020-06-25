@@ -464,7 +464,8 @@ import java.util.UUID;
         } else {
             mAllProxied.remove(player.getUniqueId());
             mDefaultChannel.remove(player.getUniqueId());
-            unsubscribeAll(player);
+            // dont resend the update packet if the player has left the proxy
+            unsubscribeAll(player, false, true);
             Debugger.log("Server leave %s. Not on proxy. Remove completely", event.getPlayer().getName());
         }
     }
@@ -617,15 +618,21 @@ import java.util.UUID;
     }
 
     public void unsubscribeAll(CommandSender sender) {
-        unsubscribeAll(sender, false);
+        unsubscribeAll(sender, false, false);
     }
 
     public void unsubscribeAll(CommandSender sender, boolean forceSync) {
+        unsubscribeAll(sender, forceSync, false);
+    }
+
+    public void unsubscribeAll(CommandSender sender, boolean forceSync, boolean playerOffline) {
         if (sender instanceof Player) {
             unsubscribeAll(((Player) sender).getUniqueId(), null, forceSync);
             PlayerSettings settings = getPlayerSettings(sender);
             settings.defaultChannel = "";
-            if (((Player) sender).isOnline()) {
+            // dont resend the update packet if the player has left the proxy
+            if (!(playerOffline) && ((Player) sender).isOnline()) {
+                System.out.println("[unsubscribeAll] Updating player settings");
                 updatePlayerSettings(sender);
             }
         }
