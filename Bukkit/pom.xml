@@ -100,8 +100,15 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+
               <minimizeJar>true</minimizeJar>
               <filters>
+                  <filter>
+                    <artifact>*:*</artifact>
+                    <excludes>
+                      <exclude>META-INF/MANIFEST.MF</exclude>
+                    </excludes>
+                  </filter>
                 <filter>
                   <artifact>org.apache.commons:commons-pool2</artifact>
                   <includes>

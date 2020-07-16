@@ -50,7 +50,7 @@ import org.bukkit.event.HandlerList;
 
 import au.com.addstar.bc.objects.ChannelType;
 
-public class ChatChannelEvent extends Event
+public class  ChatChannelEvent extends Event
 {
 	private static HandlerList handlers = new HandlerList();
 	

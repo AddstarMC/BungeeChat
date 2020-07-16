@@ -238,8 +238,7 @@ public class Formatter
 	}
 	
 	public static String updateIfPlayer(CommandSender sender, String message){
-		if(sender instanceof Player)
-		{
+		if(sender instanceof Player) {
 			Player player = (Player)sender;
 			String prefix = getChatName(player);
 			if(prefix == null){
@@ -250,8 +249,7 @@ public class Formatter
 			message = message.replace("{GROUP}", (group != null ? group : "Default"));
 			message = message.replace("{WORLD}", player.getWorld().getName());
 		}
-		else
-		{
+		else {
 			message = message.replace("{CHATNAME}", "" );
 			message = message.replace("{GROUP}", "Server");
 			message = message.replace("{WORLD}", "");

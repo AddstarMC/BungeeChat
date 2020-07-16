@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="Maven: net.cubespace:Yamler-Core:2.4.0-SNAPSHOT">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/net/cubespace/Yamler-Core/2.4.0-SNAPSHOT/Yamler-Core-2.4.0-20180905.114208-1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/cubespace/Yamler-Core/2.4.0-SNAPSHOT/Yamler-Core-2.4.0-20200518.110141-2.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$MAVEN_REPOSITORY$/net/cubespace/Yamler-Core/2.4.0-SNAPSHOT/Yamler-Core-2.4.0-20180905.114208-1-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/cubespace/Yamler-Core/2.4.0-SNAPSHOT/Yamler-Core-2.4.0-20200518.110141-2-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/net/cubespace/Yamler-Core/2.4.0-SNAPSHOT/Yamler-Core-2.4.0-20180905.114208-1-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/cubespace/Yamler-Core/2.4.0-SNAPSHOT/Yamler-Core-2.4.0-20200518.110141-2-sources.jar!/" />
     </SOURCES>
   </library>
 </component>
