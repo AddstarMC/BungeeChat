@@ -45,12 +45,13 @@ package au.com.addstar.bc.utils;
  * #L%
  */
 
+import java.awt.*;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permissible;
 
@@ -374,5 +375,78 @@ public class Utilities
 		}
 		
 		return builder.toString();
+	}
+
+	public static String colorize(String message, CommandSender sender)
+	{
+		int pos = -1;
+		char colorChar = '&';
+		boolean hasRGB = sender.hasPermission("bungeechat.format.rgb");
+		String updatedMessage = message;
+		if(hasRGB) {
+			updatedMessage = parseRGBColors(message);
+		}
+		StringBuilder buffer = new StringBuilder(updatedMessage);
+
+		boolean hasColor = sender.hasPermission("bungeechat.color");
+		boolean hasReset = sender.hasPermission("bungeechat.format.reset");
+		boolean hasBold = sender.hasPermission("bungeechat.format.bold");
+		boolean hasItalic = sender.hasPermission("bungeechat.format.italic");
+		boolean hasUnderline = sender.hasPermission("bungeechat.format.underline");
+		boolean hasStrikethrough = sender.hasPermission("bungeechat.format.strikethrough");
+		boolean hasMagic = sender.hasPermission("bungeechat.format.magic");
+
+		while((pos = updatedMessage.indexOf(colorChar, pos+1)) != -1)
+		{
+			if(updatedMessage.length() > pos + 1)
+			{
+				char atPos = Character.toLowerCase(updatedMessage.charAt(pos+1));
+
+				boolean allow = false;
+				if(((atPos >= '0' && atPos <= '9') || (atPos >= 'a' && atPos <= 'f')) && hasColor)
+					allow = true;
+				else if(atPos == 'r' && hasReset)
+					allow = true;
+				else if(atPos == 'l' && hasBold)
+					allow = true;
+				else if(atPos == 'm' && hasStrikethrough)
+					allow = true;
+				else if(atPos == 'n' && hasUnderline)
+					allow = true;
+				else if(atPos == 'o' && hasItalic)
+					allow = true;
+				else if(atPos == 'k' && hasMagic)
+					allow = true;
+
+				if(allow)
+					buffer.setCharAt(pos, ChatColor.COLOR_CHAR);
+			}
+		}
+
+		return buffer.toString();
+	}
+
+	public static String parseChatColors(String input){
+		String out;
+		out = ChatColor.translateAlternateColorCodes('&',input);
+		return parseRGBColors(out);
+	}
+
+	public static String parseRGBColors(String input){
+		String out = input;
+		while(out.contains("#")){
+			int begin = out.indexOf("#");
+			int end = begin+7;
+			String hexString = out.substring(begin,end);
+			Color color;
+			try {
+				color = Color.decode(hexString);
+			} catch (NumberFormatException e) {
+				color = Color.GRAY;
+			}
+			String updated = out.substring(0,begin)+ChatColor.of(color)+out.substring(end);
+			out = updated;
+		}
+		return out;
 	}
 }

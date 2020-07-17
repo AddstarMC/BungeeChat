@@ -47,11 +47,14 @@ package au.com.addstar.bc.objects;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PermissionSetting;
+import au.com.addstar.bc.utils.Utilities;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
+
+import java.awt.*;
 
 public class ChatChannel
 {
@@ -72,7 +75,7 @@ public class ChatChannel
 	{
 		this.name = name;
 		this.command = command;
-		this.format = ChatColor.translateAlternateColorCodes('&', format);
+		this.format = Utilities.parseChatColors(format);
 		if(permission != null && !permission.isEmpty())
 			this.permission = permission;
 		if(permission != null && !listenPerm.isEmpty())
@@ -81,6 +84,8 @@ public class ChatChannel
         isRP = rp != null && rp;
 
 	}
+
+
 	
 	public void registerChannel()
 	{
@@ -112,7 +117,7 @@ public class ChatChannel
 	{
 		PermissionSetting level = Formatter.getPermissionLevel(sender);
 		
-		message = BungeeChat.colorize(message, sender);
+		message = Utilities.colorize(message, sender);
 		if (ChatColor.stripColor(message).trim().isEmpty())
 			return;
 		

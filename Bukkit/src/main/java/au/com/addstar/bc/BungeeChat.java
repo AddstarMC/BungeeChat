@@ -262,50 +262,19 @@ public class BungeeChat extends JavaPlugin implements Listener
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Colorize a string based on a senders perms.
+	 *
+	 * @param message String
+	 * @param sender commandSender
+	 * @return colorized string
+	 * @deprecated use {@link Utilities#colorize(String,CommandSender)}
+	 */
+	@Deprecated
 	public static String colorize(String message, CommandSender sender)
 	{
-		int pos = -1;
-		char colorChar = '&';
-		
-		StringBuilder buffer = new StringBuilder(message);
-		
-		boolean hasColor = sender.hasPermission("bungeechat.color");
-		boolean hasReset = sender.hasPermission("bungeechat.format.reset");
-		boolean hasBold = sender.hasPermission("bungeechat.format.bold");
-		boolean hasItalic = sender.hasPermission("bungeechat.format.italic");
-		boolean hasUnderline = sender.hasPermission("bungeechat.format.underline");
-		boolean hasStrikethrough = sender.hasPermission("bungeechat.format.strikethrough");
-		boolean hasMagic = sender.hasPermission("bungeechat.format.magic");
-		
-		while((pos = message.indexOf(colorChar, pos+1)) != -1)
-		{
-			if(message.length() > pos + 1)
-			{
-				char atPos = Character.toLowerCase(message.charAt(pos+1));
-				
-				boolean allow = false;
-				if(((atPos >= '0' && atPos <= '9') || (atPos >= 'a' && atPos <= 'f')) && hasColor)
-					allow = true;
-				else if(atPos == 'r' && hasReset)
-					allow = true;
-				else if(atPos == 'l' && hasBold)
-					allow = true;
-				else if(atPos == 'm' && hasStrikethrough)
-					allow = true;
-				else if(atPos == 'n' && hasUnderline)
-					allow = true;
-				else if(atPos == 'o' && hasItalic)
-					allow = true;
-				else if(atPos == 'k' && hasMagic)
-					allow = true;
-				
-				if(allow)
-					buffer.setCharAt(pos, ChatColor.COLOR_CHAR);
-			}
-		}
-		
-		return buffer.toString();
+		return Utilities.colorize(message,sender);
 	}
 	
 	public static void setLastMsgTarget(CommandSender sender, CommandSender target)
