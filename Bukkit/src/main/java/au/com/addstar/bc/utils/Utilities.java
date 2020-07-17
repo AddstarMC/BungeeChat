@@ -100,6 +100,7 @@ public class Utilities
 	 * @return A String
 	 */
 	public static String colorize(String text) {
+		text = parseRGBColors(text);
 		return ChatColor.translateAlternateColorCodes('&', text);
 	}
 

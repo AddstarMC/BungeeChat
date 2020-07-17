@@ -48,7 +48,7 @@ package au.com.addstar.bc.commands;
 import java.util.List;
 
 import au.com.addstar.bc.BungeeChat;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

@@ -51,7 +51,7 @@ import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.PermissionSetting;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -106,7 +106,7 @@ public class ChatHandler implements Listener{
 		if(!Formatter.keywordsEnabled)
 			return;
 		
-		String newMessage = Formatter.highlightKeywords(event.getMessage(), ChatColor.getLastColors(event.getFormat()));
+		String newMessage = Formatter.highlightKeywords(event.getMessage(), org.bukkit.ChatColor.getLastColors(event.getFormat()));
 		if(newMessage == null)
 			return;
 		
@@ -129,7 +129,7 @@ public class ChatHandler implements Listener{
 		if(!Formatter.keywordsEnabled)
 			return;
 		
-		String newMessage = Formatter.highlightKeywords(event.getMessage(), ChatColor.getLastColors(event.getFormat()));
+		String newMessage = Formatter.highlightKeywords(event.getMessage(), org.bukkit.ChatColor.getLastColors(event.getFormat()));
 		if(newMessage == null)
 		{
 			BungeeChat.mirrorChat(message, ChannelType.KeywordHighlight.getName());

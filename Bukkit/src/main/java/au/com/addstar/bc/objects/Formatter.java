@@ -56,7 +56,7 @@ import java.util.regex.PatternSyntaxException;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PermissionSetting;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -282,7 +282,7 @@ public class Formatter
 			
 			while(m.find())
 			{
-				String currentColour = ChatColor.getLastColors(message.substring(0, m.end()));
+				String currentColour = org.bukkit.ChatColor.getLastColors(message.substring(0, m.end()));
 				if(currentColour.isEmpty())
 					currentColour = defaultColour;
 				

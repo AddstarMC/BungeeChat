@@ -45,8 +45,8 @@ package au.com.addstar.bc;
  * #L%
  */
 
+import au.com.addstar.bc.utils.Utilities;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.NotNull;
@@ -67,18 +67,11 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 			}
 		}
 		
-		this.format = ChatColor.translateAlternateColorCodes('&', format);
+		this.format = Utilities.colorize(format);
 		this.priority = priority;
 		
 		this.color = "";
-		for(int i = 0; i < color.length(); ++i)
-		{
-			char c = color.charAt(i);
-			ChatColor col = ChatColor.getByChar(c);
-			if(col != null) {
-				this.color += col.toString();
-			}
-		}
+		this.color = Utilities.colorize(color);
 	}
 	
 	public String format;
