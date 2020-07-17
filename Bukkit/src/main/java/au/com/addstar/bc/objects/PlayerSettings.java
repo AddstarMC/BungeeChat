@@ -48,6 +48,10 @@ package au.com.addstar.bc.objects;
 import java.util.UUID;
 
 import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.command.CommandSender;
 
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
@@ -69,7 +73,7 @@ public class PlayerSettings
 	
 	public boolean isAFK = false;
 
-	public String chatName = "";
+	public Component chatName = TextComponent.empty();
 
 	public String defaultChannel = "";
 	
@@ -86,12 +90,12 @@ public class PlayerSettings
 		msgEnabled = packet.getMsgToggle();
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
-		chatName = packet.getChatName();
+		chatName = Utilities.SERIALIZER.deserialize(packet.getChatName());
 		defaultChannel = packet.getDefaultChannel();
 	}
 	
 	public PlayerSettingsPacket toPacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, chatName, defaultChannel);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, Utilities.SERIALIZER.serialize(chatName), defaultChannel);
 	}
 }

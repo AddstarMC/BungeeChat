@@ -49,6 +49,9 @@ import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.utils.Utilities;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -72,7 +75,8 @@ public class SubscribeCommand implements CommandExecutor {
         }
         Player player = (Player) commandSender;
         if (args.length == 0) {
-            player.sendMessage(Utilities.colorize("&3Usage: &6/chat <channel>"));
+            Utilities.getAudienceProvider().player(player).sendMessage(TextComponent.of("Usage: ")
+                        .color(NamedTextColor.DARK_AQUA).append(TextComponent.of("/chat <channel>").color(NamedTextColor.GOLD)));
             return false;
         } else {
             String channelName = args[0];
@@ -82,24 +86,27 @@ public class SubscribeCommand implements CommandExecutor {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(subscribed);
                     BungeeChat.getPlayerManager().unsubscribeAll(player, true);
                     if (!player.hasPermission(perm)) {
-                        player.sendMessage(Utilities.colorize("&3Unsubscribed from &a" + subscribed));
+                        Utilities.getAudienceProvider().player(player).sendMessage(TextComponent.of("Unsubscribed from ")
+                              .color(NamedTextColor.DARK_AQUA).append(TextComponent.of(subscribed).color(NamedTextColor.GREEN)));
                     } else {
-                        player.sendMessage(Utilities.colorize("&cCould not unsubscribe from &a" + subscribed));
+                        Utilities.getAudienceProvider().player(player).sendMessage(TextComponent.of("Could not unsubscribe from ")
+                              .color(NamedTextColor.DARK_AQUA).append(TextComponent.of(subscribed).color(NamedTextColor.GREEN)));
                     }
                 } else {
                     BungeeChat.getPlayerManager().unsubscribeAll(player, true);
-                    player.sendMessage(Utilities.colorize("&3You are not subscribed to any channels."));
+                    Utilities.getAudienceProvider().player(player).sendMessage(TextComponent.of("You are not subscribed to any channels.").color(NamedTextColor.DARK_AQUA));
                 }
                 return true;
             }
             if (commandSender.hasPermission("bungeechat.subscribe." + channelName)) {
-                String prefix = BungeeChat.getPlayerManager().getPlayerSettings(player).chatName;
+                Component prefix = BungeeChat.getPlayerManager().getPlayerSettings(player).chatName;
                 final ChatChannel chatChannel = instance.getChatChannelsManager().getChatChannel(channelName);
                 if (chatChannel != null) {
                     String perm = chatChannel.permission;
                     if (perm == null) {
                         instance.getLogger().warning("The speak permission for " + chatChannel.name + " is null");
-                        player.sendMessage(Utilities.colorize("&cError with Channel permission please contact admin"));
+                        Utilities.getAudienceProvider().player(player).sendMessage(TextComponent.of("Error with Channel permission please contact admin")
+                              .color(NamedTextColor.RED));
                         return false;
                     }
                     BungeeChat.getPlayerManager().unsubscribeAll(player, true);
@@ -108,35 +115,55 @@ public class SubscribeCommand implements CommandExecutor {
                         player.recalculatePermissions();
                         if (player.hasPermission(perm)) {
                             BungeeChat.getPlayerManager().setDefaultChannel(player, chatChannel.name);
-                            player.sendMessage(Utilities.colorize("&3You have subscribed to &a" + chatChannel.name));
-                            player.sendMessage(Utilities.colorize("&3Your chat will default to this channel."));
-                            player.sendMessage(Utilities.colorize("&3Use &6! &3before your message to send to public chat"));
-                            player.sendMessage(Utilities.colorize("&3Use &6/chat global &3to leave &a" + chatChannel.name + " &3chat"));
+                            TextComponent.Builder builder = TextComponent.builder()
+                                  .content("You have subscribed to ").color(NamedTextColor.DARK_AQUA)
+                                  .append(TextComponent.of(chatChannel.name).color(NamedTextColor.GREEN))
+                                  .append(TextComponent.newline())
+                                  .append("Your chat will default to this channel.")
+                                  .append(TextComponent.newline())
+                                  .append("Use ").append(TextComponent.of("!").color(NamedTextColor.GOLD))
+                                  .append(" before your message to send to public chat")
+                                  .append(TextComponent.newline())
+                                  .append("Use ").append(TextComponent.of("/chat global").color(NamedTextColor.GOLD))
+                                  .append(" to leave ").append(TextComponent.of(chatChannel.name).color(NamedTextColor.GREEN))
+                                  .append(" chat")
+                                  .append(TextComponent.newline());
                             if (instance.getChatChannelsManager().isRolePlay(channelName)) {
-                                if (prefix != null) {
-                                    player.sendMessage(Utilities.colorize("&3Your roleplay prefix is &b" + prefix));
-                                    player.sendMessage(Utilities.colorize("&3Set your roleplay name using &6/chatname <RolePlayName>"));
+                                if (prefix != null && prefix != TextComponent.empty()) {
+                                    builder.append(TextComponent.of("Your roleplay prefix is "))
+                                          .append(prefix).append(TextComponent.newline());
                                 }
+                                builder.append("Set your roleplay name using").append(TextComponent.of("/chatname <RolePlayName>").color(NamedTextColor.GOLD));
                             }
+                            Utilities.getAudienceProvider().player(player).sendMessage(builder.build());
+
                         }
                     } else {
                         if (!instance.getChatChannelsManager().isSubscribable(channelName)) {
-                            player.sendMessage(Utilities.colorize("&cThat channel is either not available or you do not have permission."));
+                            Utilities.getAudienceProvider().player(player).sendMessage(TextComponent.of("That channel is either not available or you do not have permission.").color(NamedTextColor.RED));
                             return false;
                         }
                         if (commandSender.hasPermission(perm)) {
-                            player.sendMessage(Utilities.colorize("&3You are already subscribed to &a" + channelName + " &3 with perm &a" + perm));
+                            Utilities.getAudienceProvider().player(player).sendMessage(
+                                  TextComponent.builder().content("You are already subscribed to ").color(NamedTextColor.DARK_AQUA)
+                                  .append(channelName).color(NamedTextColor.GREEN)
+                                  .append(" with perm ")
+                                  .append(perm).color(NamedTextColor.GREEN).build());
                             BungeeChat.getPlayerManager().setDefaultChannel(player, channelName);
                             return true;
                         }
                     }
                     return true;
                 } else {
-                    player.sendMessage(Utilities.colorize("&cChannel &a" + channelName + " &cdoes not exist."));
+                    Utilities.getAudienceProvider().player(player).sendMessage(
+                          TextComponent.builder().content("Channel ").color(NamedTextColor.DARK_AQUA)
+                                .append(channelName).color(NamedTextColor.RED)
+                                .append(" does not exist.")
+                                .build());
                     return false;
                 }
             } else {
-                player.sendMessage(Utilities.colorize("&cNo Permission for that command"));
+                Utilities.getAudienceProvider().player(player).sendMessage(TextComponent.of("No Permission for that command.").color(NamedTextColor.RED));
                 return false;
             }
         }

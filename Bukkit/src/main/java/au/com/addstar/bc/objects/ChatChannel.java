@@ -47,16 +47,19 @@ package au.com.addstar.bc.objects;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PermissionSetting;
+import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
+import java.util.Set;
+
 public class ChatChannel
 {
 	public String name;
-	public String format;
+	public Component format;
 	public String command;
 	public String permission;
 	public String listenPermission;
@@ -72,7 +75,7 @@ public class ChatChannel
 	{
 		this.name = name;
 		this.command = command;
-		this.format = ChatColor.translateAlternateColorCodes('&', format);
+		this.format = Utilities.parseChatColors(format);
 		if(permission != null && !permission.isEmpty())
 			this.permission = permission;
 		if(permission != null && !listenPerm.isEmpty())
@@ -81,6 +84,8 @@ public class ChatChannel
         isRP = rp != null && rp;
 
 	}
+
+
 	
 	public void registerChannel()
 	{
@@ -108,21 +113,27 @@ public class ChatChannel
 			Bukkit.getPluginManager().removePermission(permission);
 	}
 	
-	public void say(CommandSender sender, String message)
+	public void say(CommandSender sender, Component message)
 	{
 		PermissionSetting level = Formatter.getPermissionLevel(sender);
-		
-		message = BungeeChat.colorize(message, sender);
-		if (ChatColor.stripColor(message).trim().isEmpty())
-			return;
-		
-		String newFormat = Formatter.replaceKeywordsPartial(format, sender, level);
-		String finalMessage = String.format(newFormat, message);
-		
+		Component newFormat = Formatter.replaceKeywords(format, sender, level);
+		Component finalMessage = Formatter.replaceMessage(newFormat, message);
 		if(listenPermission != null)
-			Bukkit.broadcast(finalMessage, listenPermission);
+			Utilities.localBroadCast(finalMessage,listenPermission);
 		else
-			Bukkit.broadcastMessage(finalMessage);
+			Utilities.localBroadCast(finalMessage, (String) null);
 		BungeeChat.mirrorChat(finalMessage, name);
 	}
+	public void say(CommandSender sender, Set<CommandSender> recepients, Component message)
+	{
+		PermissionSetting level = Formatter.getPermissionLevel(sender);
+		Component newFormat = Formatter.replaceKeywords(format, sender, level);
+		Component finalMessage = Formatter.replaceMessage(newFormat, message);
+		if(listenPermission != null)
+			Utilities.localBroadCast(finalMessage,listenPermission,null);
+		else
+			Utilities.localBroadCast(finalMessage,null,null);
+		BungeeChat.mirrorChat(finalMessage, name);
+	}
+
 }

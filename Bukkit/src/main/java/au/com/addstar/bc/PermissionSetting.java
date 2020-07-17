@@ -45,11 +45,13 @@ package au.com.addstar.bc;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.NotNull;
+
 
 public class PermissionSetting implements Comparable<PermissionSetting>
 {
@@ -67,21 +69,25 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 			}
 		}
 		
-		this.format = ChatColor.translateAlternateColorCodes('&', format);
+		this.format = format;
+		this.textComponentFormat = MiniMessage.get().parse(format);
 		this.priority = priority;
-		
-		this.color = "";
-		for(int i = 0; i < color.length(); ++i)
-		{
-			char c = color.charAt(i);
-			ChatColor col = ChatColor.getByChar(c);
-			if(col != null) {
-				this.color += col.toString();
-			}
-		}
+		this.color = color;
+
+
 	}
-	
+
+
+	/**
+	 * Minimessage or Legacy formatted string thats overrides how chat appears when this permissable types a message
+	 */
 	public String format;
+
+	public transient Component textComponentFormat;
+
+	/**
+	 * MiniMessage formatted string for colouring displayname
+	 */
 	public String color;
 	public int priority;
 	public String permission;

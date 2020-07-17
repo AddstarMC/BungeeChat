@@ -46,8 +46,9 @@ package au.com.addstar.bc;
  */
 
 import au.com.addstar.bc.config.ChatChannel;
+import au.com.addstar.bc.util.Utilities;
+import net.kyori.adventure.text.TextComponent;
 import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 
@@ -68,9 +69,9 @@ public class ManagementCommand extends Command
     {
         if(args.length < 1)
         {
-            sender.sendMessage(new TextComponent("Usage: /bungeechat reload"));
-            sender.sendMessage(new TextComponent("Usage: /bungeechat listchannel"));
-            sender.sendMessage(new TextComponent("Usage: /bungeechat playerproperties <player>"));
+            Utilities.audience.audience(sender).sendMessage(TextComponent.of("Usage: /bungeechat reload"));
+            Utilities.audience.audience(sender).sendMessage(TextComponent.of("Usage: /bungeechat listchannel"));
+            Utilities.audience.audience(sender).sendMessage(TextComponent.of("Usage: /bungeechat playerproperties <player>"));
             return;
         }
 
@@ -81,46 +82,46 @@ public class ManagementCommand extends Command
             {
                 mPlugin.applySyncConfig();
                 mPlugin.getSyncManager().sendConfig("bungeechat");
-                sender.sendMessage(new TextComponent("BungeeChat config reloaded"));
+                Utilities.audience.audience(sender).sendMessage(TextComponent.of("BungeeChat config reloaded"));
             }
             else
             {
-                sender.sendMessage(new TextComponent("An error occured while loading the BungeeChat config! Check the Proxy console"));
+                Utilities.audience.audience(sender).sendMessage(TextComponent.of("An error occured while loading the BungeeChat config! Check the Proxy console"));
             }
             break;
             case "listchannel":
-                sender.sendMessage(new TextComponent("List of Channels"));
-                sender.sendMessage(new TextComponent("<Name> : <ListenPermission> : <SpeakPermission> : <command> "));
+                Utilities.audience.audience(sender).sendMessage(TextComponent.of("List of Channels"));
+                Utilities.audience.audience(sender).sendMessage(TextComponent.of("<Name> : <ListenPermission> : <SpeakPermission> : <command> "));
 
                 for(Map.Entry<String, ChatChannel> entry: mPlugin.getChannels().entrySet()) {
-                    sender.sendMessage(new TextComponent(entry.getKey() + " : "+ entry.getValue().listenPermission +
+                    Utilities.audience.audience(sender).sendMessage(TextComponent.of(entry.getKey() + " : "+ entry.getValue().listenPermission +
                             " : "+ entry.getValue().permission +" : "+entry.getValue().command));
 
                 }
-                sender.sendMessage(new TextComponent("------------------"));
+                Utilities.audience.audience(sender).sendMessage(TextComponent.of("------------------"));
             break;
             case "playerproperties":
                 if(args.length < 2){
                     ProxiedPlayer target = BungeeChat.instance.getProxy().getPlayer(args[1]);
                     if(target ==null){
-                        sender.sendMessage(new TextComponent("Player not found: "+ args[1]));
+                        Utilities.audience.audience(sender).sendMessage(TextComponent.of("Player not found: "+ args[1]));
                         return;
                     }
                     Map<String, Object> result =
                             BungeeChat.instance.getSyncManager().getProperties(target);
                     if(result!=null) {
-                        sender.sendMessage(new TextComponent("List of Properties for " + target.getDisplayName()+"("+target.getName()+")" ));
-                        sender.sendMessage(new TextComponent("------------------"));
+                        Utilities.audience.audience(sender).sendMessage(TextComponent.of("List of Properties for " + target.getDisplayName()+"("+target.getName()+")" ));
+                        Utilities.audience.audience(sender).sendMessage(TextComponent.of("------------------"));
                         for (Map.Entry<String, Object> entry : result.entrySet()) {
-                            sender.sendMessage(new TextComponent(entry.getKey()+" : " + entry.getValue().toString() ));
+                            Utilities.audience.audience(sender).sendMessage(TextComponent.of(entry.getKey()+" : " + entry.getValue().toString() ));
                         }
-                        sender.sendMessage(new TextComponent("------------------"));
+                        Utilities.audience.audience(sender).sendMessage(TextComponent.of("------------------"));
                         return;
                     }
                 }
                 break;
             default:
-                sender.sendMessage(new TextComponent("Usage: /bungeechat " +
+                Utilities.audience.audience(sender).sendMessage(TextComponent.of("Usage: /bungeechat " +
                         "reload|listchannel|playerproperties <name>"));
                 break;
         }

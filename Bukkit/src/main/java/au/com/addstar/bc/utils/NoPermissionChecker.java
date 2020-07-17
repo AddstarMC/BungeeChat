@@ -45,9 +45,9 @@ package au.com.addstar.bc.utils;
  * #L%
  */
 
-import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.Permissible;
 
-public class NoPermissionChecker implements ValidChecker<CommandSender>
+public class NoPermissionChecker implements ValidChecker<Permissible>
 {
 	private String mPermisison;
 	
@@ -57,7 +57,7 @@ public class NoPermissionChecker implements ValidChecker<CommandSender>
 	}
 	
 	@Override
-	public boolean isValid( CommandSender object )
+	public boolean isValid( Permissible object )
 	{
 		return !object.hasPermission(mPermisison);
 	}

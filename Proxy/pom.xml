@@ -22,29 +22,12 @@
   <parent>
     <groupId>au.com.addstar</groupId>
     <artifactId>BungeeChat</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <version>1.5.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   
   <artifactId>BungeeChat-Proxy</artifactId>
   <name>BungeeChat-Proxy</name>
-
-  <repositories>
-    <!-- Addstar Snapshot repo (has Yamler, Bungeecord) -->
-    <repository>
-      <id>addstar-snapshot-repo</id>
-      <url>http://maven.addstar.com.au/artifactory/ext-snapshot-local</url>
-      <snapshots>
-      	<enabled>true</enabled>
-      </snapshots>
-    </repository>
-	    
-    <!-- Maven Central -->
-    <repository>
-      <id>maven-central</id>
-      <url>http://repo1.maven.org/maven2/</url>
-    </repository>
-  </repositories>
 
   <dependencies>
     <dependency>
@@ -52,7 +35,6 @@
         <artifactId>waterfall-api</artifactId>
         <version>${bungee.version}</version>
         <scope>provided</scope>
-        <optional>true</optional>
   	</dependency>
   	
   	<dependency>
@@ -60,7 +42,6 @@
 	  <artifactId>Yamler-Core</artifactId>
 	  <version>2.4.0-SNAPSHOT</version>
       <scope>provided</scope>
-	  <optional>true</optional>
 	</dependency>
     
     <dependency>
@@ -68,6 +49,11 @@
       <artifactId>BungeeChat-Core</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.kyori</groupId>
+      <artifactId>adventure-platform-bungeecord</artifactId>
+      <version>4.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 
@@ -84,7 +70,6 @@
       </resource>
     </resources>
     <sourceDirectory>src/main/java</sourceDirectory>
-
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -96,6 +81,13 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.checkerframework:*</exclude>
+                  <exclude>org.jetbrains:annotations</exclude>
+                  <exclude>org.slf4j:*</exclude>
+                </excludes>
+              </artifactSet>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
@@ -104,6 +96,12 @@
                   </excludes>
                 </filter>
               </filters>
+              <relocations>
+                <relocation>
+                  <pattern>net.kyori</pattern>
+                  <shadedPattern>au.com.addstar.bc.lib.kyori</shadedPattern>
+                </relocation>
+              </relocations>
               <minimizeJar>false</minimizeJar>
             </configuration>
           </execution>
@@ -123,4 +121,5 @@
       </plugin>
     </plugins>
   </build>
+
 </project>

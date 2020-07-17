@@ -47,6 +47,7 @@ package au.com.addstar.bc;
 
 import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.objects.ChannelType;
+import au.com.addstar.bc.utils.Utilities;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -57,6 +58,7 @@ import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+
 
 public class PacketHandler implements IPacketHandler
 {
@@ -75,17 +77,13 @@ public class PacketHandler implements IPacketHandler
 	private void handleMirror(MirrorPacket packet)
 	{
 		ChannelType type = ChannelType.from(packet.getChannel());
-		Bukkit.getPluginManager().callEvent(new ChatChannelEvent(packet.getChannel(), type, packet.getMessage()));
+		Bukkit.getPluginManager().callEvent(new ChatChannelEvent(packet.getChannel(), type,packet.getMessage()));
 	}
 	
 	private void handleSend(SendPacket packet)
 	{
-		Player player = Bukkit.getPlayer(packet.getUUID());
-		if(player != null)
-		{
-			Debugger.log("Sending message to %s: '%s'", player.getName(), packet.getMessage());
-			player.sendMessage(packet.getMessage());
-		}
+			Debugger.log("Sending message to %s: '%s'", packet.getUUID(), packet.getMessage());
+			Utilities.getAudienceProvider().player(packet.getUUID()).sendMessage(packet.getMessage());
 	}
 	
 	private void handleUpdateName(UpdateNamePacket packet)

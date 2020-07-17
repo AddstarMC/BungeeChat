@@ -48,6 +48,9 @@ package au.com.addstar.bc.listeners;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
+import au.com.addstar.bc.util.Utilities;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.connection.Server;
 import net.md_5.bungee.api.event.PluginMessageEvent;
@@ -89,7 +92,7 @@ public class BungeeListener implements Listener {
                 if(subChannel.equals("Mirror"))
                 {
                     String chatChannel = input.readUTF();
-                    String message = input.readUTF();
+                    Component message = Utilities.SERIALIZER.deserialize(input.readUTF());
                     
                     plugin.getPacketManager().broadcast(new MirrorPacket(chatChannel, message));
                 }
@@ -109,7 +112,7 @@ public class BungeeListener implements Listener {
                         id = player.getUniqueId();
                     }
     
-                    plugin.getPacketManager().broadcast(new SendPacket(id, input.readUTF()));
+                    plugin.getPacketManager().broadcast(new SendPacket(id, Utilities.SERIALIZER.deserialize(input.readUTF())));
                 }
             }
             catch(IOException e)

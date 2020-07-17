@@ -50,7 +50,10 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
+import au.com.addstar.bc.util.Utilities;
 import net.cubespace.Yamler.Config.YamlConfig;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 
 public class PlayerSettings extends YamlConfig
 {
@@ -70,15 +73,16 @@ public class PlayerSettings extends YamlConfig
 	public UUID lastMsgTarget = null;
 	
 	public long muteTime = 0;
-	
+
+	//A minimessage formatted String that uses %NAME% as a placholder for the playername for the tab.
 	@NoSave
-	public String tabColor = "";
+	public String tabColor = "%NAME%";
 
 	@NoSave
 	public boolean isAFK = false;
 
 	@NoSave
-	public String chatName = "";
+	public Component chatName = TextComponent.empty();
 
 	@NoSave
 	public String defaultChannel = "";
@@ -97,12 +101,12 @@ public class PlayerSettings extends YamlConfig
 		msgEnabled = packet.getMsgToggle();
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
-		chatName = packet.getChatName();
+		chatName = Utilities.SERIALIZER.deserialize(packet.getChatName());
 		defaultChannel = packet.getDefaultChannel();
 	}
 	
 	public PlayerSettingsPacket getUpdatePacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, chatName,defaultChannel);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, Utilities.SERIALIZER.serialize(chatName),defaultChannel);
 	}
 }

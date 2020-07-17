@@ -45,21 +45,30 @@ package au.com.addstar.bc.objects;
  * #L%
  */
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PermissionSetting;
+import com.google.gson.reflect.TypeToken;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.Template;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.PermissionDefault;
 
 import au.com.addstar.bc.config.KeywordHighlighterConfig;
@@ -71,18 +80,28 @@ import au.com.addstar.bc.utils.Utilities;
 public class Formatter
 {
 	public static ArrayList<PermissionSetting> permissionLevels = new ArrayList<>();
-	public static String consoleOverride = null;
+	public static Component consoleOverride = null;
 	
-	private static String mDefaultFormat = "<{DISPLAYNAME}> {MESSAGE}";
-	private static String mRpDefaultFormat = "<{DISPLAYNAME}>({CHATNAME}) {MESSAGE}";
+	private static Component mDefaultFormat = TextComponent.of("<%DISPLAYNAME%> %MESSAGE%");
+	private static Component mRpDefaultFormat = TextComponent.of("<%DISPLAYNAME%>(%CHATNAME%) %MESSAGE%");
 	public static boolean keywordsEnabled;
+
 	public static ArrayList<String> keywordEnabledChannels = new ArrayList<>();
 	public static String keywordPerm;
-	public static HashMap<Pattern, String> keywordPatterns = new HashMap<>();
+	public static HashMap<Pattern, Style> keywordPatterns = new HashMap<>();
 	
-	public static String mPMFormatInbound = "[{DISPLAYNAME} -> Me]: {MESSAGE}";
-	public static String mPMFormatOutbound = "[Me -> {DISPLAYNAME}]: {MESSAGE}";
-	
+	public static Component mPMFormatInbound = TextComponent.of("[%DISPLAYNAME% -> Me]: %MESSAGE%");
+	public static Component mPMFormatOutbound = TextComponent.of("[Me -> %DISPLAYNAME%]: %MESSAGE%");
+
+	private final static Pattern DISPLAYNAME = Pattern.compile("%DISPLAYNAME%");
+	private final static Pattern RAWDISPLAYNAME = Pattern.compile("%RAWDISPLAYNAME%");
+	private final static Pattern NAME = Pattern.compile("%NAME%");
+	private final static Pattern SERVER = Pattern.compile("%SERVER%");
+	private final static Pattern CHATNAME = Pattern.compile("%CHATNAME%");
+	private final static Pattern GROUP = Pattern.compile("%GROUP%");
+	private final static Pattern WORLD = Pattern.compile("%WORLD%");
+	private final static Pattern MESSAGE = Pattern.compile("%MESSAGE%");
+
 	public static void load(SyncConfig config)
 	{
 		if(!config.getString("consolename", "").isEmpty())
@@ -90,8 +109,8 @@ public class Formatter
 		else
 			consoleOverride = null;
 		
-		mPMFormatInbound = Utilities.colorize(config.getString("pm-format-in", "[{DISPLAYNAME} -> Me]: {MESSAGE}"));
-		mPMFormatOutbound = Utilities.colorize(config.getString("pm-format-out", "[Me -> {DISPLAYNAME}]: {MESSAGE}"));
+		mPMFormatInbound = Utilities.colorize(config.getString("pm-format-in", "[%DISPLAYNAME% -> Me]: %MESSAGE%"));
+		mPMFormatOutbound = Utilities.colorize(config.getString("pm-format-out", "[Me -> %DISPLAYNAME%}]: %MESSAGE%"));
 		
 		permissionLevels.clear();
 		
@@ -119,7 +138,14 @@ public class Formatter
 				try
 				{
 					Pattern pattern = Pattern.compile(key, Pattern.CASE_INSENSITIVE);
-					Formatter.keywordPatterns.put(pattern, keywords.getString(key, null));
+					String jsonStyle = keywords.getString(key, null);
+					if(jsonStyle != null) {
+						Type styleToken = TypeToken.get(Style.class).getType();
+						Style style = GsonComponentSerializer.gson().serializer().fromJson(jsonStyle,styleToken);
+						Formatter.keywordPatterns.put(pattern,style);
+					}
+					Formatter.keywordPatterns.put(pattern,null);
+
 				}
 				catch (PatternSyntaxException e)
 				{
@@ -137,7 +163,7 @@ public class Formatter
 		}
 	}
 	
-	public static PermissionSetting getPermissionLevel(CommandSender sender)
+	public static PermissionSetting getPermissionLevel(Permissible sender)
 	{
 		if((sender instanceof ConsoleCommandSender) && !permissionLevels.isEmpty())
 			return permissionLevels.get(permissionLevels.size()-1);
@@ -155,156 +181,156 @@ public class Formatter
 		return level;
 	}
 	
-	public static String getChatFormat(PermissionSetting level)
+	public static Component getChatFormat(PermissionSetting level)
 	{
 		if(level != null)
-			return level.format;
+			return level.textComponentFormat;
 		else
 			return mDefaultFormat;
 	}
 	
-	public static String getChatFormatForUse(Player player, PermissionSetting level)
+	public static Component getChatFormatForUse(Player player, PermissionSetting level)
 	{
 		return replaceKeywords(getChatFormat(level), player, level);
 	}
-	
-	private static String getFmtDisplayName(CommandSender sender, PermissionSetting level)
-	{
-		String displayName = "%1$s"; 
-		
-		if(consoleOverride != null && sender == Bukkit.getConsoleSender())
-			displayName = consoleOverride;
-		
-		if(level == null)
-			return displayName;
-		else
-			return level.color + displayName;
-	}
-	private static String getChatName(CommandSender sender){
-		String chatName;
+
+	private static Component getChatName(CommandSender sender){
 		if(sender instanceof Player) {
-			chatName = BungeeChat.getPlayerManager().getPlayerChatName(sender);
+			return BungeeChat.getPlayerManager().getPlayerChatName(sender);
 		}else if (sender instanceof RemotePlayer){
-			chatName = BungeeChat.getPlayerManager().getPlayerChatName(sender);
+			return BungeeChat.getPlayerManager().getPlayerChatName(sender);
 		}else{
-			return null;
+			return TextComponent.empty();
 		}
-		return chatName;
 	}
 
-	
-	public static String getDisplayName(CommandSender sender, PermissionSetting level)
+	public static Component getDisplayName(CommandSender sender, PermissionSetting level)
 	{
-		String displayName = sender.getName();
-		
+		//todo Possible cache display names to save parsing
+
+		if(consoleOverride != null && sender == Bukkit.getConsoleSender())
+			return consoleOverride;
+		final String displayName;
 		if(sender instanceof Player)
 			displayName = ((Player)sender).getDisplayName();
 		else if(sender instanceof RemotePlayer)
 			displayName = ((RemotePlayer)sender).getDisplayName();
-		
-		if(consoleOverride != null && sender == Bukkit.getConsoleSender())
-			displayName = consoleOverride;
-		
-		if(level == null)
-			return displayName;
 		else
-			return level.color + displayName;
+			displayName = sender.getName();
+		Component result;
+		if(level != null) {
+			result = MiniMessage.get().parse(level.color, Template.of("%NAME%", displayName));
+		} else {
+			result = TextComponent.of(displayName);
+		}
+		return result;
 	}
-	
-	public static String replaceKeywords(String string, CommandSender sender, PermissionSetting level)
+
+	public static Component replaceMessage(Component format,final Component message){
+		return format.replaceText(MESSAGE, builder -> TextComponent.builder().append(message));
+	}
+
+	/**
+	 * Replace the keywords.
+	 *
+	 * @param compo Component
+	 * @param sender Sender
+	 * @param level PermissionLevel
+	 * @return Component
+	 */
+
+	public static Component replaceKeywords(Component compo, CommandSender sender, PermissionSetting level)
 	{
-		string = string.replace("{DISPLAYNAME}", getFmtDisplayName(sender, level));
-		string = string.replace("{RAWDISPLAYNAME}", ChatColor.stripColor(getDisplayName(sender, level)));
-		string = string.replace("{NAME}", sender.getName());
-		string = string.replace("{MESSAGE}", "%2$s");
-		string = string.replace("{SERVER}", BungeeChat.serverName);
-		
-		string = updateIfPlayer(sender,string);
-		
-		return string;
+		Component displayName = getDisplayName(sender,level);
+		Component rawDisplayName = getDisplayName(sender,null);
+		compo = compo.replaceText(DISPLAYNAME, builder -> TextComponent.builder().append(displayName))
+			.replaceText(RAWDISPLAYNAME, builder -> TextComponent.builder().append(rawDisplayName))
+			.replaceText(NAME, builder -> builder.content(sender.getName())) //this should not be used because but its a safety feature
+			.replaceText(SERVER, builder -> TextComponent.builder().content(sender.getServer().getName()));
+		compo = updateIfPlayer(sender,compo);
+		return compo;
 	}
-	
-	public static String replaceKeywordsPartial(String string, CommandSender sender, PermissionSetting level)
+
+	/**
+	 * Replace the keywords.
+	 *
+	 * @param string Component
+	 * @param sender Sender
+	 * @param level PermissionLevel
+	 * @return Component
+	 * @deprecated  Use {@link Formatter#replaceKeywords(Component, CommandSender, PermissionSetting)}
+	 */
+	@Deprecated
+	public static Component replaceKeywordsPartial(Component string, CommandSender sender, PermissionSetting level)
 	{
-		string = string.replace("{DISPLAYNAME}", getDisplayName(sender, level));
-		string = string.replace("{RAWDISPLAYNAME}", ChatColor.stripColor(getDisplayName(sender, level)));
-		string = string.replace("{NAME}", sender.getName());
-		string = string.replace("{MESSAGE}", "%1$s");
-		string = string.replace("{SERVER}", BungeeChat.serverName);
-		
-		string = updateIfPlayer(sender,string);
-		
-		return string;
+		return replaceKeywords(string,sender,level);
 	}
 	
-	public static String updateIfPlayer(CommandSender sender, String message){
-		if(sender instanceof Player) {
+	public static Component updateIfPlayer(CommandSender sender, Component message){
+		if (sender instanceof Player) {
 			Player player = (Player)sender;
-			String prefix = getChatName(player);
-			if(prefix == null){
-				prefix = "";
-			}
-			message = message.replace("{CHATNAME}", prefix );
 			String group = BungeeChat.getPrimaryGroup(player);
-			message = message.replace("{GROUP}", (group != null ? group : "Default"));
-			message = message.replace("{WORLD}", player.getWorld().getName());
+			message = message.replaceText(CHATNAME, b -> TextComponent.builder().append(getChatName(sender)))
+				.replaceText(GROUP, b -> TextComponent.builder().content(group != null ? group : "Default"))
+				.replaceText(WORLD, b -> TextComponent.builder().content(player.getWorld().getName()));
 		}
 		else {
-			message = message.replace("{CHATNAME}", "" );
-			message = message.replace("{GROUP}", "Server");
-			message = message.replace("{WORLD}", "");
+			message = message.replaceText(CHATNAME, b -> TextComponent.builder().content(""))
+				.replaceText(SERVER, b -> TextComponent.builder().content("Server"))
+				.replaceText(WORLD, b -> TextComponent.builder().content(""));
 		}
 		return message;
 	}
 	
-	public static String getPMFormat(CommandSender to, boolean inbound)
+	public static Component getPMFormat(CommandSender to, boolean inbound)
 	{
 		PermissionSetting level = getPermissionLevel(to);
 		
 		if(inbound)
-			return replaceKeywordsPartial(mPMFormatInbound, to, level); 
+			return replaceKeywords(mPMFormatInbound, to, level);
 		else
-			return replaceKeywordsPartial(mPMFormatOutbound, to, level);
+			return replaceKeywords(mPMFormatOutbound, to, level);
 	}
-	
-	public static String highlightKeywords(String message, String defaultColour)
+
+	/**
+	 * Adds Key word highlighting to a message.
+	 * @param message Component
+	 * @return Component or null if no highlighting performed
+	 */
+	public static Component highlightKeywords(Component message){
+		return highlightKeywords(message,null);
+	}
+
+	/**
+	 * Adds Key word highlighting to a message.
+	 * @param message Component
+	 * @param defaultColour TextColor to apply by default.
+	 * @return Component or null if no highlighting performed
+	 */
+	public static Component highlightKeywords(Component message, TextColor defaultColour)
 	{
-		if(defaultColour.isEmpty())
-			defaultColour = ChatColor.RESET.toString();
-		
-		boolean matched = false;
-		for(Entry<Pattern, String> entry : keywordPatterns.entrySet())
-		{
-			Matcher m = entry.getKey().matcher(message);
-			String modified = message;
-			
-			int offset = 0;
-			
-			while(m.find())
-			{
-				String currentColour = ChatColor.getLastColors(message.substring(0, m.end()));
-				if(currentColour.isEmpty())
-					currentColour = defaultColour;
-				
-				modified = modified.substring(0,m.start() + offset) + entry.getValue() + m.group(0) + currentColour + modified.substring(m.end() + offset);
-				offset += entry.getValue().length() + currentColour.length();
-				matched = true;
-			}
-			
-			message = modified;
+		if(defaultColour != null) {
+			message.colorIfAbsent(defaultColour);
 		}
-		
-		if(matched)
+		AtomicBoolean matched = new AtomicBoolean(false);
+		for(Entry<Pattern, Style> entry : keywordPatterns.entrySet()) {
+			message.replaceText(entry.getKey(), builder -> {
+				matched.set(true);
+				return builder.style(entry.getValue());
+			});
+		}
+
+		if(matched.get()) {
 			return message;
-		
+		}
 		return null;
 	}
 	
-	public static void broadcastChat(String message)
+	public static void localBroadcast(Component message)
 	{
 		if(!keywordsEnabled)
-			Utilities.broadcast(message, null, null);
+			Utilities.localBroadCast(message, (String) null);
 		else
-			Utilities.broadcast(message, null, new NoPermissionChecker(keywordPerm));
+			Utilities.localBroadCast(message, null, new NoPermissionChecker(keywordPerm));
 	}
 }

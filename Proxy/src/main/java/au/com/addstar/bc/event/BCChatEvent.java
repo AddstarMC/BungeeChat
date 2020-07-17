@@ -45,14 +45,15 @@ package au.com.addstar.bc.event;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.plugin.Event;
 
 public class BCChatEvent extends Event
 {
 	private String mChannel;
-	private String mMessage;
+	private Component mMessage;
 	
-	public BCChatEvent(String channel, String message)
+	public BCChatEvent(String channel, Component message)
 	{
 		mChannel = channel;
 		mMessage = message;
@@ -63,7 +64,7 @@ public class BCChatEvent extends Event
 		return mChannel;
 	}
 	
-	public String getMessage()
+	public Component getMessage()
 	{
 		return mMessage;
 	}

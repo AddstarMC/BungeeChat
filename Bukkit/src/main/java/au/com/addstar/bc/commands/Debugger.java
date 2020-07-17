@@ -48,12 +48,22 @@ package au.com.addstar.bc.commands;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PlayerManager;
 import au.com.addstar.bc.objects.RemotePlayer;
+import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public class Debugger implements CommandExecutor
 {
@@ -119,66 +129,94 @@ public class Debugger implements CommandExecutor
 		}
 	}
 	
-	public static void logTrue(boolean expression, String message, Object... params)
+	private static void logTrue(boolean expression, String message, Object... params)
 	{
 		if (!expression)
 			log(message, params);
 	}
 	
 	@Override
-	public boolean onCommand( CommandSender sender, Command cmd, String label, String[] args )
+	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args )
 	{
-		if (args.length == 0)
-			return false;
-		
+		if (args.length == 0) {
+            Component c = TextComponent.of("General debug |")
+                    .append(createOnOffButtons(mDebugEnabled,"bchat general"));
+            Component cp = TextComponent.of("Packet debug |")
+                    .append(createOnOffButtons(mPacketDebugEnabled,"bchat packet"));
+            c.append(TextComponent.newline()).append(cp);
+            Utilities.getAudienceProvider().audience(sender).sendMessage(c.append(TextComponent.newline()).append(cp));
+            return true;
+        }
+
 		if (args[0].equalsIgnoreCase("general"))
 		{
-			if (args.length != 2)
-				return false;
-			
-			boolean on = Boolean.parseBoolean(args[1]);
-			setGeneralDebugState(on);
-			
-			sender.sendMessage(ChatColor.GOLD + "General debug is now " + (on ? "on" : "off"));
+			if (args.length == 2) {
+                boolean on = Boolean.parseBoolean(args[1]);
+                setGeneralDebugState(on);
+            }
+			Component c = TextComponent.of("General debug |")
+                    .append(createOnOffButtons(mDebugEnabled,"bchat general"));
+			Utilities.getAudienceProvider().audience(sender).sendMessage(c);
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
 		{
-			if (args.length != 2)
-				return false;
-			
-			boolean on = Boolean.parseBoolean(args[1]);
-			setPacketDebugState(on);
-			
-			sender.sendMessage(ChatColor.GOLD + "Packet debug is now " + (on ? "on" : "off"));
-		}
+			if (args.length == 2) {
+                boolean on = Boolean.parseBoolean(args[1]);
+                setPacketDebugState(on);
+            }
+            Component c = TextComponent.of("Packet debug |")
+                    .append(createOnOffButtons(mPacketDebugEnabled,"bchat packet"));
+            Utilities.getAudienceProvider().audience(sender).sendMessage(c);
+        }
 		else if (args[0].equalsIgnoreCase("player"))
 		{
 			if (args.length != 2)
 				return false;
 			
 			CommandSender player = BungeeChat.getPlayerManager().getPlayerExact(args[1]);
-			Player bplayer = Bukkit.getPlayer(PlayerManager.getUniqueId(player));
-			
-			sender.sendMessage(String.format("State %s: %s", args[1], buildPlayerDebug(player, bplayer)));
+            UUID uuid = PlayerManager.getUniqueId(player);
+			if(uuid != null) {
+                Player bukkitPlayer = Bukkit.getPlayer(uuid);
+                Utilities.getAudienceProvider().audience(sender)
+                        .sendMessage(
+                                TextComponent.of(String.format("State %s: %s", args[1], buildPlayerDebug(player, bukkitPlayer))));
+            } else {
+			    return false;
+            }
+
 		}
 		else if (args[0].equalsIgnoreCase("allplayers"))
 		{
-			sender.sendMessage("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size() + " Bukkit players: " + Bukkit.getOnlinePlayers().size());
+            Utilities.getAudienceProvider().audience(sender)
+                    .sendMessage(
+                            TextComponent.of("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size()
+                                    + " Bukkit players: " + Bukkit.getOnlinePlayers().size()));
 			// Check all tracked players
-			for (CommandSender player : BungeeChat.getPlayerManager().getPlayers())
-				sender.sendMessage(String.format(" %s: %s", player.getName(), buildPlayerDebug(player, Bukkit.getPlayer(PlayerManager.getUniqueId(player)))));
+			for (CommandSender player : BungeeChat.getPlayerManager().getPlayers()) {
+                UUID uuid = PlayerManager.getUniqueId(player);
+                if (uuid != null) {
+                    Utilities.getAudienceProvider().audience(sender)
+                            .sendMessage(
+                                    TextComponent.of(String.format(" %s: %s", player.getName(),
+                                            buildPlayerDebug(player, Bukkit.getPlayer(uuid)))));
+                }
+            }
 			
 			// Look for any that are not tracked
 			for (Player player : Bukkit.getOnlinePlayers())
 			{
 				CommandSender bplayer = BungeeChat.getPlayerManager().getPlayer(player.getUniqueId());
 				if (bplayer == null)
-					sender.sendMessage(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player)));
+                    Utilities.getAudienceProvider().audience(sender)
+                            .sendMessage(
+                                    TextComponent.of(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player))));
 			}
 		}
 		else if (args[0].equalsIgnoreCase("resync"))
 		{
-			sender.sendMessage("Resynching BungeeChat");
+            Utilities.getAudienceProvider().audience(sender)
+                    .sendMessage(
+                            TextComponent.of("Resynching BungeeChat"));
 			BungeeChat.getInstance().requestUpdate();
 		}
 		else
@@ -186,7 +224,42 @@ public class Debugger implements CommandExecutor
 		
 		return true;
 	}
-	
+	private static  Component createOnOffButtons(final boolean status,String baseCommand){
+	    String onText;
+	    String offText;
+	    if(status){
+	         onText = " ON🗸|";
+	         offText = " OFF |";
+        } else {
+             onText = " ON |";
+             offText = " OFF🗸|";
+
+        }
+		Component compOn = TextComponent.of(onText)
+				.style(getStyle(true,status))
+				.hoverEvent(HoverEvent.showText(TextComponent.of("Click to turn on")))
+				.clickEvent(ClickEvent.runCommand(baseCommand+" true"));
+		Component compOff = TextComponent.of(offText).style(getStyle(false,!status))
+				.hoverEvent(HoverEvent.showText(TextComponent.of("Click to turn OFF")))
+				.clickEvent(ClickEvent.runCommand(baseCommand+" false"));
+		return compOn.append(compOff);
+	}
+
+	private static Style getStyle(boolean onbutton, boolean iftrue){
+		TextColor color;
+		if(iftrue)
+			if(onbutton) {
+				color = NamedTextColor.GREEN;
+			} else {
+				color = NamedTextColor.RED;
+			}
+		else {
+			color = NamedTextColor.DARK_GRAY;
+
+		}
+		return Style.builder().color(color).build();
+	}
+
 	private String buildPlayerDebug(CommandSender player, Player local)
 	{
 		StringBuilder builder = new StringBuilder();

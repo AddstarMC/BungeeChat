@@ -28,6 +28,8 @@ import com.google.common.collect.Sets;
 
 import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.GameProfile;
 import net.md_5.bungee.api.ProxyServer;
@@ -57,8 +59,8 @@ public class ColourTabList extends TabListAdapter
 	
 	private int lastPing;
 	private Set<ProxiedPlayer> mVisiblePlayers = Sets.newConcurrentHashSet();
-	private String mHeaderContents;
-	private String mFooterContents;
+	private Component mHeaderContents;
+	private Component mFooterContents;
 	private boolean mHasInited;
 	private SkinData mForcedSkinData;
 	// ==== 1.7 compat ====
@@ -234,12 +236,12 @@ public class ColourTabList extends TabListAdapter
 		if (!isNewTab(getPlayer()))
 			return;
 		
-		String headerString = BungeeChat.instance.getTabHeaderString(getPlayer());
-		String footerString = BungeeChat.instance.getTabFooterString(getPlayer());
+		Component headerString = BungeeChat.instance.getTabHeaderString(getPlayer());
+		Component footerString = BungeeChat.instance.getTabFooterString(getPlayer());
 		
 		if (!headerString.equals(mHeaderContents) || !footerString.equals(mFooterContents))
 		{
-			getPlayer().setTabHeader(TextComponent.fromLegacyText(headerString), TextComponent.fromLegacyText(footerString));
+			getPlayer().setTabHeader(BungeeCordComponentSerializer.get().serialize(headerString), BungeeCordComponentSerializer.get().serialize(footerString));
 			mHeaderContents = headerString;
 			mFooterContents = footerString;
 		}

@@ -67,9 +67,9 @@ public class Config extends YamlConfig
 	public String consoleName = "";
 	
 	@Path("PM-format-in")
-	public String pmFormatIn = "[{DISPLAYNAME}&r -> Me]: {MESSAGE}";
+	public String pmFormatIn = "[%DISPLAYNAME%&r -> Me]: %MESSAGE%";
 	@Path("PM-format-out")
-	public String pmFormatOut = "[Me -> {DISPLAYNAME}&r]: {MESSAGE}";
+	public String pmFormatOut = "[Me -> %DISPLAYNAME%&r]: %MESSAGE%";
 	
 	@Comment("Here you can set up permission based formats")
 	public Map<String, PermissionSetting> permSettings;
@@ -105,12 +105,12 @@ public class Config extends YamlConfig
 	@Comment("Settings for redis so that")
 	public RedisSettings redis = new RedisSettings();
 	
-	@Comments({"Changes what text appears in the tab header. This may contain tokens:", "{PLAYER} The players name", "{DISPLAYNAME} The players display name", "{TABNAME} The players tab display name (includes colour)", "{COUNT} The player count", "{MAX} The max player count", "{SERVER} The servers name"})
+	@Comments({"Changes what text appears in the tab header. This may contain tokens:", "%PLAYER% The players name", "%DISPLAYNAME% The players display name", "%TABNAME% The players tab display name (includes colour)", "%COUNT% The player count", "%MAX% The max player count", "%SERVER% The servers name"})
 	@Path("tab.header")
-	public String tabListHeader = "Welcome";
-	@Comments({"Changes what text appears in the tab footer. This may contain tokens:", "{PLAYER} The players name", "{DISPLAYNAME} The players display name", "{TABNAME} The players tab display name (includes colour)", "{COUNT} The player count", "{MAX} The max player count", "{SERVER} The servers name"})
+	public String tabListHeader = "<gold><bold>Our Server - %SERVER%</bold></gold>";
+	@Comments({"Changes what text appears in the tab footer. Formatting is done with MiniMessage. This may contain tokens:", "%PLAYER% The players name", "%DISPLAYNAME% The players display name", "%TABNAME% The players tab display name (includes colour)", "%COUNT% The player count", "%MAX% The max player count", "%SERVER% The servers name"})
 	@Path("tab.footer")
-	public String tabListFooter = "&l{COUNT}/{MAX}";
+	public String tabListFooter = "<bold>%COUNT%/%MAX%</bold>";
 	
 	@Comments("Place server specific settings here")
 	public HashMap<String, ServerConfig> servers = new HashMap<>();
@@ -123,8 +123,8 @@ public class Config extends YamlConfig
 		permSettings = new LinkedHashMap<>();
 		channels = new LinkedHashMap<>();
 
-		permSettings.put("default", new PermissionSetting("<{DISPLAYNAME}>: {MESSAGE}", "f", 0));
-		channels.put("BCast", new ChatChannel("bcast", "&6[&4Broadcast&6] &a{MESSAGE}", "bungeechat.broadcast", "*"));
+		permSettings.put("default", new PermissionSetting("<%DISPLAYNAME%>: %MESSAGE%", "f", 0));
+		channels.put("BCast", new ChatChannel("bcast", "<gold>[<gradient:red:dark_red>Broadcast</gradient>]</gold> <light_green>%MESSAGE%</light_green>", "bungeechat.broadcast", "*"));
 
 		keywordHighlighter = new KeywordHighlighterSettings();
 

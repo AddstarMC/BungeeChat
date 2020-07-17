@@ -49,8 +49,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import au.com.addstar.bc.objects.ChannelType;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -79,7 +81,7 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 	{
 		if(event.getChannelType() == ChannelType.SocialSpy)
 		{
-			Utilities.broadcast(event.getMessage(), "bungeechat.socialspy", Utilities.SOCIAL_SPY_ENABLED);
+			Utilities.localBroadCast(event.getMessage(), "bungeechat.socialspy", Utilities.SOCIAL_SPY_ENABLED);
 		}
 	}
 	
@@ -90,8 +92,8 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		
 		if(mKeywords.contains(command.toLowerCase()))
 		{
-			String message = event.getPlayer().getName() + ": " + event.getMessage();
-			Utilities.broadcast(message, "bungeechat.socialspy", event.getPlayer(), Utilities.SOCIAL_SPY_ENABLED);
+			Component message = TextComponent.of(event.getPlayer().getName() + ": " + event.getMessage());
+			Utilities.localBroadCast(message, "bungeechat.socialspy", event.getPlayer(), Utilities.SOCIAL_SPY_ENABLED);
 			BungeeChat.mirrorChat(message, ChannelType.SocialSpy.getName());
 		}
 	}
@@ -136,12 +138,13 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		
 		boolean on = isEnabled(sender);
 		on = !on;
-		
+		Component message;
 		if(on)
-			sender.sendMessage(ChatColor.GREEN + "SocialSpy now on");
+			message = TextComponent.of("SocialSpy now on").color(NamedTextColor.GREEN);
 		else
-			sender.sendMessage(ChatColor.GREEN + "SocialSpy now off");
-		
+			message = TextComponent.of("SocialSpy now Off").color(NamedTextColor.RED);
+		Utilities.getAudienceProvider().audience(sender).sendMessage(message);
+
 		setStatus(sender, on);
 		
 		return true;

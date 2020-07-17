@@ -49,15 +49,18 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import au.com.addstar.bc.sync.SyncMethod;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.util.Utilities;
+
 
 public class StandardServMethods implements SyncMethod
 {
@@ -208,7 +211,7 @@ public class StandardServMethods implements SyncMethod
 		{
 			String timeString = Utilities.timeDiffToString(muteLength);
 			
-			String message;
+			Component message;
 			if (player == null)
 			{
 				for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
@@ -223,7 +226,8 @@ public class StandardServMethods implements SyncMethod
 					return false;
 			}
 			
-			message = ChatColor.AQUA + player.getDisplayName() + " and alternate accounts have been muted for " + timeString;
+			message = net.kyori.adventure.text.TextComponent.of(player.getDisplayName() + " and alternate accounts have been muted for " + timeString).color(NamedTextColor.AQUA);
+
 			BungeeChat.instance.getPacketManager().broadcast(new MirrorPacket("~BC", message));
 			BungeeChat.instance.getMuteHandler().setIPMute(address, System.currentTimeMillis() + muteLength);
 		}
@@ -277,7 +281,7 @@ public class StandardServMethods implements SyncMethod
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":kickPlayer()."+player);
-		pplayer.disconnect(TextComponent.fromLegacyText(reason));
+		pplayer.disconnect(BungeeCordComponentSerializer.get().serialize(TextComponent.of(reason)));
 		
 		return null;
 	}

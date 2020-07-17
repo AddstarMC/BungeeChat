@@ -49,6 +49,10 @@ import java.util.List;
 
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.PlayerSettings;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -113,14 +117,18 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		{
 			if(!sender.hasPermission("bungeechat.afk.others"))
 			{
-				sender.sendMessage(ChatColor.RED + "You do not have permission to change other players AFK state.");
+				Utilities.getAudienceProvider().audience(sender)
+					.sendMessage(TextComponent.of("You do not have permission to change other players AFK state.")
+						.color(NamedTextColor.RED));
 				return true;
 			}
 			
 			target = BungeeChat.getPlayerManager().getPlayer(args[0]);
 			if(target == null)
 			{
-				sender.sendMessage(ChatColor.RED + "Unknown player " + args[0]);
+				Utilities.getAudienceProvider().audience(sender)
+					.sendMessage(TextComponent.of("Unknown player " + args[0])
+						.color(NamedTextColor.RED));
 				return true;
 			}
 		}
@@ -149,7 +157,9 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			BungeeChat.getSyncManager().callSyncMethod("bchat:toggleAFK", null, PlayerManager.getUniqueId(target));
 		
 		if(target != sender)
-			sender.sendMessage(ChatColor.GREEN + "Toggled " + target.getName() + "'s AFK state");
+			Utilities.getAudienceProvider().audience(sender)
+				.sendMessage(TextComponent.of("Toggled " + target.getName() + "'s AFK state")
+					.color(NamedTextColor.GREEN));
 		return true;
 	}
 	
@@ -174,12 +184,12 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		}
 	}
 	
-	public void checkAFK(final CommandSender sender, CommandSender player, final String message)
+	public void checkAFK(final CommandSender sender, CommandSender player, Component message)
 	{
 		if(player instanceof Player)
 		{
 			if(isAFK((Player)player))
-				sender.sendMessage(message);
+				Utilities.getAudienceProvider().audience(sender).sendMessage(message);
 		}
 		else
 		{
@@ -195,7 +205,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 				public void onFinished( Boolean data )
 				{
 					if(data)
-						sender.sendMessage(message);
+						Utilities.getAudienceProvider().audience(sender).sendMessage(message);
 				}
 				
 			}, PlayerManager.getUniqueId(player));
@@ -212,15 +222,17 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 	
 	private void onAFKChange(Player player, boolean isAFK)
 	{
-		String message;
+		Component message;
+		Component name = LegacyComponentSerializer.legacySection().deserialize(player.getDisplayName()).color(NamedTextColor.GRAY);
+		TextComponent.Builder builder = TextComponent.builder().content("* ").color(NamedTextColor.GRAY).append(name);
 		if(isAFK)
-			message = ChatColor.GRAY + "* " + ChatColor.stripColor(player.getDisplayName()) + " is now AFK.";
+			builder.append(TextComponent.of(" is now AFK."));
 		else
-			message = ChatColor.GRAY + "* " + ChatColor.stripColor(player.getDisplayName()) + " is no longer AFK.";
-		
+			builder.append(TextComponent.of(" is no longer AFK."));
+		message = builder.build();
 		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 		
-		Utilities.broadcast(message, null, null);
+		Utilities.localBroadCast(message, null,object -> true);
 	}
 	
 	private boolean isAFK(Player player)
@@ -341,9 +353,12 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 					if(time - settings.afkStartTime >= kickTime * 60000)
 					{
 						BungeeChat.getSyncManager().callSyncMethod("bchat:kick", null, player.getUniqueId(), String.format(kickMessage, kickTime));
-						String consoleKickMessage = ChatColor.GOLD + player.getDisplayName() + " has been kicked for idling more than " + kickTime + " minutes";
+
+						Component consoleKickMessage = LegacyComponentSerializer.legacySection().deserialize(player.getDisplayName())
+							.append(TextComponent.of(" has been kicked for idling more than " + kickTime + " minutes"))
+							.colorIfAbsent(NamedTextColor.GOLD);
 						BungeeChat.mirrorChat(consoleKickMessage, ChannelType.AFKKick.getName());
-						Bukkit.broadcast(consoleKickMessage, "bungeechat.afk.kick.notify");
+						Utilities.localBroadCast(consoleKickMessage, "bungeechat.afk.kick.notify",object -> true);
 					}
 				}
 				else if(!settings.isAFK)

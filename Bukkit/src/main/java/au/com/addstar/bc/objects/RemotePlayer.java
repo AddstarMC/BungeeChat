@@ -49,12 +49,18 @@ import java.util.Set;
 import java.util.UUID;
 
 import au.com.addstar.bc.BungeeChat;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 public class RemotePlayer implements CommandSender
 {
@@ -75,10 +81,10 @@ public class RemotePlayer implements CommandSender
 		return name;
 	}
 
-	public String getChatName(){
-		String name = BungeeChat.getPlayerManager().getPlayerChatName(this);
-		if(name == null || name.isEmpty())
-			return mName;
+	public Component getChatName(){
+		Component name = BungeeChat.getPlayerManager().getPlayerChatName(this);
+		if(name == TextComponent.empty())
+			return TextComponent.of(mName);
 		return name;
 	}
 	
@@ -164,8 +170,8 @@ public class RemotePlayer implements CommandSender
 	}
 
 	@Override
-	public Spigot spigot() {
-		return null;
+	public @NotNull Spigot spigot() {
+		return new RemoteSpigot(mId);
 	}
 
 	public UUID getUniqueId()
@@ -179,17 +185,39 @@ public class RemotePlayer implements CommandSender
 		return null;
 	}
 
-	@Override
-	public void sendMessage( String message )
+	public void sendMessage( Component message )
 	{
-		BungeeChat.sendMessage(this, message);
+		BungeeChat.sendRemoteMessage(this, message);
+	}
+
+	@Override
+	public void sendMessage(@NotNull String message) {
+		this.sendMessage(MiniMessage.get().parse(message));
 	}
 
 	@Override
 	public void sendMessage( String[] message )
 	{
 		for(String m : message)
-			BungeeChat.sendMessage(this, m);
+			this.sendMessage(m);
 	}
+	private static class RemoteSpigot extends Spigot{
+		private final UUID uuid;
 
+		RemoteSpigot(UUID uuid) {
+			super();
+			this.uuid = uuid;
+		}
+
+		@Override
+		public void sendMessage(@NotNull BaseComponent component) {
+			BaseComponent[] c = {component};
+			this.sendMessage(c);
+		}
+
+		@Override
+		public void sendMessage(@NotNull BaseComponent... components) {
+			BungeeChat.sendRemoteMessage(uuid,BungeeCordComponentSerializer.get().deserialize(components));
+		}
+	}
 }

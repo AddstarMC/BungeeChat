@@ -45,8 +45,15 @@ package au.com.addstar.bc.util;
  * #L%
  */
 
-public class Utilities
-{
+import au.com.addstar.bc.BungeeChat;
+import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+
+public class Utilities {
+
+	public static BungeeAudiences audience = BungeeAudiences.create(BungeeChat.instance);
+	public static final GsonComponentSerializer SERIALIZER = GsonComponentSerializer.gson();
+
 	public static String timeDiffToString(long time)
 	{
 		StringBuilder builder = new StringBuilder();

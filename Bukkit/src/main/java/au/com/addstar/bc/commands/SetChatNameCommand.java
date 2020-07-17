@@ -46,7 +46,10 @@ package au.com.addstar.bc.commands;
  */
 
 import au.com.addstar.bc.BungeeChat;
-import org.bukkit.ChatColor;
+import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -63,19 +66,22 @@ public class SetChatNameCommand implements CommandExecutor {
         Player player = (Player) commandSender;
         if (args.length == 0) {
                 commandSender.sendMessage("Usage: /chatname <name>");
-                BungeeChat.getPlayerManager().setPlayerChatName(player, "");
-            commandSender.sendMessage(" Your chat name is cleared");
-
+                BungeeChat.getPlayerManager().setPlayerChatName(player, TextComponent.empty());
+                commandSender.sendMessage(" Your chat name is cleared");
         } else {
                 String prefix = args[0];
             if (prefix.length() > 25)
             {
-                commandSender.sendMessage(ChatColor.RED + "Nickname cannot be longer than 25 characters");
+                Utilities.getAudienceProvider()
+                      .audience(commandSender)
+                      .sendMessage(TextComponent.of( "Nickname cannot be longer than 25 characters").color(NamedTextColor.RED));
                 return true;
             }
-                String colorprefix = BungeeChat.colorize(prefix,commandSender);
-                BungeeChat.getPlayerManager().setPlayerChatName(player, colorprefix);
-                commandSender.sendMessage(" Your chat name is set to " + colorprefix);
+                Component colourPrefix = Utilities.colorize(prefix,commandSender);
+                BungeeChat.getPlayerManager().setPlayerChatName(player, colourPrefix);
+            Utilities.getAudienceProvider()
+                  .audience(commandSender)
+                  .sendMessage(TextComponent.of( " Your chat name is set to ").append(colourPrefix));
                 return true;
             }
         }else{

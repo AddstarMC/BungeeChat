@@ -47,6 +47,9 @@ package au.com.addstar.bc.sync.packet;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
+import com.google.gson.Gson;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class MirrorPacket extends Packet
 {
@@ -55,9 +58,9 @@ public class MirrorPacket extends Packet
 	private static final int CHANNEL = 0;
 	private static final int MESSAGE = 1;
 	
-	public MirrorPacket(String channel, String message)
+	public MirrorPacket(String channel, Component message)
 	{
-		super(channel, message);
+		super(channel, GsonComponentSerializer.gson().serialize(message));
 	}
 	
 	protected MirrorPacket(Object... data)
@@ -70,8 +73,8 @@ public class MirrorPacket extends Packet
 		return (String)getData(CHANNEL);
 	}
 	
-	public String getMessage()
+	public Component getMessage()
 	{
-		return (String)getData(MESSAGE);
+		return GsonComponentSerializer.gson().deserialize((String)getData(MESSAGE));
 	}
 }

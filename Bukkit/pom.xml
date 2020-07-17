@@ -23,8 +23,8 @@
   <parent>
     <groupId>au.com.addstar</groupId>
     <artifactId>BungeeChat</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <version>1.5.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>BungeeChat-Bukkit</artifactId>
   <name>BungeeChat-Bukkit</name>
@@ -57,11 +57,16 @@
           </exclusion>
       </exclusions>
     </dependency>
-    
     <dependency>
       <groupId>au.com.addstar</groupId>
       <artifactId>BungeeChat-Core</artifactId>
       <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.kyori</groupId>
+      <artifactId>adventure-platform-bukkit</artifactId>
+      <version>4.0.0-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
@@ -90,8 +95,13 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-
               <minimizeJar>true</minimizeJar>
+              <artifactSet>
+                <excludes>
+                  <exclude>org.checkerframework:*</exclude>
+                  <exclude>org.jetbrains:annotations</exclude>
+                </excludes>
+              </artifactSet>
               <filters>
                   <filter>
                     <artifact>*:*</artifact>
@@ -106,6 +116,12 @@
                   </includes>
                 </filter>
               </filters>
+              <relocations>
+                <relocation>
+                  <pattern>net.kyori</pattern>
+                  <shadedPattern>au.com.addstar.bc.lib.kyori</shadedPattern>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>

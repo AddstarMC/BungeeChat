@@ -45,17 +45,32 @@ package au.com.addstar.bc;
  * #L%
  */
 
-import au.com.addstar.bc.commands.*;
+import au.com.addstar.bc.commands.ChannelListCommand;
+import au.com.addstar.bc.commands.Debugger;
+import au.com.addstar.bc.commands.ListSubscribedCommand;
+import au.com.addstar.bc.commands.MessageCommand;
+import au.com.addstar.bc.commands.MuteHandler;
+import au.com.addstar.bc.commands.NicknameCommand;
+import au.com.addstar.bc.commands.RealnameCommand;
+import au.com.addstar.bc.commands.SetChatNameCommand;
+import au.com.addstar.bc.commands.SkinCommand;
+import au.com.addstar.bc.commands.SubscribeCommand;
 import au.com.addstar.bc.listeners.ChatHandler;
 import au.com.addstar.bc.listeners.SystemMessagesHandler;
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.RemotePlayer;
-import au.com.addstar.bc.sync.packet.*;
+import au.com.addstar.bc.sync.packet.MirrorPacket;
+import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
+import au.com.addstar.bc.sync.packet.SendPacket;
+import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
@@ -76,6 +91,9 @@ import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
 import au.com.addstar.bc.utils.Utilities;
+import org.slf4j.Logger;
+
+import java.util.UUID;
 
 public class BungeeChat extends JavaPlugin implements Listener
 {
@@ -96,8 +114,13 @@ public class BungeeChat extends JavaPlugin implements Listener
 	
 	private SyncManager mSyncManager;
 	private BukkitComLink mComLink;
+
+	public static BukkitAudiences getAudiences() {
+		return audiences;
+	}
+
+	private static BukkitAudiences audiences;
 	public static String forceGlobalprefix = "!";
-	@SuppressWarnings( "unchecked" )
 	@Override
 	public void onEnable()
 	{
@@ -109,7 +132,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 		}
 		else
 			permissionManager = null;
-		
+		audiences = BukkitAudiences.create(this);
 		Bukkit.getPluginManager().registerEvents(new ChatHandler(this), this);
 		
 		Bukkit.getPluginManager().registerEvents(this, this);
@@ -232,19 +255,56 @@ public class BungeeChat extends JavaPlugin implements Listener
 		}
 	}
 
-	public static void sendMessage(RemotePlayer player, String message)
+	public static void sendRemoteMessage(RemotePlayer player, Component message)
 	{
-		getPacketManager().broadcast(new SendPacket(player.getUniqueId(), message));
+		sendRemoteMessage(player.getUniqueId(),message);
 	}
-	
+
+	public static void sendRemoteMessage(UUID uuid, Component message)
+	{
+		getPacketManager().broadcast(new SendPacket(uuid,message));
+	}
+
+	/**
+	 * Please use {@link BungeeChat#mirrorChat(Component, String)}
+	 * @param fullChat String
+	 * @param channel String
+	 * @deprecated  use {@link BungeeChat#mirrorChat(Component, String)}
+	 */
+	@Deprecated
 	public static void mirrorChat(String fullChat, String channel)
+	{
+		mInstance.getLogger().info("Deprecated Message received: " + fullChat + " on channel: " + channel);
+		getPacketManager().broadcast(new MirrorPacket(channel, LegacyComponentSerializer.legacySection().deserialize(fullChat)));
+	}
+
+	/**
+	 * Send a message to a network channel
+	 * @param fullChat Message
+	 * @param channel Channel
+	 */
+	public static void mirrorChat(Component fullChat, String channel)
 	{
 		getPacketManager().broadcast(new MirrorPacket(channel, fullChat));
 	}
-	
-	public static void broadcast(String message)
+
+	/**
+	 * Broadcasts a message that has no formatting to all connected servers
+	 * @param message Component
+	 */
+	@Deprecated
+	public static void networkBroadcast(String message)
 	{
-		Utilities.broadcast(message, null, null);
+		networkBroadcast(TextComponent.of(message));
+	}
+
+	/**
+	 * Broadcasts a message that has no formatting to all connected servers
+	 * @param message String
+	 */
+	public static void networkBroadcast(Component message)
+	{
+		Utilities.localBroadCast(message, null, object -> true);
 		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 	}
 	
@@ -262,51 +322,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 			return null;
 		}
 	}
-	
-	public static String colorize(String message, CommandSender sender)
-	{
-		int pos = -1;
-		char colorChar = '&';
-		
-		StringBuilder buffer = new StringBuilder(message);
-		
-		boolean hasColor = sender.hasPermission("bungeechat.color");
-		boolean hasReset = sender.hasPermission("bungeechat.format.reset");
-		boolean hasBold = sender.hasPermission("bungeechat.format.bold");
-		boolean hasItalic = sender.hasPermission("bungeechat.format.italic");
-		boolean hasUnderline = sender.hasPermission("bungeechat.format.underline");
-		boolean hasStrikethrough = sender.hasPermission("bungeechat.format.strikethrough");
-		boolean hasMagic = sender.hasPermission("bungeechat.format.magic");
-		
-		while((pos = message.indexOf(colorChar, pos+1)) != -1)
-		{
-			if(message.length() > pos + 1)
-			{
-				char atPos = Character.toLowerCase(message.charAt(pos+1));
-				
-				boolean allow = false;
-				if(((atPos >= '0' && atPos <= '9') || (atPos >= 'a' && atPos <= 'f')) && hasColor)
-					allow = true;
-				else if(atPos == 'r' && hasReset)
-					allow = true;
-				else if(atPos == 'l' && hasBold)
-					allow = true;
-				else if(atPos == 'm' && hasStrikethrough)
-					allow = true;
-				else if(atPos == 'n' && hasUnderline)
-					allow = true;
-				else if(atPos == 'o' && hasItalic)
-					allow = true;
-				else if(atPos == 'k' && hasMagic)
-					allow = true;
-				
-				if(allow)
-					buffer.setCharAt(pos, ChatColor.COLOR_CHAR);
-			}
-		}
-		
-		return buffer.toString();
-	}
+
 	
 	public static void setLastMsgTarget(CommandSender sender, CommandSender target)
 	{

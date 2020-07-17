@@ -45,6 +45,9 @@ package au.com.addstar.bc;
  * #L%
  */
 
+import au.com.addstar.bc.util.Utilities;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -75,7 +78,7 @@ public class PacketHandler implements IPacketHandler
 	public void handle( Packet packet, ServerInfo sender )
 	{
 		if(packet instanceof MirrorPacket)
-			handleMirror((MirrorPacket)packet, sender);
+			handleMirror((MirrorPacket)packet);
 		else if(packet instanceof PlayerSettingsPacket)
 			handlePlayerSettings((PlayerSettingsPacket)packet);
 		else if(packet instanceof UpdateNamePacket)
@@ -86,11 +89,12 @@ public class PacketHandler implements IPacketHandler
 			handlePlayerListRequest((PlayerListRequestPacket)packet, sender);
 	}
 	
-	private void handleMirror(MirrorPacket packet, ServerInfo sender)
+	private void handleMirror(MirrorPacket packet)
 	{
-		ProxyServer.getInstance().getPluginManager().callEvent(new BCChatEvent(packet.getChannel(), packet.getMessage()));
+		Component message = packet.getMessage();
+		ProxyServer.getInstance().getPluginManager().callEvent(new BCChatEvent(packet.getChannel(),message));
 		if(!packet.getChannel().startsWith("~"))
-			ProxyServer.getInstance().getConsole().sendMessage(TextComponent.fromLegacyText(packet.getMessage()));
+			Utilities.audience.console().sendMessage(message);
 	}
 	
 	private void handlePlayerSettings(PlayerSettingsPacket packet)

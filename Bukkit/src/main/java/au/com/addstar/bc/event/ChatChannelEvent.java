@@ -45,6 +45,7 @@ package au.com.addstar.bc.event;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -56,9 +57,9 @@ public class  ChatChannelEvent extends Event
 	
 	private String mChannel;
 	private ChannelType mType;
-	private String mMessage;
+	private Component mMessage;
 	
-	public ChatChannelEvent(String channel, ChannelType type, String message)
+	public ChatChannelEvent(String channel, ChannelType type, Component message)
 	{
 		mChannel = channel;
 		mType = type;
@@ -75,7 +76,7 @@ public class  ChatChannelEvent extends Event
 		return mType;
 	}
 	
-	public String getMessage()
+	public Component getMessage()
 	{
 		return mMessage;
 	}

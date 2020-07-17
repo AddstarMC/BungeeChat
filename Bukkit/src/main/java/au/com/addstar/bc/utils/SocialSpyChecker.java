@@ -49,14 +49,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import au.com.addstar.bc.BungeeChat;
+import org.bukkit.permissions.Permissible;
 
-public class SocialSpyChecker implements ValidChecker<CommandSender>
+public class SocialSpyChecker implements ValidChecker<Permissible>
 {
 	@Override
-	public boolean isValid( CommandSender object )
+	public boolean isValid( Permissible object )
 	{
 		if(object instanceof Player)
-			return BungeeChat.isSocialSpyEnabled(object);
+			return BungeeChat.isSocialSpyEnabled((CommandSender) object);
 		
 		return false;
 	}

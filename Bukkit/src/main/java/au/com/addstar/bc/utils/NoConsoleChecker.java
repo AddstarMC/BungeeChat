@@ -47,11 +47,12 @@ package au.com.addstar.bc.utils;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permissible;
 
-public class NoConsoleChecker implements ValidChecker<CommandSender>
+public class NoConsoleChecker implements ValidChecker<Permissible>
 {
 	@Override
-	public boolean isValid( CommandSender object )
+	public boolean isValid( Permissible object )
 	{
 		return object instanceof Player;
 	}

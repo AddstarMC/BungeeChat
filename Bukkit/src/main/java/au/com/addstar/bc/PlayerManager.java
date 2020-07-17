@@ -61,6 +61,9 @@ import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -242,7 +245,7 @@ import java.util.UUID;
 		return matches;
 	}
 
-	public String getPlayerChatName(CommandSender player){
+	public Component getPlayerChatName(CommandSender player){
 		if(player instanceof Player)
 		{
 			PlayerSettings settings = getPlayerSettings(player);
@@ -256,7 +259,7 @@ import java.util.UUID;
 		}
 	}
 
-	public void setPlayerChatName(CommandSender player, String prefix){
+	public void setPlayerChatName(CommandSender player, Component prefix){
 		if(player instanceof Player)
 		{
 			PlayerSettings settings = getPlayerSettings(player);
@@ -416,7 +419,7 @@ import java.util.UUID;
         }
 
         if (message != null)
-            BungeeChat.broadcast(message);
+            BungeeChat.networkBroadcast(LegacyComponentSerializer.legacySection().deserialize(message));
     }
 
     private void onRefresh(PlayerRefreshPacket packet) {
@@ -484,7 +487,7 @@ import java.util.UUID;
         PlayerSettings settings = getPlayerSettings(player);
 
         if (!settings.tabFormat.equals(colour)) {
-            Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat.replace(ChatColor.COLOR_CHAR, '&'), colour.replace(ChatColor.COLOR_CHAR, '&'));
+            Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat, colour);
             settings.tabFormat = colour;
             BungeeChat.getSyncManager().callSyncMethod("bchat:setTabColor", null, player.getUniqueId(), settings.tabFormat);
         }

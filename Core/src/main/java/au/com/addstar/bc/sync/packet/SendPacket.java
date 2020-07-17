@@ -49,6 +49,8 @@ import java.util.UUID;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class SendPacket extends Packet
 {
@@ -57,9 +59,9 @@ public class SendPacket extends Packet
 	private static final int ID = 0;
 	private static final int MESSAGE = 1;
 	
-	public SendPacket(UUID id, String message)
+	public SendPacket(UUID id, Component message)
 	{
-		super(id, message);
+		super(id, GsonComponentSerializer.gson().serialize(message));
 	}
 	
 	protected SendPacket(Object[] data)
@@ -72,8 +74,8 @@ public class SendPacket extends Packet
 		return (UUID)getData(ID);
 	}
 	
-	public String getMessage()
+	public Component getMessage()
 	{
-		return (String)getData(MESSAGE);
+		return GsonComponentSerializer.gson().deserialize((String)getData(MESSAGE));
 	}
 }
