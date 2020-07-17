@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>au.com.addstar</groupId>
     <artifactId>BungeeChat</artifactId>
-    <version>1.3.1-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>BungeeChat</name>
     <organization>
@@ -39,9 +39,9 @@
         <build.number />
         <plugin.version>${project.version}-${build.number}</plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spigot.version>1.15-R0.1-SNAPSHOT</spigot.version>
-        <bungee.version>1.15-SNAPSHOT</bungee.version>
-        <spigot.api.version>1.13</spigot.api.version>
+        <spigot.version>1.16.1-R0.1-SNAPSHOT</spigot.version>
+        <bungee.version>1.16-R0.2-SNAPSHOT</bungee.version>
+        <spigot.api.version>1.16</spigot.api.version>
         <license.dir>${basedir}</license.dir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -52,6 +52,18 @@
         <url>https://github.com/AddstarMC/BungeeChat</url>
         <tag>HEAD</tag>
     </scm>
+    <distributionManagement>
+        <repository>
+            <id>maven.addstar.com.au</id>
+            <name>maven.addstar.com.au-releases</name>
+            <url>https://maven.addstar.com.au/artifactory/ext-release-local</url>
+        </repository>
+        <snapshotRepository>
+            <id>maven.addstar.com.au</id>
+            <name>maven.addstar.com.au-snapshots</name>
+            <url>https://maven.addstar.com.au/artifactory/ext-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
     <developers>
         <developer>
             <id>AddstarMC</id>
