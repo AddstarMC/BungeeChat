@@ -44,6 +44,8 @@
         <bungee.version>1.15-SNAPSHOT</bungee.version>
         <spigot.api.version>1.13</spigot.api.version>
         <license.dir>${basedir}</license.dir>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
     <scm>
         <connection>scm:git:git@github.com:AddstarMC/BungeeChat.git</connection>
@@ -73,20 +75,24 @@
         <!-- Addstar repos -->
         <repository>
             <id>addstar-repo</id>
-            <url>http://maven.addstar.com.au/artifactory/all-release</url>
+            <url>https://maven.addstar.com.au/artifactory/all-release</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
         </repository>
         <repository>
             <id>addstar-snapshot-repo</id>
-            <url>http://maven.addstar.com.au/artifactory/all-snapshot</url>
+            <url>https://maven.addstar.com.au/artifactory/all-snapshot</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
             <releases>
                 <enabled>false</enabled>
             </releases>
+        </repository>
+        <repository>
+            <id>maven-central</id>
+            <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
     <dependencies>
@@ -119,23 +125,13 @@
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <configuration>
-                        <attach>true</attach>
+                        <!--<release>8</release>  JDK9 -->
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-release-plugin</artifactId>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -152,19 +148,12 @@
                     <version>3.2.4</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>2.0.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.7</version>
-                </plugin>
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.2.1</version>
+                    <configuration>
+                        <attach>true</attach>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -177,7 +166,6 @@
                     <version>3.0.0-M1</version>
                 </plugin>
             </plugins>
-
         </pluginManagement>
         <plugins>
             <plugin>
@@ -195,6 +183,11 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.7</version>
             </plugin>
         </plugins>
     </build>
