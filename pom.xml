@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>au.com.addstar</groupId>
     <artifactId>BungeeChat</artifactId>
-    <version>1.3.0</version>
+    <version>1.3.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>BungeeChat</name>
     <organization>
@@ -50,7 +50,7 @@
         <connection>scm:git:git@github.com:AddstarMC/BungeeChat.git</connection>
         <developerConnection>scm:git:git@github.com:AddstarMC/BungeeChat.git</developerConnection>
         <url>https://github.com/AddstarMC/BungeeChat</url>
-        <tag>BungeeChat-1.3.0</tag>
+        <tag>HEAD</tag>
     </scm>
     <developers>
         <developer>
