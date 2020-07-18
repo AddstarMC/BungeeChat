@@ -19,6 +19,7 @@
 
 package au.com.addstar.bc.objects;
 
+import au.com.addstar.bc.utils.Utilities;
 import junit.framework.TestCase;
 
 /**
@@ -28,10 +29,12 @@ import junit.framework.TestCase;
 public class ChatChannelTest extends TestCase {
 
     public void testParseChatColors() {
-        String input = "&r&c[Admin]#54A4B5";
-        String out = ChatChannel.parseChatColors(input);
+        String input = "&r&c[Admin]#54A4B5testcolors add something funcky #5 or more #454545 asadsdas asd#FFF asdasdasd s\n";
+        String out = Utilities.parseChatColors(input);
+        assertEquals("§r§c[Admin]§x§5§4§a§4§b§5testcolors add something funcky #5 or more §x§4§5§4§5§4§5 asadsdas asd§x§0§0§0§f§f§f asdasdasd s\n",out);
         String input2 = "#000000Black#FFFFFFWhite";
-        String out2 = ChatChannel.parseChatColors(input2);
+        String out2 = Utilities.parseChatColors(input2);
+        assertEquals("§x§0§0§0§0§0§0Black§x§f§f§f§f§f§fWhite",out2);
 
     }
 }

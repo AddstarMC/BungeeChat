@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import au.com.addstar.bc.commands.Debugger;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -59,7 +60,9 @@ public class Utilities
 {
 	public static final NoConsoleChecker NO_CONSOLE = new NoConsoleChecker();
 	public static final SocialSpyChecker SOCIAL_SPY_ENABLED = new SocialSpyChecker();
-	
+
+	private static final Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})");
+
 	public static void broadcast(String message, String permission, ValidChecker<CommandSender> checker)
 	{
 		Collection<? extends Permissible> targets;
@@ -435,18 +438,21 @@ public class Utilities
 
 	public static String parseRGBColors(String input){
 		String out = input;
-		while(out.contains("#")){
-			int begin = out.indexOf("#");
-			int end = begin+7;
-			String hexString = out.substring(begin,end);
-			Color color;
-			try {
-				color = Color.decode(hexString);
-			} catch (NumberFormatException e) {
-				color = Color.GRAY;
+		Matcher matcher = HEX_PATTERN.matcher(out);
+		while(matcher.find()) {
+			int groups = matcher.groupCount();
+			for (int i=0;i < groups;i++) {
+				String hex = matcher.group(i);
+				Color color;
+				try {
+					color = Color.decode(hex);
+					out = out.replace(hex, ChatColor.of(color).toString());
+				} catch (NumberFormatException e){
+					out = out.replace(hex, "");
+					Debugger.log("Invalid hex code removed: " +hex+ " from " + input);
+				}
 			}
-			String updated = out.substring(0,begin)+ChatColor.of(color)+out.substring(end);
-			out = updated;
+			matcher = HEX_PATTERN.matcher(out);
 		}
 		return out;
 	}
