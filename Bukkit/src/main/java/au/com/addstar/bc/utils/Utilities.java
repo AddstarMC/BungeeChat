@@ -61,7 +61,7 @@ public class Utilities
 	public static final NoConsoleChecker NO_CONSOLE = new NoConsoleChecker();
 	public static final SocialSpyChecker SOCIAL_SPY_ENABLED = new SocialSpyChecker();
 
-	private static final Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})");
+	private static final Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
 
 	public static void broadcast(String message, String permission, ValidChecker<CommandSender> checker)
 	{
