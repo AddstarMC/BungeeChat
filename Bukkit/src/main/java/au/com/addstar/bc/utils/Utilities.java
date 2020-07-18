@@ -75,6 +75,7 @@ public class Utilities
 		{
 			if(perm instanceof CommandSender && (permission == null || perm.hasPermission(permission)) && (checker == null || checker.isValid((CommandSender)perm)))
 				((CommandSender)perm).sendMessage(message);
+
 		}
 	}
 	
@@ -430,13 +431,13 @@ public class Utilities
 		return buffer.toString();
 	}
 
-	public static String parseChatColors(String input){
+	public static String parseChatColors(final String input){
 		String out;
 		out = ChatColor.translateAlternateColorCodes('&',input);
 		return parseRGBColors(out);
 	}
 
-	public static String parseRGBColors(String input){
+	public static String parseRGBColors(final String input){
 		String out = input;
 		Matcher matcher = HEX_PATTERN.matcher(out);
 		while(matcher.find()) {

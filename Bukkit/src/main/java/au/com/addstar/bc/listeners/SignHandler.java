@@ -17,27 +17,22 @@
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package au.com.addstar.bc.objects;
+package au.com.addstar.bc.listeners;
 
 import au.com.addstar.bc.utils.Utilities;
-import junit.framework.TestCase;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.SignChangeEvent;
 
 /**
- * Created for the AddstarMC Project.
- * Created by Narimm on 17/07/2020.
+ * Created for use for the Add5tar MC Minecraft server
+ * Created by benjamincharlton on 18/07/2020.
  */
-public class ChatChannelTest extends TestCase {
+public class SignHandler {
 
-    public void testParseChatColors() {
-        String input = "&r&c[Admin]#54A4B5testcolors add something funcky #5 or more #454545 asadsdas asd#FFF asdasdasd s\n";
-        String out = Utilities.parseChatColors(input);
-        assertEquals("§r§c[Admin]§x§5§4§a§4§b§5testcolors add something funcky #5 or more §x§4§5§4§5§4§5 asadsdas asd§x§0§0§0§f§f§f asdasdasd s\n",out);
-        String input2 = "#000000Black#FFFFFFWhite";
-        String out2 = Utilities.parseChatColors(input2);
-        assertEquals("§x§0§0§0§0§0§0Black§x§f§f§f§f§f§fWhite",out2);
-        String input3 = "#000Black#FFFWhite";
-        String out3 = Utilities.parseChatColors(input3);
-        assertEquals("§x§0§0§0§0§0§0Black§x§0§0§0§f§f§fWhite",out3);
-
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    private void onSignChange(SignChangeEvent event) {
+        for (int i = 0; i < 4; ++i)
+            event.setLine(i, Utilities.colorize(event.getLine(i), event.getPlayer()));
     }
 }
