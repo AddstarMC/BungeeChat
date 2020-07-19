@@ -35,9 +35,5 @@ public class ChatChannelTest extends TestCase {
         String input2 = "#000000Black#FFFFFFWhite";
         String out2 = Utilities.parseChatColors(input2);
         assertEquals("§x§0§0§0§0§0§0Black§x§f§f§f§f§f§fWhite",out2);
-        String input3 = "#000Black#FFFWhite";
-        String out3 = Utilities.parseChatColors(input3);
-        assertEquals("§x§0§0§0§0§0§0Black§x§0§0§0§f§f§fWhite",out3);
-
     }
 }

@@ -389,7 +389,7 @@ public class Utilities
 		boolean hasRGB = sender.hasPermission("bungeechat.format.rgb");
 		String updatedMessage = message;
 		if(hasRGB) {
-			updatedMessage = parseRGBColors(message);
+			updatedMessage = parseRGBColors(message,Bukkit.getServer().getBukkitVersion());
 		}
 		StringBuilder buffer = new StringBuilder(updatedMessage);
 
@@ -431,12 +431,63 @@ public class Utilities
 		return buffer.toString();
 	}
 
+	public static String parseChatColors(final String input, final String serverVersion) {
+		String out;
+		out = ChatColor.translateAlternateColorCodes('&',input);
+		return parseRGBColors(out,serverVersion);
+	}
+
 	public static String parseChatColors(final String input){
 		String out;
 		out = ChatColor.translateAlternateColorCodes('&',input);
 		return parseRGBColors(out);
 	}
 
+	/**
+	 * Parse RBG based on Server Versions
+	 * @param input String
+	 * @param serverVersion String
+	 * @return String
+	 */
+
+	public static String parseRGBColors(final String input, final String serverVersion){
+		boolean supported = true;
+		VersionUtil.BukkitVersion version = VersionUtil.BukkitVersion.fromString(serverVersion);
+		if(version.isLowerThan(VersionUtil.v1_16_1_R01)) {
+			supported =false;
+		}
+		if(supported) {
+			return parseRGBColors(input);
+		} else {
+			return stripRGBColors(input);
+		}
+	}
+
+	/**
+	 * Remove RGB if not supported.
+	 *
+	 * @param input String
+	 * @return String
+	 */
+	public static String stripRGBColors (final String input) {
+		String out = input;
+		Matcher matcher = HEX_PATTERN.matcher(out);
+		while(matcher.find()) {
+			int groups = matcher.groupCount();
+			for (int i=0;i < groups;i++) {
+				String hex = matcher.group(i);
+				out = out.replace(hex, "");
+			}
+			matcher = HEX_PATTERN.matcher(out);
+		}
+		return out;
+	}
+
+	/**
+	 * Parse RBG to Color
+	 * @param input String
+	 * @return String
+	 */
 	public static String parseRGBColors(final String input){
 		String out = input;
 		Matcher matcher = HEX_PATTERN.matcher(out);

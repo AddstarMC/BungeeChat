@@ -41,7 +41,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spigot.version>1.16.1-R0.1-SNAPSHOT</spigot.version>
         <bungee.version>1.16-R0.2-SNAPSHOT</bungee.version>
-        <spigot.api.version>1.16</spigot.api.version>
+        <spigot.api.version>1.15</spigot.api.version>
         <license.dir>${basedir}</license.dir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
