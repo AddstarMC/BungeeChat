@@ -45,7 +45,7 @@ package au.com.addstar.bc.utils;
  * #L%
  */
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

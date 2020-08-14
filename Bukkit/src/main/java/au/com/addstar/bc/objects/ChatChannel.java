@@ -54,8 +54,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-import java.awt.*;
-
 public class ChatChannel
 {
 	public String name;
@@ -65,6 +63,7 @@ public class ChatChannel
 	public String listenPermission;
 	public boolean subscribe;
 	public boolean isRP;
+	private final static String version = Bukkit.getBukkitVersion();
 
 
 	public ChatChannel(String name, String command, String format, String permission, String listenPerm)
@@ -75,7 +74,7 @@ public class ChatChannel
 	{
 		this.name = name;
 		this.command = command;
-		this.format = Utilities.parseChatColors(format);
+		this.format = Utilities.parseChatColors(format, version);
 		if(permission != null && !permission.isEmpty())
 			this.permission = permission;
 		if(permission != null && !listenPerm.isEmpty())

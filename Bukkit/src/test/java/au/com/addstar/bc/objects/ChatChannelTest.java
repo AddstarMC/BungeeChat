@@ -22,6 +22,8 @@ package au.com.addstar.bc.objects;
 import au.com.addstar.bc.utils.Utilities;
 import junit.framework.TestCase;
 
+import java.awt.Color;
+
 /**
  * Created for the AddstarMC Project.
  * Created by Narimm on 17/07/2020.
@@ -31,9 +33,12 @@ public class ChatChannelTest extends TestCase {
     public void testParseChatColors() {
         String input = "&r&c[Admin]#54A4B5testcolors add something funcky #5 or more #454545 asadsdas asd#FFF asdasdasd s\n";
         String out = Utilities.parseChatColors(input);
-        assertEquals("§r§c[Admin]§x§5§4§a§4§b§5testcolors add something funcky #5 or more §x§4§5§4§5§4§5 asadsdas asd§x§0§0§0§f§f§f asdasdasd s\n",out);
+        assertEquals("§r§c[Admin]§x§5§4§a§4§b§5testcolors add something funcky #5 or more §x§4§5§4§5§4§5 asadsdas asd#FFF asdasdasd s\n",out);
         String input2 = "#000000Black#FFFFFFWhite";
-        String out2 = Utilities.parseChatColors(input2);
+        String out2 = Utilities.parseChatColors(input2,"1.16.2-R0.1-SNAPSHOT");
         assertEquals("§x§0§0§0§0§0§0Black§x§f§f§f§f§f§fWhite",out2);
+        String input3 = "#000000Black #FFFFFFWhite";
+        String out3 = Utilities.parseChatColors(input3,"1.15.2-R0.1-SNAPSHOT");
+        assertEquals("Black White",out3);
     }
 }
