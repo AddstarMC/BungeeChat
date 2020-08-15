@@ -19,31 +19,6 @@
 
 package au.com.addstar.bc;
 
-/*-
- * #%L
- * BungeeChat-Bukkit
- * %%
- * Copyright (C) 2015 - 2020 AddstarMC
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
 
 import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.event.ProxyJoinEvent;
@@ -61,10 +36,14 @@ import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+import au.com.addstar.bc.utils.Utilities;
+import com.google.gson.JsonSyntaxException;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -90,7 +69,7 @@ import java.util.UUID;
 {
 	private BungeeChat plugin;
 	private Map<UUID, CommandSender> mAllProxied = new HashMap<>();
-	private Set<UUID> uuidProxied = new HashSet<>();
+	private Collection<UUID> uuidProxied = new HashSet<>();
 	private Map<UUID, String> mNicknames = new HashMap<>();
 	private Map<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
 	private Map<UUID, String> mDefaultChannel = new HashMap<>();
@@ -408,15 +387,23 @@ import java.util.UUID;
                 case FireEventPacket.EVENT_QUIT: {
                     ProxyLeaveEvent event = new ProxyLeaveEvent(player, message);
                     Bukkit.getPluginManager().callEvent(event);
-
                     message = event.getQuitMessage();
                     break;
                 }
             }
         }
 
-        if (message != null)
-            BungeeChat.broadcast(message);
+        if (message != null) {
+            Component out;
+            try {
+                out = GsonComponentSerializer.gson().deserialize(message);
+            }catch (JsonSyntaxException e){
+                Debugger.log(e.getMessage());
+                out = TextComponent.of(message);
+            }
+
+            Utilities.broadcast(out, null);
+        }
     }
 
     private void onRefresh(PlayerRefreshPacket packet) {
@@ -484,7 +471,7 @@ import java.util.UUID;
         PlayerSettings settings = getPlayerSettings(player);
 
         if (!settings.tabFormat.equals(colour)) {
-            Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat.replace(ChatColor.COLOR_CHAR, '&'), colour.replace(ChatColor.COLOR_CHAR, '&'));
+            Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat, colour);
             settings.tabFormat = colour;
             BungeeChat.getSyncManager().callSyncMethod("bchat:setTabColor", null, player.getUniqueId(), settings.tabFormat);
         }

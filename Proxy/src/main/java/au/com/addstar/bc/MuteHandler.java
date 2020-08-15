@@ -57,10 +57,10 @@ import java.util.concurrent.TimeUnit;
 import au.com.addstar.bc.config.Config;
 import au.com.addstar.bc.sync.packet.GlobalMutePacket;
 import au.com.addstar.bc.util.Utilities;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -98,9 +98,12 @@ public class MuteHandler implements Listener
 			mGMuteTime = 0;
 		
 		if (mGMuteTime == 0)
-			ProxyServer.getInstance().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
+			BungeeChat.audiences.all().sendMessage(TextComponent.of("The global mute has ended").color(NamedTextColor.AQUA));
 		else
-			ProxyServer.getInstance().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "A " + ChatColor.RED + "global" + ChatColor.AQUA + " mute has been started"));
+			BungeeChat.audiences.all().sendMessage(
+				TextComponent.of("A ").color(NamedTextColor.AQUA)
+				.append(TextComponent.of("global").color(NamedTextColor.RED))
+				.append(TextComponent.of(" mute has been started")));
 	}
 	
 	public void setGMute(long endTime)
@@ -109,18 +112,19 @@ public class MuteHandler implements Listener
 			return;
 		
 		if (endTime == 0)
-			ProxyServer.getInstance().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
+			BungeeChat.audiences.all().sendMessage(TextComponent.of("The global mute has ended").color(NamedTextColor.AQUA));
 		else
 		{
-			String message = ChatColor.AQUA + "A " + ChatColor.RED + "global" + ChatColor.AQUA + " mute has been started";
+			Component message = TextComponent.of("A ").color(NamedTextColor.AQUA)
+				.append(TextComponent.of("global").color(NamedTextColor.RED))
+				.append(TextComponent.of(" mute has been started"));
 			
 			if(endTime != Long.MAX_VALUE)
 			{
 				long timeLeft = Math.round((endTime - System.currentTimeMillis()) / 1000) * 1000L;
-				message += " for " + Utilities.timeDiffToString(timeLeft);
+				message = message.append(TextComponent.of(" for " + Utilities.timeDiffToString(timeLeft)));
 			}
-			
-			ProxyServer.getInstance().broadcast(TextComponent.fromLegacyText(message));
+			BungeeChat.audiences.all().sendMessage(message);
 		}
 		
 		mGMuteTime = endTime;
@@ -133,19 +137,17 @@ public class MuteHandler implements Listener
 	
 	public void setIPMute(InetAddress address, long endTime)
 	{
-		BaseComponent[] message;
+		Component message;
 		if (endTime == 0)
 		{
 			if(mIPMuteTime.remove(address) == null)
 				return;
-			
-			message = TextComponent.fromLegacyText(ChatColor.AQUA + "You are no longer muted. You may talk again.");
+			message = TextComponent.of("You are no longer muted. You may talk again.").color(NamedTextColor.AQUA);
 		}
 		else
 		{
 			long timeLeft = Math.round((endTime - System.currentTimeMillis()) / 1000) * 1000L;
-			message = TextComponent.fromLegacyText(ChatColor.AQUA + "You have been muted for " + Utilities.timeDiffToString(timeLeft));
-			
+			message = TextComponent.of("You have been muted for " + Utilities.timeDiffToString(timeLeft)).color(NamedTextColor.AQUA);
 			mIPMuteTime.put(address, endTime);
 		}
 		
@@ -154,7 +156,7 @@ public class MuteHandler implements Listener
 		{
 			if (p.getAddress().getAddress().equals(address))
 			{
-				p.sendMessage(message);
+				BungeeChat.audiences.player(p).sendMessage(message);
 				break;
 			}
 		}
@@ -198,20 +200,19 @@ public class MuteHandler implements Listener
 		boolean global = isGMuted();
 		
 		event.setCancelled(true);
-		if (event.isCommand())
-		{
+		Component message;
+		if (event.isCommand()) {
 			if (global)
-				player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "Everyone is muted. You may not use that command."));
+				message = TextComponent.of("Everyone is muted. You may not use that command.").color(NamedTextColor.AQUA);
 			else
-				player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are muted. You may not use that command."));
-		}
-		else
-		{
+				message = TextComponent.of("You are muted. You may not use that command.").color(NamedTextColor.AQUA);
+		} else {
 			if (global)
-				player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "Everyone is muted. You may not talk."));
+				message = TextComponent.of("Everyone is muted. You may not talk.").color(NamedTextColor.AQUA);
 			else
-				player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are muted. You may not talk."));
+				message = TextComponent.of("You are muted. You may not talk.").color(NamedTextColor.AQUA);
 		}
+		BungeeChat.audiences.player(player).sendMessage(message);
 	}
 	
 	private class UnmuteTimer implements Runnable
@@ -221,7 +222,8 @@ public class MuteHandler implements Listener
 		{
 			if(mGMuteTime > 0 && System.currentTimeMillis() >= mGMuteTime)
 			{
-				ProxyServer.getInstance().broadcast(TextComponent.fromLegacyText(ChatColor.AQUA + "The global mute has ended"));
+				Component message = TextComponent.of("The global mute has ended").color(NamedTextColor.AQUA);
+				BungeeChat.audiences.all().sendMessage(message);
 				mGMuteTime = 0;
 				// TODO: Remove, this is only for legacy 
 				BungeeChat.instance.getPacketManager().broadcast(new GlobalMutePacket(0));
@@ -235,11 +237,11 @@ public class MuteHandler implements Listener
 				if (System.currentTimeMillis() >= entry.getValue())
 				{
 					it.remove();
-					BaseComponent[] message = TextComponent.fromLegacyText(ChatColor.AQUA + "You are no longer muted. You may talk again.");
+					Component message = TextComponent.of("You are no longer muted. You may talk again.").color(NamedTextColor.AQUA);
 					for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
 					{
 						if (player.getAddress().getAddress().equals(entry.getKey()))
-							player.sendMessage(message);
+							BungeeChat.audiences.audience(player).sendMessage(message);
 					}
 				}
 			}
@@ -252,8 +254,8 @@ public class MuteHandler implements Listener
 					settings.muteTime = 0;
 					mPlayerManager.updateSettings(player);
 					mPlayerManager.savePlayer(player);
-					
-					player.sendMessage(TextComponent.fromLegacyText(ChatColor.AQUA + "You are no longer muted. You may talk again."));
+					Component message = TextComponent.of("You are no longer muted. You may talk again.").color(NamedTextColor.AQUA);
+					BungeeChat.audiences.audience(player).sendMessage(message);
 				}
 			}
 		}

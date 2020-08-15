@@ -45,10 +45,11 @@ package au.com.addstar.bc;
  * #L%
  */
 
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.protocol.packet.PlayerListItem;
@@ -108,7 +109,8 @@ public class Debugger extends Command
 	public static void logt(String message, Object... params)
 	{
 		if (mTabDebugEnabled)
-			log0("TabList", String.format(message, params).replace(ChatColor.COLOR_CHAR, '&'));
+			log0("TabList", LegacyComponentSerializer.legacyAmpersand().serialize(
+				LegacyComponentSerializer.legacySection().deserialize(String.format(message, params))));
 	}
 	
 	public static void logTabItem(PlayerListItem packet, ProxiedPlayer to)
@@ -150,7 +152,7 @@ public class Debugger extends Command
 			else
 				message = String.format("%s %s: %s", packet.getAction().name(), name, message);
 			
-			log0("TabList", String.format("to %s: %s", to.getName(), message).replace(ChatColor.COLOR_CHAR, '&'));
+			log0("TabList", LegacyComponentSerializer.legacyAmpersand().serialize(LegacyComponentSerializer.legacySection().deserialize(String.format("to %s: %s", to.getName(), message))));
 		}
 	}
 	
@@ -170,11 +172,19 @@ public class Debugger extends Command
 	{
 		if (!onCommand(sender, args))
 		{
-			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug general <true|false>"));
-			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug packet <true|false>"));
-			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug tab <true|false>"));
-			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug player <name>"));
-			sender.sendMessage(TextComponent.fromLegacyText("/!bchatdebug allplayers"));
+			TextComponent message = TextComponent.builder().color(NamedTextColor.RED)
+				.append(TextComponent.of("/!bchatdebug general <true|false>"))
+				.append(TextComponent.newline())
+				.append(TextComponent.of("/!bchatdebug packet <true|false>"))
+				.append(TextComponent.newline())
+				.append(TextComponent.of("/!bchatdebug tab <true|false>"))
+				.append(TextComponent.newline())
+				.append(TextComponent.of("/!bchatdebug player <name>"))
+				.append(TextComponent.newline())
+				.append(TextComponent.of("/!bchatdebug allplayers"))
+				.append(TextComponent.newline())
+				.build();
+			BungeeChat.audiences.audience(sender).sendMessage(message);
 		}
 	}
 	
@@ -190,8 +200,9 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setGeneralDebugState(on);
-			
-			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "General debug is now " + (on ? "on" : "off")));
+			TextComponent message = TextComponent.of("General debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
+			BungeeChat.audiences.audience(sender).sendMessage(message);
+
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
 		{
@@ -200,8 +211,8 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
-			
-			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "Packet debug is now " + (on ? "on" : "off")));
+			TextComponent message = TextComponent.of( "Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
+			BungeeChat.audiences.audience(sender).sendMessage(message);
 		}
 		else if (args[0].equalsIgnoreCase("tab"))
 		{
@@ -210,8 +221,8 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setTabDebugState(on);
-			
-			sender.sendMessage(TextComponent.fromLegacyText(ChatColor.GOLD + "TabList debug is now " + (on ? "on" : "off")));
+			net.kyori.adventure.text.TextComponent message = net.kyori.adventure.text.TextComponent.of( "TabList debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
+			BungeeChat.audiences.audience(sender).sendMessage(message);
 		}
 		else
 			return false;

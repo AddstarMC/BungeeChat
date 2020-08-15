@@ -72,8 +72,13 @@ import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
+import au.com.addstar.bc.util.Utilities;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -89,6 +94,7 @@ public class BungeeChat extends Plugin
 	
 	public static BungeeChat instance;
 	private String channelName = "bungeechat:chat";
+	public static BungeeAudiences audiences;
 	
 	private SyncManager mSyncManager;
 	private PacketManager mPacketManager;
@@ -102,12 +108,12 @@ public class BungeeChat extends Plugin
 	private SkinLibrary mSkins;
 	
 	private ProxyComLink mComLink;
-	
+
 	@Override
 	public void onEnable()
 	{
 		instance = this;
-		
+		audiences = BungeeAudiences.create(this);
 		File configFile = new File(getDataFolder(), "config.yml");
 		if(!getDataFolder().exists())
 			getDataFolder().mkdirs();
@@ -264,7 +270,8 @@ public class BungeeChat extends Plugin
 				if (line.startsWith("#") || line.trim().isEmpty())
 					continue;
 
-				String regex, colourString;
+				String regex;
+				String colourString;
 
 				if (line.contains(">")) {
 					int pos = line.lastIndexOf('>');
@@ -272,8 +279,9 @@ public class BungeeChat extends Plugin
 					colourString = line.substring(pos + 1).trim();
 				} else {
 					regex = line.trim();
-					colourString = ChatColor.GOLD.toString();
+					colourString = "GOLD";
 				}
+				TextColor  color = Utilities.getColor(colourString);
 
 				try {
 					Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
@@ -281,21 +289,12 @@ public class BungeeChat extends Plugin
 					getLogger().warning("[" + file + "] Invalid regex: \"" + regex + "\" at line " + lineNo);
 					continue;
 				}
-
-				StringBuilder colour = new StringBuilder();
-				for (int i = 0; i < colourString.length(); ++i) {
-					char c = colourString.charAt(i);
-					ChatColor col = ChatColor.getByChar(c);
-
-					if (col == null) {
-						getLogger().warning("[" + file + "] Invalid colour code: \'" + c + "\' at line " + lineNo);
-						continue;
-					}
-
-					colour.append(col.toString());
+				if (color == null) {
+					getLogger().warning("[" + file + "] Invalid colour code: \'" + colourString + "\' at line " + lineNo);
+					continue;
 				}
 
-				mKeywordSettings.put(regex, colour.toString());
+				mKeywordSettings.put(regex,colourString);
 			}
 			reader.close();
 		}
@@ -374,7 +373,7 @@ public class BungeeChat extends Plugin
 			mPacketManager.broadcast(packet);
 	}
 	
-	public String getTabHeaderString(ProxiedPlayer player)
+	public Component getTabHeaderString(ProxiedPlayer player)
 	{
 		String header = null;
 		if (player.getServer() != null)
@@ -386,38 +385,41 @@ public class BungeeChat extends Plugin
 		if (header == null)
 			header = mConfig.tabListHeader;
 		if (header == null)
-			return "";
+			return TextComponent.empty();
 		
-		return formatHeaderString(header, player);
+		return formatString(header, player);
 	}
 	
-	public String getTabFooterString(ProxiedPlayer player)
+	public Component getTabFooterString(ProxiedPlayer player)
 	{
-		String header = null;
+		String footer = null;
 		if (player.getServer() != null)
 		{
 			ServerConfig config = mConfig.servers.get(player.getServer().getInfo().getName()); 
 			if (config != null)
-				header = config.tabListFooter;
+				footer = config.tabListFooter;
 		}
-		if (header == null)
-			header = mConfig.tabListFooter;
-		if (header == null)
-			return "";
+		if (footer == null)
+			footer = mConfig.tabListFooter;
+		if (footer == null)
+			return TextComponent.empty();
 		
-		return formatHeaderString(header, player);
+		return formatString(footer, player);
 	}
-	
-	private String formatHeaderString(String string, ProxiedPlayer player)
+
+	private Component formatString(String string, ProxiedPlayer player)
 	{
 		PlayerSettings settings = mSettings.getSettings(player);
-		return ChatColor.translateAlternateColorCodes('&', string
-				.replace("{PLAYER}", player.getName())
-				.replace("{DISPLAYNAME}", player.getDisplayName())
-				.replace("{TABNAME}", settings.tabColor + player.getDisplayName())
-				.replace("{SERVER}", player.getServer() != null ? player.getServer().getInfo().getName() : "")
-				.replace("{COUNT}", String.valueOf(getPlayerCount(player)))
-				.replace("{MAX}", String.valueOf(player.getPendingConnection().getListener().getMaxPlayers())));
+		TextColor color = Utilities.getColor(settings.tabColor);
+		String nameColoured = MiniMessage.get().serialize(TextComponent.of(player.getDisplayName()).color(color));
+		String out = string
+			.replace("{PLAYER}", player.getName())
+			.replace("{DISPLAYNAME}", player.getDisplayName())
+			.replace("{TABNAME}", nameColoured)
+			.replace("{SERVER}", player.getServer() != null ? player.getServer().getInfo().getName() : "")
+			.replace("{COUNT}", String.valueOf(getPlayerCount(player)))
+			.replace("{MAX}", String.valueOf(player.getPendingConnection().getListener().getMaxPlayers()));
+		return MiniMessage.get().deserialize(out);
 	}
 	
 	private int getPlayerCount(ProxiedPlayer player)

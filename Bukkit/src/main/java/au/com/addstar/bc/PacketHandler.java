@@ -47,6 +47,7 @@ package au.com.addstar.bc;
 
 import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.objects.ChannelType;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

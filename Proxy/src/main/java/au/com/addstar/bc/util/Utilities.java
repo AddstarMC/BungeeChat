@@ -45,6 +45,11 @@ package au.com.addstar.bc.util;
  * #L%
  */
 
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+
 public class Utilities
 {
 	public static String timeDiffToString(long time)
@@ -159,6 +164,25 @@ public class Utilities
 		}
 		
 		return builder.toString();
+	}
+
+	public static TextColor getColor(String color) {
+		TextColor out = NamedTextColor.NAMES.value(color);
+		if(out != null) {
+			return out;
+		}
+		if(color.indexOf('&') > -1 ){
+			TextComponent component = LegacyComponentSerializer.legacyAmpersand()
+				.deserialize(color+" ");
+			return component.color();
+		}
+		try {
+			return TextColor.of(Integer.parseInt(color,16));
+
+		} catch (NumberFormatException e){
+			return null;
+		}
+
 	}
 	
 	public static String timeDiffToStringShort(long time)

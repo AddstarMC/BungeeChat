@@ -50,8 +50,9 @@ import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.PermissionSetting;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -94,9 +95,8 @@ public class ChatHandler implements Listener{
 		PermissionSetting level = Formatter.getPermissionLevel(event.getPlayer());
 		
 		event.setFormat(Formatter.getChatFormatForUse(event.getPlayer(), level));
-		event.setMessage(BungeeChat.colorize(event.getMessage(), event.getPlayer()));
-		
-		if(ChatColor.stripColor(event.getMessage()).trim().isEmpty())
+		event.setMessage(Utilities.colorize(event.getMessage(), event.getPlayer()));
+		if(Utilities.isEmpty(event.getMessage()))
 			event.setCancelled(true);
 	}
 	
@@ -106,7 +106,7 @@ public class ChatHandler implements Listener{
 		if(!Formatter.keywordsEnabled)
 			return;
 		
-		String newMessage = Formatter.highlightKeywords(event.getMessage(), org.bukkit.ChatColor.getLastColors(event.getFormat()));
+		String newMessage = Formatter.highlightKeywords(event.getMessage());
 		if(newMessage == null)
 			return;
 		
@@ -129,7 +129,7 @@ public class ChatHandler implements Listener{
 		if(!Formatter.keywordsEnabled)
 			return;
 		
-		String newMessage = Formatter.highlightKeywords(event.getMessage(), org.bukkit.ChatColor.getLastColors(event.getFormat()));
+		String newMessage = Formatter.highlightKeywords(event.getMessage());
 		if(newMessage == null)
 		{
 			BungeeChat.mirrorChat(message, ChannelType.KeywordHighlight.getName());
@@ -137,7 +137,8 @@ public class ChatHandler implements Listener{
 		else
 		{
 			newMessage = String.format(event.getFormat(), event.getPlayer().getDisplayName(), newMessage);
-			Utilities.broadcast(newMessage, Formatter.keywordPerm, Utilities.NO_CONSOLE);
+			Component c = MiniMessage.get().deserialize(newMessage);
+			Utilities.broadcast(c, Formatter.keywordPerm, Utilities.NO_CONSOLE);
 			BungeeChat.mirrorChat(newMessage, ChannelType.KeywordHighlight.getName());
 		}
 	}
@@ -151,20 +152,26 @@ public class ChatHandler implements Listener{
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onChatChannel(ChatChannelEvent event)
 	{
+		Component c;
 		switch(event.getChannelType())
 		{
 		case Default:
-			Formatter.broadcastChat(event.getMessage());
+			c = MiniMessage.get().deserialize(event.getMessage());
+			Formatter.broadcastChat(c);
 			break;
 		case KeywordHighlight:
-			if(Formatter.keywordsEnabled)
-				Bukkit.broadcast(event.getMessage(), Formatter.keywordPerm);
+			if (Formatter.keywordsEnabled) {
+				c = MiniMessage.get().deserialize(event.getMessage());
+				Utilities.broadcast(c,Formatter.keywordPerm);
+			}
 			break;
 		case Broadcast:
-			Utilities.broadcast(event.getMessage(), null, null);
+			c = MiniMessage.get().deserialize(event.getMessage());
+			Utilities.broadcast(c,null);
 			break;
 		case AFKKick:
-			Bukkit.broadcast(event.getMessage(), "bungeechat.afk.kick.notify");
+			c = MiniMessage.get().deserialize(event.getMessage());
+			Utilities.broadcast(c,"bungeechat.afk.kick.notify");
 			break;
 		default:
 			break;

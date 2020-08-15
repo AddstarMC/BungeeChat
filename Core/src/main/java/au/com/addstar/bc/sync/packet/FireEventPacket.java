@@ -45,6 +45,7 @@ package au.com.addstar.bc.sync.packet;
  * #L%
  */
 
+import java.awt.Component;
 import java.util.UUID;
 
 import au.com.addstar.bc.sync.Packet;
@@ -76,9 +77,14 @@ public class FireEventPacket extends Packet
 	{
 		return (UUID)getData(1);
 	}
-	
+
+	/**
+	 * GsonSerialized {@link net.kyori.adventure.text.TextComponent}
+	 * @return
+	 */
 	public String getMessage()
 	{
 		return (String)getData(2);
 	}
+
 }

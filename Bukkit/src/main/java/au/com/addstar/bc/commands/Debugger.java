@@ -48,12 +48,15 @@ package au.com.addstar.bc.commands;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PlayerManager;
 import au.com.addstar.bc.objects.RemotePlayer;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import javax.xml.soap.Text;
 
 public class Debugger implements CommandExecutor
 {
@@ -138,8 +141,8 @@ public class Debugger implements CommandExecutor
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setGeneralDebugState(on);
-			
-			sender.sendMessage(ChatColor.GOLD + "General debug is now " + (on ? "on" : "off"));
+			BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("General debug is now " + (on ? "on" : "off"))
+				.color(NamedTextColor.GOLD));
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
 		{
@@ -148,8 +151,8 @@ public class Debugger implements CommandExecutor
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
-			
-			sender.sendMessage(ChatColor.GOLD + "Packet debug is now " + (on ? "on" : "off"));
+			BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("Packet debug is now " + (on ? "on" : "off"))
+				.color(NamedTextColor.GOLD));
 		}
 		else if (args[0].equalsIgnoreCase("player"))
 		{
@@ -158,22 +161,24 @@ public class Debugger implements CommandExecutor
 			
 			CommandSender player = BungeeChat.getPlayerManager().getPlayerExact(args[1]);
 			Player bplayer = Bukkit.getPlayer(PlayerManager.getUniqueId(player));
-			
-			sender.sendMessage(String.format("State %s: %s", args[1], buildPlayerDebug(player, bplayer)));
+			BungeeChat.audiences.audience(sender).sendMessage(
+				TextComponent.of(String.format("State %s: %s", args[1], buildPlayerDebug(player, bplayer))));
 		}
 		else if (args[0].equalsIgnoreCase("allplayers"))
 		{
 			sender.sendMessage("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size() + " Bukkit players: " + Bukkit.getOnlinePlayers().size());
 			// Check all tracked players
 			for (CommandSender player : BungeeChat.getPlayerManager().getPlayers())
-				sender.sendMessage(String.format(" %s: %s", player.getName(), buildPlayerDebug(player, Bukkit.getPlayer(PlayerManager.getUniqueId(player)))));
+				BungeeChat.audiences.audience(sender).sendMessage(
+					TextComponent.of(String.format(" %s: %s", player.getName(), buildPlayerDebug(player, Bukkit.getPlayer(PlayerManager.getUniqueId(player))))));
 			
 			// Look for any that are not tracked
 			for (Player player : Bukkit.getOnlinePlayers())
 			{
 				CommandSender bplayer = BungeeChat.getPlayerManager().getPlayer(player.getUniqueId());
 				if (bplayer == null)
-					sender.sendMessage(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player)));
+					BungeeChat.audiences.audience(sender).sendMessage(
+						TextComponent.of(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player))));
 			}
 		}
 		else if (args[0].equalsIgnoreCase("resync"))

@@ -31,14 +31,11 @@ import java.awt.Color;
 public class ChatChannelTest extends TestCase {
 
     public void testParseChatColors() {
-        String input = "&r&c[Admin]#54A4B5testcolors add something funcky #5 or more #454545 asadsdas asd#FFF asdasdasd s\n";
+        String input = "<red>[Admin]</red><#54A4B5>testcolors</#54A4B5> add something funcky #5 or more <#454545>asadsdas</#454545> asd#FFF asdasdasd s\n";
         String out = Utilities.parseChatColors(input);
-        assertEquals("§r§c[Admin]§x§5§4§a§4§b§5testcolors add something funcky #5 or more §x§4§5§4§5§4§5 asadsdas asd#FFF asdasdasd s\n",out);
-        String input2 = "#000000Black#FFFFFFWhite";
-        String out2 = Utilities.parseChatColors(input2,"1.16.2-R0.1-SNAPSHOT");
-        assertEquals("§x§0§0§0§0§0§0Black§x§f§f§f§f§f§fWhite",out2);
-        String input3 = "#000000Black #FFFFFFWhite";
-        String out3 = Utilities.parseChatColors(input3,"1.15.2-R0.1-SNAPSHOT");
-        assertEquals("Black White",out3);
+        assertEquals("<red>[Admin]<color:#54a4b5>testcolors</color:#54a4b5> add something funcky #5 or more <color:#454545>asadsdas</color:#454545> asd#FFF asdasdasd s\n",out);
+        String input2 = "<#000000>Black <#FFFFFF>White";
+        String out2 = Utilities.parseChatColors(input2);
+        assertEquals("<black>Black </black>White",out2);
     }
 }

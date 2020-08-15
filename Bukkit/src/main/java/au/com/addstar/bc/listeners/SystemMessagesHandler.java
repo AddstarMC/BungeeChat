@@ -45,8 +45,8 @@ package au.com.addstar.bc.listeners;
  * #L%
  */
 
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -79,7 +79,7 @@ public class SystemMessagesHandler implements Listener
 	@EventHandler(priority=EventPriority.LOWEST)
 	private void onPlayerKicked(PlayerKickEvent event)
 	{
-		event.setLeaveMessage(null);
+		event.setLeaveMessage("");
 	}
 	
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
@@ -88,13 +88,14 @@ public class SystemMessagesHandler implements Listener
 		String message = event.getDeathMessage();
 		if(message == null)
 			return;
-
-		message = message.replace(event.getEntity().getName(), ChatColor.stripColor(event.getEntity().getDisplayName()));
+		String displayName = LegacyComponentSerializer.legacySection().deserialize(event.getEntity().getDisplayName()).content();
+		message = message.replace(event.getEntity().getName(), displayName);
 		
 		if(event.getEntity().getKiller() != null)
 		{
 			Player killer = event.getEntity().getKiller();
-			message = message.replace(killer.getName(), ChatColor.stripColor(killer.getDisplayName()));
+			String killDisplayName = LegacyComponentSerializer.legacySection().deserialize(killer.getDisplayName()).content();
+			message = message.replace(killer.getName(), killDisplayName);
 		}
 		
 		event.setDeathMessage(message);

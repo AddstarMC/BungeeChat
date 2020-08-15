@@ -46,7 +46,11 @@ package au.com.addstar.bc.commands;
  */
 
 import au.com.addstar.bc.BungeeChat;
-import net.md_5.bungee.api.ChatColor;
+import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -64,18 +68,22 @@ public class SetChatNameCommand implements CommandExecutor {
         if (args.length == 0) {
                 commandSender.sendMessage("Usage: /chatname <name>");
                 BungeeChat.getPlayerManager().setPlayerChatName(player, "");
-            commandSender.sendMessage(" Your chat name is cleared");
+            BungeeChat.audiences.audience(commandSender).sendMessage(
+                  TextComponent.of(" Your chat name is cleared"));
 
         } else {
-                String prefix = args[0];
-            if (prefix.length() > 25)
+            String prefix = args[0];
+            Component colorPrefix = Utilities.colorizeComponent(prefix,commandSender);
+            String plain = MiniMessage.get().stripTokens(MiniMessage.get().serialize(colorPrefix));
+            if (plain.length() > 25)
             {
-                commandSender.sendMessage(ChatColor.RED + "Nickname cannot be longer than 25 characters");
+                BungeeChat.audiences.audience(commandSender).sendMessage(
+                      TextComponent.of("Nickname cannot be longer than 25 characters").color(NamedTextColor.RED));
                 return true;
             }
-                String colorprefix = BungeeChat.colorize(prefix,commandSender);
-                BungeeChat.getPlayerManager().setPlayerChatName(player, colorprefix);
-                commandSender.sendMessage(" Your chat name is set to " + colorprefix);
+            BungeeChat.getPlayerManager().setPlayerChatName(player, MiniMessage.get().serialize(colorPrefix));
+            Component message = TextComponent.of(" Your chat name is set to ").append(colorPrefix);
+            BungeeChat.audiences.audience(commandSender).sendMessage(message);
                 return true;
             }
         }else{

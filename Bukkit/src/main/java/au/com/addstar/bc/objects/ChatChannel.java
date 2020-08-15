@@ -48,7 +48,8 @@ package au.com.addstar.bc.objects;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PermissionSetting;
 import au.com.addstar.bc.utils.Utilities;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
@@ -63,8 +64,6 @@ public class ChatChannel
 	public String listenPermission;
 	public boolean subscribe;
 	public boolean isRP;
-	private final static String version = Bukkit.getBukkitVersion();
-
 
 	public ChatChannel(String name, String command, String format, String permission, String listenPerm)
 	{
@@ -74,7 +73,7 @@ public class ChatChannel
 	{
 		this.name = name;
 		this.command = command;
-		this.format = Utilities.parseChatColors(format, version);
+		this.format = Utilities.parseChatColors(format);
 		if(permission != null && !permission.isEmpty())
 			this.permission = permission;
 		if(permission != null && !listenPerm.isEmpty())
@@ -115,18 +114,13 @@ public class ChatChannel
 	public void say(CommandSender sender, String message)
 	{
 		PermissionSetting level = Formatter.getPermissionLevel(sender);
-		
 		message = Utilities.colorize(message, sender);
-		if (ChatColor.stripColor(message).trim().isEmpty())
+		if (Utilities.isEmpty(message))
 			return;
-		
 		String newFormat = Formatter.replaceKeywordsPartial(format, sender, level);
 		String finalMessage = String.format(newFormat, message);
-		
-		if(listenPermission != null)
-			Bukkit.broadcast(finalMessage, listenPermission);
-		else
-			Bukkit.broadcastMessage(finalMessage);
+		Component component = MiniMessage.get().parse(finalMessage);
+		Utilities.broadcast(component,listenPermission);
 		BungeeChat.mirrorChat(finalMessage, name);
 	}
 }

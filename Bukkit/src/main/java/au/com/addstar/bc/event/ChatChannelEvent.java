@@ -57,12 +57,13 @@ public class  ChatChannelEvent extends Event
 	private String mChannel;
 	private ChannelType mType;
 	private String mMessage;
-	
+
 	public ChatChannelEvent(String channel, ChannelType type, String message)
 	{
 		mChannel = channel;
 		mType = type;
 		mMessage = message;
+
 	}
 	
 	public String getChannelName()

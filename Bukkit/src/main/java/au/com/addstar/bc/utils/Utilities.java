@@ -45,13 +45,21 @@ package au.com.addstar.bc.utils;
  * #L%
  */
 
-import java.awt.Color;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import au.com.addstar.bc.commands.Debugger;
-import net.md_5.bungee.api.ChatColor;
+import au.com.addstar.bc.BungeeChat;
+import net.kyori.adventure.platform.AudienceProvider;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permissible;
@@ -60,52 +68,128 @@ public class Utilities
 {
 	public static final NoConsoleChecker NO_CONSOLE = new NoConsoleChecker();
 	public static final SocialSpyChecker SOCIAL_SPY_ENABLED = new SocialSpyChecker();
-
 	private static final Pattern HEX_PATTERN = Pattern.compile("#([A-Fa-f0-9]{6})");
 
-	public static void broadcast(String message, String permission, ValidChecker<CommandSender> checker)
-	{
+	public static void broadcast(Component component, String permission, ValidChecker<CommandSender> checker , AudienceProvider audience) {
 		Collection<? extends Permissible> targets;
-		if(permission != null)
+		if(permission != null) {
 			targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
-		else
+		} else {
 			targets = Bukkit.getOnlinePlayers();
-
+		}
 		for(Permissible perm : targets)
 		{
-			if(perm instanceof CommandSender && (permission == null || perm.hasPermission(permission)) && (checker == null || checker.isValid((CommandSender)perm)))
-				((CommandSender)perm).sendMessage(message);
-
+			sendPermissionMessageToAudience(component, permission, checker, audience, perm);
 		}
 	}
-	
-	public static void broadcast(String message, String permission, CommandSender except, ValidChecker<CommandSender> checker)
+
+	private static void sendPermissionMessageToAudience(Component component, String permission, ValidChecker<CommandSender> checker, AudienceProvider audience, Permissible perm) {
+		if(perm instanceof CommandSender && (permission == null || perm.hasPermission(permission)) && (checker == null || checker.isValid((CommandSender)perm))) {
+			if(audience instanceof BukkitAudiences) {
+				((BukkitAudiences)audience).audience((CommandSender) perm).sendMessage(component);
+			} else {
+				audience.console().sendMessage(component);
+			}
+		}
+	}
+
+	public static void broadcast(Component component, String permission, ValidChecker<CommandSender> checker) {
+		broadcast(component,permission,checker,BungeeChat.audiences);
+	}
+
+	@Deprecated
+	public static void broadcast(String message, String permission, ValidChecker<CommandSender> checker) {
+		broadcast(TextComponent.of(message),permission,checker);
+	}
+
+	public static void broadcast(Component component, String permission, CommandSender except, ValidChecker<CommandSender> checker) {
+		broadcast(component,permission,except,checker,BungeeChat.audiences);
+	}
+
+
+	public static void broadcast(Component component, String permission, CommandSender except, ValidChecker<CommandSender> checker, AudienceProvider audienceProvider)
 	{
 		Collection<? extends Permissible> targets;
 		if(permission != null)
 			targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
 		else
 			targets = Bukkit.getOnlinePlayers();
-		
+
 		for(Permissible perm : targets)
 		{
-			if(perm == except)
+			if(perm == except) {
 				continue;
-			
-			if(perm instanceof CommandSender && (permission == null || perm.hasPermission(permission)) && (checker == null || checker.isValid((CommandSender)perm)))
-				((CommandSender)perm).sendMessage(message);
+			}
+			sendPermissionMessageToAudience(component, permission, checker, audienceProvider, perm);
 		}
+	}
+
+	@Deprecated
+	public static void broadcast(String message, String permission, CommandSender except, ValidChecker<CommandSender> checker) {
+		broadcast(TextComponent.of(message),permission,except,checker);
+	}
+
+	public static void broadcast(Component component, String permission) {
+		broadcast(component,permission,null);
+	}
+
+	@Deprecated
+	public static void broadcast(String message, String permission) {
+		broadcast(TextComponent.of(message),permission,null);
 	}
 
 	/**
-	 * Converts color place-holders.
+	 * Converts color place-holders to {@link MiniMessage} formatted colours as a string
 	 *
 	 * @param text text to color
 	 * @return A String
 	 */
 	public static String colorize(String text) {
-		text = parseRGBColors(text);
-		return ChatColor.translateAlternateColorCodes('&', text);
+		if(text.indexOf('&') > -1) {
+			return MiniMessage.get().serialize(LegacyComponentSerializer.legacyAmpersand().deserialize(text));
+		} else {
+			return text;
+		}
+	}
+
+	public static Component colorizeAsComponent(String text) {
+		if(text.indexOf('&') > -1) {
+			return LegacyComponentSerializer.legacyAmpersand().deserialize(text);
+		} else {
+			return MiniMessage.get().deserialize(text);
+		}
+	}
+
+	/**
+	 * Parses the text in Minimessage format and makes sure it has atleast some content.
+	 * @param text
+	 * @return boolean true if empty
+	 */
+	public static boolean isEmpty(String text) {
+		Component c = MiniMessage.get().parse(text);
+		return isEmpty(c);
+	}
+
+	public static boolean isEmpty(Component text) {
+		return !componentHasContent(text);
+	}
+	private static boolean componentHasContent(Component c){
+		if(c instanceof TextComponent){
+			if(!((TextComponent) c).content().isEmpty()) {
+				return true;
+			}
+		}
+		if(c instanceof TranslatableComponent) {
+			if (!((TranslatableComponent) c).key().isEmpty()) {
+				return true;
+			}
+		}
+		for(Component child:c.children()){
+			if(componentHasContent(child)){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static long parseDateDiff(String dateDiff)
@@ -382,130 +466,82 @@ public class Utilities
 		return builder.toString();
 	}
 
-	public static String colorize(String message, CommandSender sender)
-	{
-		int pos = -1;
-		char colorChar = '&';
-		boolean hasRGB = sender.hasPermission("bungeechat.format.rgb");
-		String updatedMessage = message;
-		if(hasRGB) {
-			updatedMessage = parseRGBColors(message,Bukkit.getServer().getBukkitVersion());
-		}
-		StringBuilder buffer = new StringBuilder(updatedMessage);
-
-		boolean hasColor = sender.hasPermission("bungeechat.color");
-		boolean hasReset = sender.hasPermission("bungeechat.format.reset");
+	/**
+	 * Removes Styling if a sender does NOT have correct permissions.
+	 * @param component String {@link MiniMessage} formatted
+	 * @param sender CommandSender;
+	 * @return String cleaned of all disallowed styling.
+	 */
+	private static Component filterStyles(Component component, CommandSender sender){
 		boolean hasBold = sender.hasPermission("bungeechat.format.bold");
 		boolean hasItalic = sender.hasPermission("bungeechat.format.italic");
 		boolean hasUnderline = sender.hasPermission("bungeechat.format.underline");
 		boolean hasStrikethrough = sender.hasPermission("bungeechat.format.strikethrough");
 		boolean hasMagic = sender.hasPermission("bungeechat.format.magic");
+		boolean hasColor = sender.hasPermission("bungeechat.color");
+		checkComponentColor(component,hasColor);
+		checkComponent(component,TextDecoration.BOLD,hasBold);
+		checkComponent(component,TextDecoration.ITALIC,hasItalic);
+		checkComponent(component,TextDecoration.UNDERLINED,hasUnderline);
+		checkComponent(component,TextDecoration.STRIKETHROUGH,hasStrikethrough);
+		checkComponent(component,TextDecoration.OBFUSCATED,hasMagic);
+		return  component;
 
-		while((pos = updatedMessage.indexOf(colorChar, pos+1)) != -1)
-		{
-			if(updatedMessage.length() > pos + 1)
-			{
-				char atPos = Character.toLowerCase(updatedMessage.charAt(pos+1));
-
-				boolean allow = false;
-				if(((atPos >= '0' && atPos <= '9') || (atPos >= 'a' && atPos <= 'f')) && hasColor)
-					allow = true;
-				else if(atPos == 'r' && hasReset)
-					allow = true;
-				else if(atPos == 'l' && hasBold)
-					allow = true;
-				else if(atPos == 'm' && hasStrikethrough)
-					allow = true;
-				else if(atPos == 'n' && hasUnderline)
-					allow = true;
-				else if(atPos == 'o' && hasItalic)
-					allow = true;
-				else if(atPos == 'k' && hasMagic)
-					allow = true;
-
-				if(allow)
-					buffer.setCharAt(pos, ChatColor.COLOR_CHAR);
-			}
-		}
-
-		return buffer.toString();
 	}
 
-	public static String parseChatColors(final String input, final String serverVersion) {
-		String out;
-		out = ChatColor.translateAlternateColorCodes('&',input);
-		return parseRGBColors(out,serverVersion);
+	private static  void checkComponentColor(Component component, boolean allowed) {
+		if(component.color() != null && !allowed) {
+			component.color(null);
+		}
+		for(Component c: component.children()) {
+			checkComponentColor(c,allowed);
+		}
+	}
+
+	private static void checkComponent(Component component, TextDecoration decoration, boolean allowed) {
+		if(component.hasDecoration(decoration) && !allowed && component.decoration(decoration).equals(TextDecoration.State.TRUE)) {
+			component.decoration(decoration, TextDecoration.State.FALSE);
+		}
+		for (Component c:component.children()){
+			checkComponent(c,decoration,allowed);
+		}
+	}
+
+	public static Component colorizeComponent(String message, CommandSender sender)
+	{
+		Component c = colorizeAsComponent(message);
+		return filterStyles(c,sender);
+	}
+
+	public static String colorize(String message, CommandSender sender)
+	{
+		Component c = colorizeAsComponent(message);
+		return MiniMessage.get().serialize(filterStyles(c,sender));
 	}
 
 	public static String parseChatColors(final String input){
-		String out;
-		out = ChatColor.translateAlternateColorCodes('&',input);
-		return parseRGBColors(out);
+		Component component = MiniMessage.get().parse(input);
+		return MiniMessage.get().serialize(component);
 	}
 
-	/**
-	 * Parse RBG based on Server Versions
-	 * @param input String
-	 * @param serverVersion String
-	 * @return String
-	 */
 
-	public static String parseRGBColors(final String input, final String serverVersion){
-		boolean supported = true;
-		VersionUtil.BukkitVersion version = VersionUtil.BukkitVersion.fromString(serverVersion);
-		if(version.isLowerThan(VersionUtil.v1_16_1_R01)) {
-			supported =false;
+	public static TextColor getColor(String color) {
+		TextColor out = NamedTextColor.NAMES.value(color);
+		if(out != null) {
+			return out;
 		}
-		if(supported) {
-			return parseRGBColors(input);
-		} else {
-			return stripRGBColors(input);
+		if(color.indexOf('&') > -1 ){
+			TextComponent component = LegacyComponentSerializer.legacyAmpersand()
+				.deserialize(color+" ");
+			return component.color();
 		}
+		try {
+			return TextColor.of(Integer.parseInt(color,16));
+
+		} catch (NumberFormatException e){
+			return null;
+		}
+
 	}
 
-	/**
-	 * Remove RGB if not supported.
-	 *
-	 * @param input String
-	 * @return String
-	 */
-	public static String stripRGBColors (final String input) {
-		String out = input;
-		Matcher matcher = HEX_PATTERN.matcher(out);
-		while(matcher.find()) {
-			int groups = matcher.groupCount();
-			for (int i=0;i < groups;i++) {
-				String hex = matcher.group(i);
-				out = out.replace(hex, "");
-			}
-			matcher = HEX_PATTERN.matcher(out);
-		}
-		return out;
-	}
-
-	/**
-	 * Parse RBG to Color
-	 * @param input String
-	 * @return String
-	 */
-	public static String parseRGBColors(final String input){
-		String out = input;
-		Matcher matcher = HEX_PATTERN.matcher(out);
-		while(matcher.find()) {
-			int groups = matcher.groupCount();
-			for (int i=0;i < groups;i++) {
-				String hex = matcher.group(i);
-				Color color;
-				try {
-					color = Color.decode(hex);
-					out = out.replace(hex, ChatColor.of(color).toString());
-				} catch (NumberFormatException e){
-					out = out.replace(hex, "");
-					Debugger.log("Invalid hex code removed: " +hex+ " from " + input);
-				}
-			}
-			matcher = HEX_PATTERN.matcher(out);
-		}
-		return out;
-	}
 }

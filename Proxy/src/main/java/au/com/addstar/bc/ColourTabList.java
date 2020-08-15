@@ -24,16 +24,18 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import au.com.addstar.bc.util.Utilities;
 import com.google.common.collect.Sets;
 
 import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.GameProfile;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.GameProfile.Property;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -47,7 +49,7 @@ import net.md_5.bungee.protocol.packet.PlayerListItem.Item;
 public class ColourTabList extends TabListAdapter
 {
 	private static final int PING_THRESHOLD = 20;
-	private static ListUpdater mUpdater = new ListUpdater();
+	private static final Listener mUpdater = new ListUpdater();
 	private final static Set<ColourTabList> mTabLists = Sets.newConcurrentHashSet();
 
 	public static void initialize(Plugin plugin)
@@ -57,11 +59,10 @@ public class ColourTabList extends TabListAdapter
 	
 	private int lastPing;
 	private Set<ProxiedPlayer> mVisiblePlayers = Sets.newConcurrentHashSet();
-	private String mHeaderContents;
-	private String mFooterContents;
+	private Component mHeaderContents;
+	private Component mFooterContents;
 	private boolean mHasInited;
 	private SkinData mForcedSkinData;
-	// ==== 1.7 compat ====
 	private String mLastName;
 
 	public ColourTabList(ProxiedPlayer player)
@@ -73,15 +74,10 @@ public class ColourTabList extends TabListAdapter
 		}
 	}
 	
-	private static String getName(ProxiedPlayer player)
+	private static TextComponent getName(ProxiedPlayer player)
 	{
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(player);
-		return settings.tabColor + ChatColor.stripColor(player.getDisplayName());
-	}
-	
-	private static BaseComponent[] getDispName(ProxiedPlayer player)
-	{
-		return TextComponent.fromLegacyText(getName(player));
+		return TextComponent.of(player.getDisplayName()).color(Utilities.getColor(settings.tabColor));
 	}
 	
 	public static boolean isNewTab(ProxiedPlayer player)
@@ -107,7 +103,7 @@ public class ColourTabList extends TabListAdapter
 	@Override
 	public void onConnect()
 	{
-		mLastName = getName(getPlayer());
+		mLastName = getName(getPlayer()).content();
 		Debugger.logt("Connect %s with %s", getPlayer().getName(), mLastName);
 		updateAll();
 	}
@@ -139,7 +135,7 @@ public class ColourTabList extends TabListAdapter
 	public void onDisconnect()
 	{
 		Debugger.logt("Disconnect %s", getPlayer().getName());
-		Item item = createItem(getPlayer(), mLastName);
+		Item item = createItem(getPlayer(), TextComponent.of(mLastName));
 		
 		PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, item);
 		
@@ -234,12 +230,14 @@ public class ColourTabList extends TabListAdapter
 		if (!isNewTab(getPlayer()))
 			return;
 		
-		String headerString = BungeeChat.instance.getTabHeaderString(getPlayer());
-		String footerString = BungeeChat.instance.getTabFooterString(getPlayer());
+		Component headerString = BungeeChat.instance.getTabHeaderString(getPlayer());
+		Component footerString = BungeeChat.instance.getTabFooterString(getPlayer());
 		
 		if (!headerString.equals(mHeaderContents) || !footerString.equals(mFooterContents))
 		{
-			getPlayer().setTabHeader(TextComponent.fromLegacyText(headerString), TextComponent.fromLegacyText(footerString));
+			getPlayer().setTabHeader(
+				BungeeCordComponentSerializer.get().serialize(headerString),
+				BungeeCordComponentSerializer.get().serialize(footerString));
 			mHeaderContents = headerString;
 			mFooterContents = footerString;
 		}
@@ -371,9 +369,9 @@ public class ColourTabList extends TabListAdapter
 			return;
 		}
 		
-		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), mLastName));
+		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), TextComponent.of(mLastName)));
 		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
-		mLastName = getName(getPlayer());
+		mLastName = getName(getPlayer()).content();
 	
 		for(ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
 		{
@@ -402,11 +400,18 @@ public class ColourTabList extends TabListAdapter
 		Debugger.logTabItem(packet, player);
 		player.unsafe().sendPacket(packet);
 	}
-	
+
+	/**
+	 * Applies a player to a {@link Item}  Strictly speak the player name should not have chat colour codes It should be
+	 * plain text.
+	 *
+	 * @param item the Item to apply to
+	 * @param player the player to apply.
+	 */
 	private static void setProfile(Item item, ProxiedPlayer player)
 	{
 		GameProfile profile = player.getProfile();
-		item.setUsername(ChatColor.stripColor(player.getDisplayName()));
+		item.setUsername(LegacyComponentSerializer.legacySection().deserialize(player.getDisplayName()).content());
 		item.setUuid(profile.getUniqueId());
 		
 		ColourTabList tab = (ColourTabList)player.getTabListHandler();
@@ -435,22 +440,29 @@ public class ColourTabList extends TabListAdapter
 		Item item = new Item();
 		setProfile(item, player);
 		
-		item.setDisplayName(getDispName(player));
+		item.setDisplayName(BungeeCordComponentSerializer.get().serialize(getName(player)));
 		item.setGamemode(0);
 		item.setPing(player.getPing());
 		
 		return item;
 	}
-	
-	private static Item createItem(ProxiedPlayer player, String name)
+
+	/**
+	 *
+	 * @param player
+	 * @param name A string of formatted text required to be converted to a bunngeechat Component[] array
+	 * @return {@link PlayerListItem.Item}
+	 */
+	private static Item createItem(ProxiedPlayer player, Component name)
 	{
 		Item item = new Item();
 		setProfile(item, player);
 		
 		if (name != null)
-			item.setDisplayName(TextComponent.fromLegacyText(name));
+			item.setDisplayName(BungeeCordComponentSerializer.get().serialize(name));
 		else
-			item.setDisplayName(TextComponent.fromLegacyText(player.getName()));
+			item.setDisplayName(BungeeCordComponentSerializer.get()
+				.serialize(TextComponent.of(player.getName())));
 
 		item.setGamemode(0);
 		item.setPing(player.getPing());

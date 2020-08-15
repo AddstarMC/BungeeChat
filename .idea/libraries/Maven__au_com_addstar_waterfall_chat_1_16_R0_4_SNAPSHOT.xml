@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: au.com.addstar:waterfall-chat:1.16-R0.4-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-chat/1.16-R0.4-SNAPSHOT/waterfall-chat-1.16-R0.4-20200813.114252-1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-chat/1.16-R0.4-SNAPSHOT/waterfall-chat-1.16-R0.4-20200813.114252-1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/au/com/addstar/waterfall-chat/1.16-R0.4-SNAPSHOT/waterfall-chat-1.16-R0.4-20200813.114252-1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

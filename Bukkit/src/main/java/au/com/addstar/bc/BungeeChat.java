@@ -47,11 +47,15 @@ package au.com.addstar.bc;
 
 import au.com.addstar.bc.commands.*;
 import au.com.addstar.bc.listeners.ChatHandler;
+import au.com.addstar.bc.listeners.SignHandler;
 import au.com.addstar.bc.listeners.SystemMessagesHandler;
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.RemotePlayer;
 import au.com.addstar.bc.sync.packet.*;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
@@ -79,6 +83,7 @@ import au.com.addstar.bc.utils.Utilities;
 public class BungeeChat extends JavaPlugin implements Listener
 {
 	public static Permission permissionManager;
+	public static BukkitAudiences audiences;
 	
 	public static String serverName = "ERROR";
 	private static BungeeChat mInstance;
@@ -101,6 +106,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public void onEnable()
 	{
 		mInstance = this;
+		audiences = BukkitAudiences.create(this);
 		if(Bukkit.getPluginManager().getPlugin("Vault") != null) {
 			RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(Permission.class);
 			if (permissionProvider != null)
@@ -110,7 +116,8 @@ public class BungeeChat extends JavaPlugin implements Listener
 			permissionManager = null;
 		
 		Bukkit.getPluginManager().registerEvents(new ChatHandler(this), this);
-		
+		Bukkit.getPluginManager().registerEvents(new SignHandler(), this);
+
 		Bukkit.getPluginManager().registerEvents(this, this);
 		
 		mComLink = setupComLink();
@@ -235,7 +242,13 @@ public class BungeeChat extends JavaPlugin implements Listener
 	{
 		getPacketManager().broadcast(new SendPacket(player.getUniqueId(), message));
 	}
-	
+
+	public static void mirrorChat(Component component, String channel)
+	{
+		String fullChat = MiniMessage.get().serialize(component);
+		getPacketManager().broadcast(new MirrorPacket(channel, fullChat));
+	}
+
 	public static void mirrorChat(String fullChat, String channel)
 	{
 		getPacketManager().broadcast(new MirrorPacket(channel, fullChat));

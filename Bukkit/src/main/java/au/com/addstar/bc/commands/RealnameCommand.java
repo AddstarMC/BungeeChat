@@ -48,7 +48,8 @@ package au.com.addstar.bc.commands;
 import java.util.List;
 
 import au.com.addstar.bc.BungeeChat;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -74,15 +75,20 @@ public class RealnameCommand implements CommandExecutor, TabCompleter
 		CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
 		if(player == null || player instanceof ConsoleCommandSender)
 		{
-			sender.sendMessage(ChatColor.RED + "Unknown player " + args[0]);
+			BungeeChat.audiences.audience(sender).sendMessage(
+				TextComponent.of("Unknown player " + args[0]).color(NamedTextColor.RED));
 			return true;
 		}
 		
 		String nick = BungeeChat.getPlayerManager().getPlayerNickname(player);
 		if (nick == null)
 			nick = player.getName();
-		sender.sendMessage(ChatColor.GOLD + nick + ChatColor.GRAY + " is actually " + ChatColor.GOLD + player.getName());
-		
+		BungeeChat.audiences.audience(sender).sendMessage(
+			TextComponent.empty()
+				.color(NamedTextColor.GRAY)
+				.append(TextComponent.of(nick).color(NamedTextColor.GOLD))
+				.append(TextComponent.of(" is actually "))
+				.append(TextComponent.of(player.getName()).color(NamedTextColor.GOLD)));
 		return true;
 	}
 

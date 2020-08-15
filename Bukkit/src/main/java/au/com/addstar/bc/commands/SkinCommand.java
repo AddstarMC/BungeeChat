@@ -50,8 +50,9 @@ import java.util.List;
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PlayerManager;
 import au.com.addstar.bc.objects.RemotePlayer;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -86,13 +87,15 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 			player = manager.getPlayer(args[0]);
 			if(!(player instanceof Player || player instanceof RemotePlayer))
 			{
-				sender.sendMessage(ChatColor.RED + "Unknown player " + args[0]);
+				BungeeChat.audiences.audience(sender).sendMessage(
+					TextComponent.of("Unknown player " + args[0]).color(NamedTextColor.RED));
 				return true;
 			}
 		}
 		else if(!(sender instanceof Player))
 		{
-			sender.sendMessage(ChatColor.RED + "A player name must be specified if not called by a player.");
+			BungeeChat.audiences.audience(sender).sendMessage(
+				TextComponent.of("A player name must be specified if not called by a player.").color(NamedTextColor.RED));
 			return true;
 		}
 
@@ -100,12 +103,14 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 		if(name.equalsIgnoreCase("off"))
 		{
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setSkin", null, PlayerManager.getUniqueId(player), null);
-			
-			sender.sendMessage(ChatColor.GREEN + "Restored " + player.getName() + "'s skin");
+
+			BungeeChat.audiences.audience(sender).sendMessage(
+				TextComponent.of("Restored " + player.getName() + "'s skin").color(NamedTextColor.GREEN));
 		}
 		else
 		{
-			sender.sendMessage(ChatColor.GREEN + "Looking up skin for " + name);
+			BungeeChat.audiences.audience(sender).sendMessage(
+				TextComponent.of("Looking up skin for " + name).color(NamedTextColor.GREEN));
 			final String playerName = player.getName();
 			@SuppressWarnings( "deprecation" )
 			OfflinePlayer oplayer = Bukkit.getOfflinePlayer(name);
@@ -121,13 +126,15 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 				@Override
 				public void onFinished( Void data )
 				{
-					sender.sendMessage(ChatColor.GREEN + "Setting " + playerName + "'s skin to be " + name + "'s skin.");
+					BungeeChat.audiences.audience(sender).sendMessage(
+						TextComponent.of("Setting " + playerName + "'s skin to be " + name + "'s skin.").color(NamedTextColor.GREEN));
 				}
 				
 				@Override
 				public void onError( String type, String message )
 				{
-					sender.sendMessage(ChatColor.RED + message);
+					BungeeChat.audiences.audience(sender).sendMessage(
+						TextComponent.of(message).color(NamedTextColor.RED));
 				}
 			}, PlayerManager.getUniqueId(player), target);
 		}

@@ -61,7 +61,7 @@ public class PermissionSettingConfig implements SyncSerializable
 	@Override
 	public Map<String, Object> toMap()
 	{
-		HashMap<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		map.put("fmt", format);
 		map.put("c", color);
 		map.put("pri", priority);
@@ -73,6 +73,7 @@ public class PermissionSettingConfig implements SyncSerializable
 	public static PermissionSettingConfig fromMap(Map<String, Object> map)
 	{
 		PermissionSettingConfig setting = new PermissionSettingConfig();
+
 		setting.format = (String)map.get("fmt");
 		setting.color = (String)map.get("c");
 		setting.permission = (String)map.get("perm");

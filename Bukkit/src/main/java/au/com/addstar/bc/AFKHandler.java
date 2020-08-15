@@ -19,38 +19,15 @@
 
 package au.com.addstar.bc;
 
-/*-
- * #%L
- * BungeeChat-Bukkit
- * %%
- * Copyright (C) 2015 - 2020 AddstarMC
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
-
 import java.util.List;
 
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.PlayerSettings;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -113,14 +90,18 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		{
 			if(!sender.hasPermission("bungeechat.afk.others"))
 			{
-				sender.sendMessage(ChatColor.RED + "You do not have permission to change other players AFK state.");
+				BungeeChat.audiences.audience(sender)
+					.sendMessage(TextComponent.of("You do not have permission to change other players AFK state.")
+						.color(NamedTextColor.RED));
 				return true;
 			}
 			
 			target = BungeeChat.getPlayerManager().getPlayer(args[0]);
 			if(target == null)
 			{
-				sender.sendMessage(ChatColor.RED + "Unknown player " + args[0]);
+				BungeeChat.audiences.audience(sender)
+					.sendMessage(TextComponent.of("Unknown player " + args[0])
+						.color(NamedTextColor.RED));
 				return true;
 			}
 		}
@@ -149,7 +130,9 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			BungeeChat.getSyncManager().callSyncMethod("bchat:toggleAFK", null, PlayerManager.getUniqueId(target));
 		
 		if(target != sender)
-			sender.sendMessage(ChatColor.GREEN + "Toggled " + target.getName() + "'s AFK state");
+			BungeeChat.audiences.audience(sender)
+				.sendMessage(TextComponent.of("Toggled " + target.getName() + "'s AFK state")
+					.color(NamedTextColor.GREEN));
 		return true;
 	}
 	
@@ -174,12 +157,12 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		}
 	}
 	
-	public void checkAFK(final CommandSender sender, CommandSender player, final String message)
+	public void checkAFK(final CommandSender sender, CommandSender player, final Component message)
 	{
 		if(player instanceof Player)
 		{
 			if(isAFK((Player)player))
-				sender.sendMessage(message);
+				BungeeChat.audiences.audience(sender).sendMessage(message);
 		}
 		else
 		{
@@ -194,8 +177,9 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 				@Override
 				public void onFinished( Boolean data )
 				{
-					if(data)
-						sender.sendMessage(message);
+					if (data) {
+						BungeeChat.audiences.audience(sender).sendMessage(message);
+					}
 				}
 				
 			}, PlayerManager.getUniqueId(player));
@@ -212,14 +196,13 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 	
 	private void onAFKChange(Player player, boolean isAFK)
 	{
-		String message;
-		if(isAFK)
-			message = ChatColor.GRAY + "* " + ChatColor.stripColor(player.getDisplayName()) + " is now AFK.";
-		else
-			message = ChatColor.GRAY + "* " + ChatColor.stripColor(player.getDisplayName()) + " is no longer AFK.";
-		
-		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
-		
+		TextComponent message;
+		if(isAFK) {
+			message = TextComponent.of("* " + player.getDisplayName() + " is now AFK.").color(NamedTextColor.GRAY);
+		} else {
+			message = TextComponent.of("* " + player.getDisplayName() + " is no longer AFK.").color(NamedTextColor.GRAY);
+		}
+		BungeeChat.mirrorChat(MiniMessage.get().serialize(message), ChannelType.Broadcast.getName());
 		Utilities.broadcast(message, null, null);
 	}
 	
@@ -338,12 +321,12 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 				
 				if(settings.isAFK && kickEnabled && !player.hasPermission("bungeechat.afk.kick.exempt"))
 				{
-					if(time - settings.afkStartTime >= kickTime * 60000)
+					if (time - settings.afkStartTime >= kickTime * 60000)
 					{
 						BungeeChat.getSyncManager().callSyncMethod("bchat:kick", null, player.getUniqueId(), String.format(kickMessage, kickTime));
-						String consoleKickMessage = ChatColor.GOLD + player.getDisplayName() + " has been kicked for idling more than " + kickTime + " minutes";
+						TextComponent consoleKickMessage = TextComponent.of(player.getDisplayName() + " has been kicked for idling more than " + kickTime + " minutes").color(NamedTextColor.GOLD);
 						BungeeChat.mirrorChat(consoleKickMessage, ChannelType.AFKKick.getName());
-						Bukkit.broadcast(consoleKickMessage, "bungeechat.afk.kick.notify");
+						Utilities.broadcast(consoleKickMessage, "bungeechat.afk.kick.notify");
 					}
 				}
 				else if(!settings.isAFK)

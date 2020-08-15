@@ -48,10 +48,11 @@ package au.com.addstar.bc;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
-
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import au.com.addstar.bc.sync.SyncMethod;
@@ -101,8 +102,7 @@ public class StandardServMethods implements SyncMethod
 	}
 
 	private HashMap<String, String> getSubscribed() {
-		HashMap<String, String> result = new HashMap<>(BungeeChat.instance.getSubHandler().getAllSubscriptions());
-		return result;
+		return new HashMap<>(BungeeChat.instance.getSubHandler().getAllSubscriptions());
 	}
 
 	public String getServer(ServerInfo server)
@@ -223,7 +223,9 @@ public class StandardServMethods implements SyncMethod
 					return false;
 			}
 			
-			message = ChatColor.AQUA + player.getDisplayName() + " and alternate accounts have been muted for " + timeString;
+			message = MiniMessage.get().serialize(
+			TextComponent.of(player.getDisplayName() + " and alternate accounts have been muted for " + timeString)
+				.color(NamedTextColor.AQUA));
 			BungeeChat.instance.getPacketManager().broadcast(new MirrorPacket("~BC", message));
 			BungeeChat.instance.getMuteHandler().setIPMute(address, System.currentTimeMillis() + muteLength);
 		}
@@ -277,7 +279,7 @@ public class StandardServMethods implements SyncMethod
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":kickPlayer()."+player);
-		pplayer.disconnect(TextComponent.fromLegacyText(reason));
+		pplayer.disconnect(BungeeCordComponentSerializer.get().serialize(TextComponent.of(reason)));
 		
 		return null;
 	}

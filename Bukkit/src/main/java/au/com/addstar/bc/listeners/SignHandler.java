@@ -20,19 +20,26 @@
 package au.com.addstar.bc.listeners;
 
 import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 
 /**
  * Created for use for the Add5tar MC Minecraft server
  * Created by benjamincharlton on 18/07/2020.
  */
-public class SignHandler {
-
+public class SignHandler implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private void onSignChange(SignChangeEvent event) {
-        for (int i = 0; i < 4; ++i)
-            event.setLine(i, Utilities.colorize(event.getLine(i), event.getPlayer()));
+        for (int i = 0; i < 4; ++i) {
+            String newLine = Utilities.colorize(event.getLine(i),event.getPlayer());
+            Component c = MiniMessage.get().deserialize(newLine);
+            String replaced = LegacyComponentSerializer.legacySection().serialize(c);
+            event.setLine(i,replaced);
+        }
     }
 }

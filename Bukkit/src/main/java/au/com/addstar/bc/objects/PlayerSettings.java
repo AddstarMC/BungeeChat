@@ -61,7 +61,11 @@ public class PlayerSettings
 	public String nickname = "";
 	
 	public long muteTime = 0;
-	
+
+	/**
+	 * A hex or legacy color code (eg &C) or formatted as per RRGGBB (no leading #) or 0xrrggbb
+	 * It can also be a named colour string ie Red
+	 */
 	public String tabFormat = "";
 	
 	public long lastActiveTime = Long.MAX_VALUE;
@@ -69,6 +73,9 @@ public class PlayerSettings
 	
 	public boolean isAFK = false;
 
+	/**
+	 * Minimessage formatted
+	 */
 	public String chatName = "";
 
 	public String defaultChannel = "";

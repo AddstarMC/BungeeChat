@@ -17,7 +17,6 @@ permissions:
       bungeechat.format.underline: true
       bungeechat.format.strikethrough: true
       bungeechat.format.magic: true
-      bungeechat.format.rgb: true
 
   bungeechat.format.reset:
     default: op

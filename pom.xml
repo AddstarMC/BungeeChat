@@ -39,9 +39,9 @@
         <build.number />
         <plugin.version>${project.version}-${build.number}</plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spigot.version>1.16.1-R0.1-SNAPSHOT</spigot.version>
-        <bungee.version>1.16-R0.2-SNAPSHOT</bungee.version>
-        <spigot.api.version>1.15</spigot.api.version>
+        <spigot.version>1.16.2-R0.1-SNAPSHOT</spigot.version>
+        <bungee.version>1.16-R0.4-SNAPSHOT</bungee.version>
+        <spigot.api.version>1.13</spigot.api.version>
         <license.dir>${basedir}</license.dir>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -100,6 +100,10 @@
             <releases>
                 <enabled>false</enabled>
             </releases>
+        </repository>
+        <repository> <!-- for development builds -->
+            <id>sonatype-oss</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
         <repository>
             <id>maven-central</id>
