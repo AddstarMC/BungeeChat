@@ -87,14 +87,14 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 			player = manager.getPlayer(args[0]);
 			if(!(player instanceof Player || player instanceof RemotePlayer))
 			{
-				BungeeChat.audiences.audience(sender).sendMessage(
+				BungeeChat.audiences.sender(sender).sendMessage(
 					TextComponent.of("Unknown player " + args[0]).color(NamedTextColor.RED));
 				return true;
 			}
 		}
 		else if(!(sender instanceof Player))
 		{
-			BungeeChat.audiences.audience(sender).sendMessage(
+			BungeeChat.audiences.sender(sender).sendMessage(
 				TextComponent.of("A player name must be specified if not called by a player.").color(NamedTextColor.RED));
 			return true;
 		}
@@ -104,12 +104,12 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 		{
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setSkin", null, PlayerManager.getUniqueId(player), null);
 
-			BungeeChat.audiences.audience(sender).sendMessage(
+			BungeeChat.audiences.sender(sender).sendMessage(
 				TextComponent.of("Restored " + player.getName() + "'s skin").color(NamedTextColor.GREEN));
 		}
 		else
 		{
-			BungeeChat.audiences.audience(sender).sendMessage(
+			BungeeChat.audiences.sender(sender).sendMessage(
 				TextComponent.of("Looking up skin for " + name).color(NamedTextColor.GREEN));
 			final String playerName = player.getName();
 			@SuppressWarnings( "deprecation" )
@@ -126,14 +126,14 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 				@Override
 				public void onFinished( Void data )
 				{
-					BungeeChat.audiences.audience(sender).sendMessage(
+					BungeeChat.audiences.sender(sender).sendMessage(
 						TextComponent.of("Setting " + playerName + "'s skin to be " + name + "'s skin.").color(NamedTextColor.GREEN));
 				}
 				
 				@Override
 				public void onError( String type, String message )
 				{
-					BungeeChat.audiences.audience(sender).sendMessage(
+					BungeeChat.audiences.sender(sender).sendMessage(
 						TextComponent.of(message).color(NamedTextColor.RED));
 				}
 			}, PlayerManager.getUniqueId(player), target);

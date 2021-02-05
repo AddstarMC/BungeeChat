@@ -79,10 +79,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.chat.TextComponentSerializer;
 
 public class BungeeChat extends Plugin
 {
@@ -385,8 +387,8 @@ public class BungeeChat extends Plugin
 		if (header == null)
 			header = mConfig.tabListHeader;
 		if (header == null)
-			return TextComponent.empty();
-		
+			return Component.empty();
+
 		return formatString(header, player);
 	}
 	
@@ -402,7 +404,7 @@ public class BungeeChat extends Plugin
 		if (footer == null)
 			footer = mConfig.tabListFooter;
 		if (footer == null)
-			return TextComponent.empty();
+			return Component.empty();
 		
 		return formatString(footer, player);
 	}
@@ -411,7 +413,7 @@ public class BungeeChat extends Plugin
 	{
 		PlayerSettings settings = mSettings.getSettings(player);
 		TextColor color = Utilities.getColor(settings.tabColor);
-		String nameColoured = MiniMessage.get().serialize(TextComponent.of(player.getDisplayName()).color(color));
+		String nameColoured = MiniMessage.get().serialize(Component.text(player.getDisplayName()).color(color));
 		String out = string
 			.replace("{PLAYER}", player.getName())
 			.replace("{DISPLAYNAME}", player.getDisplayName())

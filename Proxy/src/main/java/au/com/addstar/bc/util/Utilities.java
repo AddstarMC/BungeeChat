@@ -177,7 +177,7 @@ public class Utilities
 			return component.color();
 		}
 		try {
-			return TextColor.of(Integer.parseInt(color,16));
+			return TextColor.color(Integer.parseInt(color,16));
 
 		} catch (NumberFormatException e){
 			return null;

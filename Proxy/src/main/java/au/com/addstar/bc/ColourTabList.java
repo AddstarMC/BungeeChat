@@ -31,7 +31,7 @@ import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.GameProfile;
 import net.md_5.bungee.api.ProxyServer;
@@ -77,7 +77,7 @@ public class ColourTabList extends TabListAdapter
 	private static TextComponent getName(ProxiedPlayer player)
 	{
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(player);
-		return TextComponent.of(player.getDisplayName()).color(Utilities.getColor(settings.tabColor));
+		return Component.text(player.getDisplayName()).color(Utilities.getColor(settings.tabColor));
 	}
 	
 	public static boolean isNewTab(ProxiedPlayer player)
@@ -135,7 +135,7 @@ public class ColourTabList extends TabListAdapter
 	public void onDisconnect()
 	{
 		Debugger.logt("Disconnect %s", getPlayer().getName());
-		Item item = createItem(getPlayer(), TextComponent.of(mLastName));
+		Item item = createItem(getPlayer(), Component.text(mLastName));
 		
 		PlayerListItem packet = createPacket(Action.REMOVE_PLAYER, item);
 		
@@ -236,8 +236,8 @@ public class ColourTabList extends TabListAdapter
 		if (!headerString.equals(mHeaderContents) || !footerString.equals(mFooterContents))
 		{
 			getPlayer().setTabHeader(
-				BungeeCordComponentSerializer.get().serialize(headerString),
-				BungeeCordComponentSerializer.get().serialize(footerString));
+				BungeeComponentSerializer.get().serialize(headerString),
+				BungeeComponentSerializer.get().serialize(footerString));
 			mHeaderContents = headerString;
 			mFooterContents = footerString;
 		}
@@ -369,7 +369,7 @@ public class ColourTabList extends TabListAdapter
 			return;
 		}
 		
-		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), TextComponent.of(mLastName)));
+		PlayerListItem packetRemove = createPacket(Action.REMOVE_PLAYER, createItem(getPlayer(), Component.text(mLastName)));
 		PlayerListItem packetAdd = createPacket(Action.ADD_PLAYER, createItem(getPlayer()));
 		mLastName = getName(getPlayer()).content();
 	
@@ -440,7 +440,7 @@ public class ColourTabList extends TabListAdapter
 		Item item = new Item();
 		setProfile(item, player);
 		
-		item.setDisplayName(BungeeCordComponentSerializer.get().serialize(getName(player)));
+		item.setDisplayName(BungeeComponentSerializer.get().serialize(getName(player)));
 		item.setGamemode(0);
 		item.setPing(player.getPing());
 		
@@ -459,10 +459,10 @@ public class ColourTabList extends TabListAdapter
 		setProfile(item, player);
 		
 		if (name != null)
-			item.setDisplayName(BungeeCordComponentSerializer.get().serialize(name));
+			item.setDisplayName(BungeeComponentSerializer.get().serialize(name));
 		else
-			item.setDisplayName(BungeeCordComponentSerializer.get()
-				.serialize(TextComponent.of(player.getName())));
+			item.setDisplayName(BungeeComponentSerializer.get()
+				.serialize(Component.text(player.getName())));
 
 		item.setGamemode(0);
 		item.setPing(player.getPing());

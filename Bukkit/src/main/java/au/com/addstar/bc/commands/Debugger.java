@@ -141,7 +141,7 @@ public class Debugger implements CommandExecutor
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setGeneralDebugState(on);
-			BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("General debug is now " + (on ? "on" : "off"))
+			BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("General debug is now " + (on ? "on" : "off"))
 				.color(NamedTextColor.GOLD));
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
@@ -151,7 +151,7 @@ public class Debugger implements CommandExecutor
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
-			BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("Packet debug is now " + (on ? "on" : "off"))
+			BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("Packet debug is now " + (on ? "on" : "off"))
 				.color(NamedTextColor.GOLD));
 		}
 		else if (args[0].equalsIgnoreCase("player"))
@@ -161,7 +161,7 @@ public class Debugger implements CommandExecutor
 			
 			CommandSender player = BungeeChat.getPlayerManager().getPlayerExact(args[1]);
 			Player bplayer = Bukkit.getPlayer(PlayerManager.getUniqueId(player));
-			BungeeChat.audiences.audience(sender).sendMessage(
+			BungeeChat.audiences.sender(sender).sendMessage(
 				TextComponent.of(String.format("State %s: %s", args[1], buildPlayerDebug(player, bplayer))));
 		}
 		else if (args[0].equalsIgnoreCase("allplayers"))
@@ -169,7 +169,7 @@ public class Debugger implements CommandExecutor
 			sender.sendMessage("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size() + " Bukkit players: " + Bukkit.getOnlinePlayers().size());
 			// Check all tracked players
 			for (CommandSender player : BungeeChat.getPlayerManager().getPlayers())
-				BungeeChat.audiences.audience(sender).sendMessage(
+				BungeeChat.audiences.sender(sender).sendMessage(
 					TextComponent.of(String.format(" %s: %s", player.getName(), buildPlayerDebug(player, Bukkit.getPlayer(PlayerManager.getUniqueId(player))))));
 			
 			// Look for any that are not tracked
@@ -177,7 +177,7 @@ public class Debugger implements CommandExecutor
 			{
 				CommandSender bplayer = BungeeChat.getPlayerManager().getPlayer(player.getUniqueId());
 				if (bplayer == null)
-					BungeeChat.audiences.audience(sender).sendMessage(
+					BungeeChat.audiences.sender(sender).sendMessage(
 						TextComponent.of(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player))));
 			}
 		}

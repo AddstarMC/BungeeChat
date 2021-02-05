@@ -86,7 +86,7 @@ public class Utilities
 	private static void sendPermissionMessageToAudience(Component component, String permission, ValidChecker<CommandSender> checker, AudienceProvider audience, Permissible perm) {
 		if(perm instanceof CommandSender && (permission == null || perm.hasPermission(permission)) && (checker == null || checker.isValid((CommandSender)perm))) {
 			if(audience instanceof BukkitAudiences) {
-				((BukkitAudiences)audience).audience((CommandSender) perm).sendMessage(component);
+				((BukkitAudiences)audience).sender((CommandSender) perm).sendMessage(component);
 			} else {
 				audience.console().sendMessage(component);
 			}

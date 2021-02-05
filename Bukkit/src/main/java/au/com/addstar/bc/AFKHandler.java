@@ -90,7 +90,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		{
 			if(!sender.hasPermission("bungeechat.afk.others"))
 			{
-				BungeeChat.audiences.audience(sender)
+				BungeeChat.audiences.sender(sender)
 					.sendMessage(TextComponent.of("You do not have permission to change other players AFK state.")
 						.color(NamedTextColor.RED));
 				return true;
@@ -99,7 +99,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			target = BungeeChat.getPlayerManager().getPlayer(args[0]);
 			if(target == null)
 			{
-				BungeeChat.audiences.audience(sender)
+				BungeeChat.audiences.sender(sender)
 					.sendMessage(TextComponent.of("Unknown player " + args[0])
 						.color(NamedTextColor.RED));
 				return true;
@@ -130,7 +130,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			BungeeChat.getSyncManager().callSyncMethod("bchat:toggleAFK", null, PlayerManager.getUniqueId(target));
 		
 		if(target != sender)
-			BungeeChat.audiences.audience(sender)
+			BungeeChat.audiences.sender(sender)
 				.sendMessage(TextComponent.of("Toggled " + target.getName() + "'s AFK state")
 					.color(NamedTextColor.GREEN));
 		return true;
@@ -162,7 +162,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		if(player instanceof Player)
 		{
 			if(isAFK((Player)player))
-				BungeeChat.audiences.audience(sender).sendMessage(message);
+				BungeeChat.audiences.sender(sender).sendMessage(message);
 		}
 		else
 		{
@@ -178,7 +178,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 				public void onFinished( Boolean data )
 				{
 					if (data) {
-						BungeeChat.audiences.audience(sender).sendMessage(message);
+						BungeeChat.audiences.sender(sender).sendMessage(message);
 					}
 				}
 				

@@ -96,8 +96,8 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 				to = player;
 			}
 		}
-		BungeeChat.audiences.audience(to).sendMessage(fullMessageIn);
-		BungeeChat.audiences.audience(from).sendMessage(fullMessageOut);
+		BungeeChat.audiences.sender(to).sendMessage(fullMessageIn);
+		BungeeChat.audiences.sender(from).sendMessage(fullMessageOut);
 		BungeeChat.setLastMsgTarget(from, to);
 		BungeeChat.setLastMsgTarget(to, from);
 		BungeeChat.getAFKHandler().checkAFK(from, to, TextComponent.of("This player is AFK. They may not see this message.").color(NamedTextColor.GRAY));
@@ -112,14 +112,14 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 					return false;
 
 				if (BungeeChat.getPlayerManager().isPlayerMuted(sender)) {
-					BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("You are muted. You may not talk")
+					BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("You are muted. You may not talk")
 						.color(NamedTextColor.AQUA));
 					return true;
 				}
 
 				final CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
 				if (player == null) {
-					BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("Cannot find player " + args[0])
+					BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("Cannot find player " + args[0])
 						.color(NamedTextColor.RED));
 					return true;
 				}
@@ -140,7 +140,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 							@Override
 							public void onFinished(Boolean data) {
 								if (!data)
-									BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("That player has messaging disabled.")
+									BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("That player has messaging disabled.")
 										.color(NamedTextColor.RED));
 								else
 									doSendMessage(player, sender, message);
@@ -150,7 +150,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 						return true;
 					} else if (player instanceof Player) {
 						if (!BungeeChat.getPlayerManager().getPlayerSettings(player).msgEnabled) {
-							BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("That player has messaging disabled.")
+							BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("That player has messaging disabled.")
 								.color(NamedTextColor.RED));
 							return true;
 						}
@@ -166,14 +166,14 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 					return false;
 
 				if (BungeeChat.getPlayerManager().isPlayerMuted(sender)) {
-					BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("You are muted. You may not talk")
+					BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("You are muted. You may not talk")
 						.color(NamedTextColor.AQUA));
 					return true;
 				}
 
 				CommandSender player = BungeeChat.getPlayerManager().getPlayerSettings(sender).getLastMsgTarget();
 				if (player == null) {
-					BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of( "You have nobody to reply to")
+					BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of( "You have nobody to reply to")
 						.color(NamedTextColor.RED));
 					return true;
 				}
@@ -198,10 +198,10 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 				settings.msgEnabled = !settings.msgEnabled;
 
 				if (settings.msgEnabled)
-					BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("Incoming Messaging Enabled")
+					BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("Incoming Messaging Enabled")
 						.color(NamedTextColor.GREEN));
 				else
-					BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("Incoming Messaging Disabled")
+					BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("Incoming Messaging Disabled")
 						.color(NamedTextColor.GOLD));
 				BungeeChat.getPlayerManager().updatePlayerSettings(sender);
 				return true;

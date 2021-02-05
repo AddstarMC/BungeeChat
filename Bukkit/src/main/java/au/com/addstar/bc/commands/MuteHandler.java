@@ -66,10 +66,10 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 					public void onFinished(List<String> data) {
 						if (data.isEmpty()) {
 
-							BungeeChat.audiences.audience(sender).sendMessage(
+							BungeeChat.audiences.sender(sender).sendMessage(
 								TextComponent.of("There are no muted players.").color(NamedTextColor.GOLD));
 						} else {
-							BungeeChat.audiences.audience(sender).sendMessage(
+							BungeeChat.audiences.sender(sender).sendMessage(
 								TextComponent.of("Muted players:").color(NamedTextColor.GOLD));
 							StringBuilder builder = new StringBuilder();
 							for (String entry : data) {
@@ -85,7 +85,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 								builder.append(Utilities.timeDiffToStringShort(time));
 								builder.append(')');
 							}
-							BungeeChat.audiences.audience(sender).sendMessage(
+							BungeeChat.audiences.sender(sender).sendMessage(
 								TextComponent.of(builder.toString()).color(NamedTextColor.GRAY));
 						}
 					}
@@ -106,7 +106,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 				if (args.length == 1) {
 					time = Utilities.parseDateDiff(args[0]);
 					if (time <= 0) {
-						BungeeChat.audiences.audience(sender).sendMessage(
+						BungeeChat.audiences.sender(sender).sendMessage(
 							TextComponent.of("Bad time format. Expected 5m, 2h or 30m2h").color(NamedTextColor.RED));
 						return true;
 					}
@@ -130,12 +130,12 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 						try {
 							address = InetAddress.getByName(args[0]);
 						} catch (UnknownHostException e) {
-							BungeeChat.audiences.audience(sender).sendMessage(
+							BungeeChat.audiences.sender(sender).sendMessage(
 								TextComponent.of("Unknown player or ip address").color(NamedTextColor.RED));
 							return true;
 						}
 					} else {
-						BungeeChat.audiences.audience(sender).sendMessage(
+						BungeeChat.audiences.sender(sender).sendMessage(
 							TextComponent.of("Unknown player").color(NamedTextColor.RED));
 						return true;
 					}
@@ -162,7 +162,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 
 					long mutetime = Utilities.parseDateDiff(args[1]);
 					if (mutetime <= 0) {
-						BungeeChat.audiences.audience(sender).sendMessage(
+						BungeeChat.audiences.sender(sender).sendMessage(
 							TextComponent.of("Bad time format. Expected 5m, 2h or 30m2h").color(NamedTextColor.RED));
 						return true;
 					}
@@ -175,7 +175,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 					BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 					Utilities.broadcast(message,null);
 					if(target != null) {
-						BungeeChat.audiences.audience(target).sendMessage(
+						BungeeChat.audiences.sender(target).sendMessage(
 							TextComponent.of("You have been muted for " + timeString).color(NamedTextColor.AQUA));
 					}
 
@@ -185,10 +185,10 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 						return false;
 
 					BungeeChat.getPlayerManager().setPlayerMuteTime(target, 0);
-					BungeeChat.audiences.audience(target).sendMessage(
+					BungeeChat.audiences.sender(target).sendMessage(
 						TextComponent.of(name + " has been unmuted").color(NamedTextColor.AQUA));
 					if(target !=null) {
-						BungeeChat.audiences.audience(target).sendMessage(
+						BungeeChat.audiences.sender(target).sendMessage(
 							TextComponent.of("You are no longer muted. You may talk again.").color(NamedTextColor.AQUA));
 					}
 					break;
@@ -198,7 +198,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 
 					long ipmutetime = Utilities.parseDateDiff(args[1]);
 					if (ipmutetime <= 0) {
-						BungeeChat.audiences.audience(sender).sendMessage(
+						BungeeChat.audiences.sender(sender).sendMessage(
 							TextComponent.of("Bad time format. Expected 5m, 2h or 30m2h").color(NamedTextColor.RED));
 						return true;
 					}
@@ -220,7 +220,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 					else
 						BungeeChat.getSyncManager().callSyncMethod("bchat:setMuteIP", null,
 								address.getHostAddress(), 0L);
-					BungeeChat.audiences.audience(sender).sendMessage(
+					BungeeChat.audiences.sender(sender).sendMessage(
 						TextComponent.of(name + " has been unmuted").color(NamedTextColor.AQUA));
 					break;
 				default:

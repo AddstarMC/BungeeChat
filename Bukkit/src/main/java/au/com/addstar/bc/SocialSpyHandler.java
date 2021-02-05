@@ -142,10 +142,10 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		on = !on;
 		
 		if(on)
-			BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("SocialSpy now on")
+			BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("SocialSpy now on")
 				.color(NamedTextColor.GREEN));
 		else
-			BungeeChat.audiences.audience(sender).sendMessage(TextComponent.of("SocialSpy now off")
+			BungeeChat.audiences.sender(sender).sendMessage(TextComponent.of("SocialSpy now off")
 				.color(NamedTextColor.GREEN));
 		setStatus(sender, on);
 		

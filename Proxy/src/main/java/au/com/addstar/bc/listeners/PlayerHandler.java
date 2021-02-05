@@ -60,6 +60,7 @@ import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -129,7 +130,7 @@ public class PlayerHandler implements Listener
 		if (player.getServer() != null)
 		{
 			boolean showQuitMessage = BungeeChat.instance.getSyncManager().getPropertyBoolean(player, "hasQuitMessage", true);
-			TextComponent quitMessage = TextComponent.of(player.getDisplayName() + " has left the game").color(NamedTextColor.GOLD);
+			TextComponent quitMessage = Component.text(player.getDisplayName() + " has left the game").color(NamedTextColor.GOLD);
 			String sendMessage = GsonComponentSerializer.gson().serialize(quitMessage);
 
 			if(!showQuitMessage)
@@ -168,7 +169,7 @@ public class PlayerHandler implements Listener
 		
 		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(), player.getName(), mSettings.getSettings(player).nickname, mSettings.getSettings(player).defaultChannel)
 		);
-		TextComponent quitMessage = TextComponent.of(player.getDisplayName() + " joined the game.").color(NamedTextColor.GOLD);
+		TextComponent quitMessage = Component.text(player.getDisplayName() + " joined the game.").color(NamedTextColor.GOLD);
 		String sendMessage = GsonComponentSerializer.gson().serialize(quitMessage);
 		BCPlayerJoinEvent jevent = new BCPlayerJoinEvent(player, sendMessage);
 		mProxy.getPluginManager().callEvent(jevent);

@@ -45,6 +45,8 @@ package au.com.addstar.bc;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -172,19 +174,19 @@ public class Debugger extends Command
 	{
 		if (!onCommand(sender, args))
 		{
-			TextComponent message = TextComponent.builder().color(NamedTextColor.RED)
-				.append(TextComponent.of("/!bchatdebug general <true|false>"))
-				.append(TextComponent.newline())
-				.append(TextComponent.of("/!bchatdebug packet <true|false>"))
-				.append(TextComponent.newline())
-				.append(TextComponent.of("/!bchatdebug tab <true|false>"))
-				.append(TextComponent.newline())
-				.append(TextComponent.of("/!bchatdebug player <name>"))
-				.append(TextComponent.newline())
-				.append(TextComponent.of("/!bchatdebug allplayers"))
-				.append(TextComponent.newline())
+			TextComponent message = Component.text().color(NamedTextColor.RED)
+				.append(Component.text("/!bchatdebug general <true|false>"))
+				.append(Component.newline())
+				.append(Component.text("/!bchatdebug packet <true|false>"))
+				.append(Component.newline())
+				.append(Component.text("/!bchatdebug tab <true|false>"))
+				.append(Component.newline())
+				.append(Component.text("/!bchatdebug player <name>"))
+				.append(Component.newline())
+				.append(Component.text("/!bchatdebug allplayers"))
+				.append(Component.newline())
 				.build();
-			BungeeChat.audiences.audience(sender).sendMessage(message);
+			BungeeChat.audiences.sender(sender).sendMessage(message);
 		}
 	}
 	
@@ -200,8 +202,8 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setGeneralDebugState(on);
-			TextComponent message = TextComponent.of("General debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
-			BungeeChat.audiences.audience(sender).sendMessage(message);
+			TextComponent message = Component.text("General debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
+			BungeeChat.audiences.sender(sender).sendMessage(message);
 
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
@@ -211,8 +213,8 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
-			TextComponent message = TextComponent.of( "Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
-			BungeeChat.audiences.audience(sender).sendMessage(message);
+			TextComponent message = Component.text( "Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
+			BungeeChat.audiences.sender(sender).sendMessage(message);
 		}
 		else if (args[0].equalsIgnoreCase("tab"))
 		{
@@ -221,8 +223,8 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setTabDebugState(on);
-			net.kyori.adventure.text.TextComponent message = net.kyori.adventure.text.TextComponent.of( "TabList debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
-			BungeeChat.audiences.audience(sender).sendMessage(message);
+			net.kyori.adventure.text.TextComponent message = net.kyori.adventure.text.Component.text( "TabList debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD);
+			BungeeChat.audiences.sender(sender).sendMessage(message);
 		}
 		else
 			return false;
