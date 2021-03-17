@@ -305,7 +305,7 @@ public class ChatChannelManager implements Listener, CommandExecutor {
             Component replacedFormat = Formatter.replaceKeywords(asyncChatEvent.getFormat(), asyncChatEvent.getChatSender(), level);
             formattedMessage = Formatter.replaceMessage(replacedFormat, asyncChatEvent.getMessage());
             Utilities.localBroadCast(formattedMessage, asyncChatEvent.getRecipients());
-            Utilities.getAudienceProvider().audience(sender).sendMessage(formattedMessage);
+            Utilities.getAudienceProvider().sender(sender).sendMessage(formattedMessage);
         }
         BungeeChat.mirrorChat(formattedMessage, ChannelType.KeywordHighlight.getName());
     }

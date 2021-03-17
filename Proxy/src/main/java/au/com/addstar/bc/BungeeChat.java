@@ -289,7 +289,7 @@ public class BungeeChat extends Plugin
 				}
 
 				StringBuilder colour = new StringBuilder();
-				Style.Builder textStyleBuilder = Style.builder();
+				Style.Builder textStyleBuilder = Style.style();
 				String[] parts = colourString.split(";");
 				for (String part:parts){
 					try {
@@ -303,7 +303,7 @@ public class BungeeChat extends Plugin
 							textStyleBuilder.color(color);
 							continue;
 						}
-						color = TextColor.of(Integer.parseInt(part,16));
+						color = TextColor.color(Integer.parseInt(part,16));
 						textStyleBuilder.color(color);
 						continue;
 					} catch (NumberFormatException e){
@@ -411,7 +411,7 @@ public class BungeeChat extends Plugin
 		if (header == null)
 			header = mConfig.tabListHeader;
 		if (header == null)
-			return TextComponent.empty();
+			return Component.empty();
 		
 		return formatHeaderString(header, player);
 	}
@@ -428,7 +428,7 @@ public class BungeeChat extends Plugin
 		if (header == null)
 			header = mConfig.tabListFooter;
 		if (header == null)
-			return TextComponent.empty();
+			return Component.empty();
 		
 		return formatHeaderString(header, player);
 	}

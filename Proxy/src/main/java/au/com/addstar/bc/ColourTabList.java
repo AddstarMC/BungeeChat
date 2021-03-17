@@ -29,7 +29,7 @@ import com.google.common.collect.Sets;
 import au.com.addstar.bc.sync.PropertyChangeEvent;
 import au.com.addstar.bc.sync.SyncManager;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.GameProfile;
 import net.md_5.bungee.api.ProxyServer;
@@ -241,7 +241,7 @@ public class ColourTabList extends TabListAdapter
 		
 		if (!headerString.equals(mHeaderContents) || !footerString.equals(mFooterContents))
 		{
-			getPlayer().setTabHeader(BungeeCordComponentSerializer.get().serialize(headerString), BungeeCordComponentSerializer.get().serialize(footerString));
+			getPlayer().setTabHeader(BungeeComponentSerializer.get().serialize(headerString), BungeeComponentSerializer.get().serialize(footerString));
 			mHeaderContents = headerString;
 			mFooterContents = footerString;
 		}

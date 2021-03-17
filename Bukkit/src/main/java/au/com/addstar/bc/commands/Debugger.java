@@ -139,12 +139,11 @@ public class Debugger implements CommandExecutor
 	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args )
 	{
 		if (args.length == 0) {
-            Component c = TextComponent.of("General debug |")
+            Component c = Component.text("General debug |")
                     .append(createOnOffButtons(mDebugEnabled,"bchat general"));
-            Component cp = TextComponent.of("Packet debug |")
+            Component cp = Component.text("Packet debug |")
                     .append(createOnOffButtons(mPacketDebugEnabled,"bchat packet"));
-            c.append(TextComponent.newline()).append(cp);
-            Utilities.getAudienceProvider().audience(sender).sendMessage(c.append(TextComponent.newline()).append(cp));
+            Utilities.getAudienceProvider().sender(sender).sendMessage(c.append(Component.newline()).append(cp));
             return true;
         }
 
@@ -154,9 +153,9 @@ public class Debugger implements CommandExecutor
                 boolean on = Boolean.parseBoolean(args[1]);
                 setGeneralDebugState(on);
             }
-			Component c = TextComponent.of("General debug |")
+			Component c = Component.text("General debug |")
                     .append(createOnOffButtons(mDebugEnabled,"bchat general"));
-			Utilities.getAudienceProvider().audience(sender).sendMessage(c);
+			Utilities.getAudienceProvider().sender(sender).sendMessage(c);
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
 		{
@@ -164,9 +163,9 @@ public class Debugger implements CommandExecutor
                 boolean on = Boolean.parseBoolean(args[1]);
                 setPacketDebugState(on);
             }
-            Component c = TextComponent.of("Packet debug |")
+            Component c = Component.text("Packet debug |")
                     .append(createOnOffButtons(mPacketDebugEnabled,"bchat packet"));
-            Utilities.getAudienceProvider().audience(sender).sendMessage(c);
+            Utilities.getAudienceProvider().sender(sender).sendMessage(c);
         }
 		else if (args[0].equalsIgnoreCase("player"))
 		{
@@ -177,9 +176,9 @@ public class Debugger implements CommandExecutor
             UUID uuid = PlayerManager.getUniqueId(player);
 			if(uuid != null) {
                 Player bukkitPlayer = Bukkit.getPlayer(uuid);
-                Utilities.getAudienceProvider().audience(sender)
+                Utilities.getAudienceProvider().sender(sender)
                         .sendMessage(
-                                TextComponent.of(String.format("State %s: %s", args[1], buildPlayerDebug(player, bukkitPlayer))));
+                                Component.text(String.format("State %s: %s", args[1], buildPlayerDebug(player, bukkitPlayer))));
             } else {
 			    return false;
             }
@@ -187,17 +186,17 @@ public class Debugger implements CommandExecutor
 		}
 		else if (args[0].equalsIgnoreCase("allplayers"))
 		{
-            Utilities.getAudienceProvider().audience(sender)
+            Utilities.getAudienceProvider().sender(sender)
                     .sendMessage(
-                            TextComponent.of("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size()
+                            Component.text("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size()
                                     + " Bukkit players: " + Bukkit.getOnlinePlayers().size()));
 			// Check all tracked players
 			for (CommandSender player : BungeeChat.getPlayerManager().getPlayers()) {
                 UUID uuid = PlayerManager.getUniqueId(player);
                 if (uuid != null) {
-                    Utilities.getAudienceProvider().audience(sender)
+                    Utilities.getAudienceProvider().sender(sender)
                             .sendMessage(
-                                    TextComponent.of(String.format(" %s: %s", player.getName(),
+                                    Component.text(String.format(" %s: %s", player.getName(),
                                             buildPlayerDebug(player, Bukkit.getPlayer(uuid)))));
                 }
             }
@@ -207,16 +206,16 @@ public class Debugger implements CommandExecutor
 			{
 				CommandSender bplayer = BungeeChat.getPlayerManager().getPlayer(player.getUniqueId());
 				if (bplayer == null)
-                    Utilities.getAudienceProvider().audience(sender)
+                    Utilities.getAudienceProvider().sender(sender)
                             .sendMessage(
-                                    TextComponent.of(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player))));
+                                    Component.text(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player))));
 			}
 		}
 		else if (args[0].equalsIgnoreCase("resync"))
 		{
-            Utilities.getAudienceProvider().audience(sender)
+            Utilities.getAudienceProvider().sender(sender)
                     .sendMessage(
-                            TextComponent.of("Resynching BungeeChat"));
+                            Component.text("Resynching BungeeChat"));
 			BungeeChat.getInstance().requestUpdate();
 		}
 		else
@@ -235,12 +234,12 @@ public class Debugger implements CommandExecutor
              offText = " OFF🗸|";
 
         }
-		Component compOn = TextComponent.of(onText)
+		Component compOn = Component.text(onText)
 				.style(getStyle(true,status))
-				.hoverEvent(HoverEvent.showText(TextComponent.of("Click to turn on")))
+				.hoverEvent(HoverEvent.showText(Component.text("Click to turn on")))
 				.clickEvent(ClickEvent.runCommand(baseCommand+" true"));
-		Component compOff = TextComponent.of(offText).style(getStyle(false,!status))
-				.hoverEvent(HoverEvent.showText(TextComponent.of("Click to turn OFF")))
+		Component compOff = Component.text(offText).style(getStyle(false,!status))
+				.hoverEvent(HoverEvent.showText(Component.text("Click to turn OFF")))
 				.clickEvent(ClickEvent.runCommand(baseCommand+" false"));
 		return compOn.append(compOff);
 	}
@@ -257,7 +256,7 @@ public class Debugger implements CommandExecutor
 			color = NamedTextColor.DARK_GRAY;
 
 		}
-		return Style.builder().color(color).build();
+		return Style.style(color);
 	}
 
 	private String buildPlayerDebug(CommandSender player, Player local)

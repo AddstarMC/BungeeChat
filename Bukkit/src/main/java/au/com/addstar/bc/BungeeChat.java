@@ -295,7 +295,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 	@Deprecated
 	public static void networkBroadcast(String message)
 	{
-		networkBroadcast(TextComponent.of(message));
+		networkBroadcast(Component.text(message));
 	}
 
 	/**

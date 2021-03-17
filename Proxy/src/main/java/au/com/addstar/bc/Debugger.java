@@ -46,6 +46,7 @@ package au.com.addstar.bc;
  */
 
 import au.com.addstar.bc.util.Utilities;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.md_5.bungee.api.ChatColor;
@@ -172,11 +173,11 @@ public class Debugger extends Command
 	{
 		if (!onCommand(sender, args))
 		{
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("/!bchatdebug general <true|false>"));
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("/!bchatdebug packet <true|false>"));
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("/!bchatdebug tab <true|false>"));
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("/!bchatdebug player <name>"));
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("/!bchatdebug allplayers"));
+			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug general <true|false>"));
+			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug packet <true|false>"));
+			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug tab <true|false>"));
+			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug player <name>"));
+			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug allplayers"));
 		}
 	}
 	
@@ -192,7 +193,7 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setGeneralDebugState(on);
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("General debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
+			Utilities.audience.sender(sender).sendMessage(Component.text("General debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
 		{
@@ -201,7 +202,7 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
+			Utilities.audience.sender(sender).sendMessage(Component.text("Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
 		}
 		else if (args[0].equalsIgnoreCase("tab"))
 		{
@@ -209,7 +210,7 @@ public class Debugger extends Command
 				return false;
 			boolean on = Boolean.parseBoolean(args[1]);
 			setTabDebugState(on);
-			Utilities.audience.audience(sender).sendMessage(TextComponent.of("TabList debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
+			Utilities.audience.sender(sender).sendMessage(Component.text("TabList debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
 		}
 		else
 			return false;

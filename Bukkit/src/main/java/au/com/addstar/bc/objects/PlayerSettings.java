@@ -73,7 +73,7 @@ public class PlayerSettings
 	
 	public boolean isAFK = false;
 
-	public Component chatName = TextComponent.empty();
+	public Component chatName = Component.empty();
 
 	public String defaultChannel = "";
 	

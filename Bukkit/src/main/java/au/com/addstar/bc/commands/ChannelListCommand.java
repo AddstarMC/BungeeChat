@@ -56,6 +56,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -83,7 +84,7 @@ public class ChannelListCommand implements CommandExecutor {
             BungeeChat.getSyncManager().callSyncMethod("bchat:getSubscribed",new Subscribed(commandSender,sub));
                        return true;
         }else{
-            Utilities.getAudienceProvider().audience(commandSender).sendMessage(TextComponent.of("No Permission").color(NamedTextColor.RED));
+            Utilities.getAudienceProvider().sender(commandSender).sendMessage(Component.text("No Permission").color(NamedTextColor.RED));
         }
         return false;
     }
@@ -112,39 +113,39 @@ public class ChannelListCommand implements CommandExecutor {
                     result.put(entry.getValue(),current);
                 }
             }
-            TextComponent.Builder builder = TextComponent.builder().color(NamedTextColor.WHITE).append(createHeader(sub));
-            builder.append(TextComponent.of(
+            TextComponent.Builder builder = Component.text().color(NamedTextColor.WHITE).append(createHeader(sub));
+            builder.append(Component.text(
                     StringUtils.center("-Channel Name-:-Total Subscribed-",31)).color(NamedTextColor.GOLD)).append(TextComponent.newline());
             for(Map.Entry<String, Integer> res: result.entrySet()){
-                builder.append(TextComponent.of(StringUtils.rightPad(res.getKey(),15))
-                        .append(TextComponent.of(" : ").color(NamedTextColor.GOLD))
-                        .append(TextComponent.of(StringUtils.leftPad(res.getValue().toString(),15))))
-                .append(TextComponent.newline());
+                builder.append(Component.text(StringUtils.rightPad(res.getKey(),15))
+                        .append(Component.text(" : ").color(NamedTextColor.GOLD))
+                        .append(Component.text(StringUtils.leftPad(res.getValue().toString(),15))))
+                .append(Component.newline());
             }
-            builder.append(TextComponent.of(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD));
-            Utilities.getAudienceProvider().audience(sender).sendMessage(builder.build());
+            builder.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD));
+            Utilities.getAudienceProvider().sender(sender).sendMessage(builder.build());
         }
 
         @Override
         public void onError(String type, String error) {
             ChatChannelManager manager = instance.getChatChannelsManager();
-            Utilities.getAudienceProvider().audience(sender).sendMessage(TextComponent.of("Error: " + type +" : " + error));
+            Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Error: " + type +" : " + error));
             TextComponent.Builder builder = TextComponent.builder().append(createHeader(sub));
-            manager.getChannelNames(sub).forEach(c -> builder.append(TextComponent.of(c)).append(TextComponent.newline()));
-            builder.append(TextComponent.of(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD));
-            Utilities.getAudienceProvider().audience(sender).sendMessage(builder.build());
+            manager.getChannelNames(sub).forEach(c -> builder.append(Component.text(c)).append(TextComponent.newline()));
+            builder.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD));
+            Utilities.getAudienceProvider().sender(sender).sendMessage(builder.build());
         }
 
         private Component createHeader(boolean sub){
-            TextComponent.Builder message = TextComponent.builder();
+            TextComponent.Builder message = Component.text();
             if(!sub){
-                message.append(TextComponent.of(StringUtils.center("***List of Channels**",31))
+                message.append(Component.text(StringUtils.center("***List of Channels**",31))
                         .color(NamedTextColor.GOLD)).append(TextComponent.newline());
             }else {
-                message.append(TextComponent.of(StringUtils.center("***List of Available Channels**",31))
+                message.append(Component.text(StringUtils.center("***List of Available Channels**",31))
                         .color(NamedTextColor.GOLD)).append(TextComponent.newline());
             }
-            message.append(TextComponent.of(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD)).append(TextComponent.newline());
+            message.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD)).append(TextComponent.newline());
             return message.build();
         }
 

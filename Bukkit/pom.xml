@@ -28,7 +28,6 @@
   </parent>
   <artifactId>BungeeChat-Bukkit</artifactId>
   <name>BungeeChat-Bukkit</name>
-
   <repositories>
     <!-- For Vault -->
     <repository>
@@ -43,7 +42,6 @@
       <version>${spigot.version}</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>net.milkbowl.vault</groupId>
       <artifactId>VaultAPI</artifactId>

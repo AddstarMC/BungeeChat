@@ -52,7 +52,7 @@ import au.com.addstar.bc.BungeeChat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -83,8 +83,8 @@ public class RemotePlayer implements CommandSender
 
 	public Component getChatName(){
 		Component name = BungeeChat.getPlayerManager().getPlayerChatName(this);
-		if(name == TextComponent.empty())
-			return TextComponent.of(mName);
+		if(name == Component.empty())
+			return Component.text(mName);
 		return name;
 	}
 	
@@ -217,7 +217,7 @@ public class RemotePlayer implements CommandSender
 
 		@Override
 		public void sendMessage(@NotNull BaseComponent... components) {
-			BungeeChat.sendRemoteMessage(uuid,BungeeCordComponentSerializer.get().deserialize(components));
+			BungeeChat.sendRemoteMessage(uuid,BungeeComponentSerializer.get().deserialize(components));
 		}
 	}
 }

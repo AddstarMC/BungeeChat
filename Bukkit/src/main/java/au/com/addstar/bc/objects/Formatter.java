@@ -82,16 +82,16 @@ public class Formatter
 	public static ArrayList<PermissionSetting> permissionLevels = new ArrayList<>();
 	public static Component consoleOverride = null;
 	
-	private static Component mDefaultFormat = TextComponent.of("<%DISPLAYNAME%> %MESSAGE%");
-	private static Component mRpDefaultFormat = TextComponent.of("<%DISPLAYNAME%>(%CHATNAME%) %MESSAGE%");
+	private static Component mDefaultFormat = Component.text("<%DISPLAYNAME%> %MESSAGE%");
+	private static Component mRpDefaultFormat = Component.text("<%DISPLAYNAME%>(%CHATNAME%) %MESSAGE%");
 	public static boolean keywordsEnabled;
 
 	public static ArrayList<String> keywordEnabledChannels = new ArrayList<>();
 	public static String keywordPerm;
 	public static HashMap<Pattern, Style> keywordPatterns = new HashMap<>();
 	
-	public static Component mPMFormatInbound = TextComponent.of("[%DISPLAYNAME% -> Me]: %MESSAGE%");
-	public static Component mPMFormatOutbound = TextComponent.of("[Me -> %DISPLAYNAME%]: %MESSAGE%");
+	public static Component mPMFormatInbound = Component.text("[%DISPLAYNAME% -> Me]: %MESSAGE%");
+	public static Component mPMFormatOutbound = Component.text("[Me -> %DISPLAYNAME%]: %MESSAGE%");
 
 	private final static Pattern DISPLAYNAME = Pattern.compile("%DISPLAYNAME%");
 	private final static Pattern RAWDISPLAYNAME = Pattern.compile("%RAWDISPLAYNAME%");
@@ -200,7 +200,7 @@ public class Formatter
 		}else if (sender instanceof RemotePlayer){
 			return BungeeChat.getPlayerManager().getPlayerChatName(sender);
 		}else{
-			return TextComponent.empty();
+			return Component.empty();
 		}
 	}
 
@@ -221,13 +221,14 @@ public class Formatter
 		if(level != null) {
 			result = MiniMessage.get().parse(level.color, Template.of("%NAME%", displayName));
 		} else {
-			result = TextComponent.of(displayName);
+			result = Component.text(displayName);
 		}
 		return result;
 	}
 
 	public static Component replaceMessage(Component format,final Component message){
-		return format.replaceText(MESSAGE, builder -> TextComponent.builder().append(message));
+		return format.replaceText(builder -> builder.match(MESSAGE).replacement(message));
+
 	}
 
 	/**
@@ -243,10 +244,11 @@ public class Formatter
 	{
 		Component displayName = getDisplayName(sender,level);
 		Component rawDisplayName = getDisplayName(sender,null);
-		compo = compo.replaceText(DISPLAYNAME, builder -> TextComponent.builder().append(displayName))
-			.replaceText(RAWDISPLAYNAME, builder -> TextComponent.builder().append(rawDisplayName))
-			.replaceText(NAME, builder -> builder.content(sender.getName())) //this should not be used because but its a safety feature
-			.replaceText(SERVER, builder -> TextComponent.builder().content(sender.getServer().getName()));
+		compo = compo
+			.replaceText(builder -> builder.match(DISPLAYNAME).replacement(displayName))
+			.replaceText(builder -> builder.match(RAWDISPLAYNAME).replacement(rawDisplayName))
+			.replaceText(builder -> builder.match(NAME).replacement(sender.getName()))
+			.replaceText(builder -> builder.match(SERVER).replacement(sender.getServer().getName()));
 		compo = updateIfPlayer(sender,compo);
 		return compo;
 	}
@@ -270,14 +272,17 @@ public class Formatter
 		if (sender instanceof Player) {
 			Player player = (Player)sender;
 			String group = BungeeChat.getPrimaryGroup(player);
-			message = message.replaceText(CHATNAME, b -> TextComponent.builder().append(getChatName(sender)))
-				.replaceText(GROUP, b -> TextComponent.builder().content(group != null ? group : "Default"))
-				.replaceText(WORLD, b -> TextComponent.builder().content(player.getWorld().getName()));
+			message = message
+				.replaceText(builder -> builder.match(CHATNAME).replacement(getChatName(sender)))
+				.replaceText(builder -> builder.match(GROUP).replacement(group != null ? group : "Default"))
+				.replaceText(builder -> builder.match(WORLD).replacement(player.getWorld().getName()));
 		}
 		else {
-			message = message.replaceText(CHATNAME, b -> TextComponent.builder().content(""))
-				.replaceText(SERVER, b -> TextComponent.builder().content("Server"))
-				.replaceText(WORLD, b -> TextComponent.builder().content(""));
+			message = message
+				.replaceText(builder -> builder.match(CHATNAME).replacement(""))
+				.replaceText(builder -> builder.match(SERVER).replacement("Server"))
+				.replaceText(builder -> builder.match(WORLD).replacement(""));
+
 		}
 		return message;
 	}

@@ -82,7 +82,7 @@ public class PlayerSettings extends YamlConfig
 	public boolean isAFK = false;
 
 	@NoSave
-	public Component chatName = TextComponent.empty();
+	public Component chatName = Component.empty();
 
 	@NoSave
 	public String defaultChannel = "";

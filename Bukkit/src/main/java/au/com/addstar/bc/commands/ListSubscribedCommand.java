@@ -111,18 +111,18 @@ public class ListSubscribedCommand implements CommandExecutor {
                                   builder.append(s).append(TextComponent.newline());
                               }
                               builder.append(TextComponent.of(StringUtils.center("-----", 40, '-')));
-                              Utilities.getAudienceProvider().audience(commandSender).sendMessage(builder.build());
+                              Utilities.getAudienceProvider().sender(commandSender).sendMessage(builder.build());
                           }
 
                           @Override
                           public void onError(String type, String message) {
-                              Utilities.getAudienceProvider().audience(commandSender).sendMessage(TextComponent.of("Error: " + type + " : " + message).color(NamedTextColor.RED));
+                              Utilities.getAudienceProvider().sender(commandSender).sendMessage(TextComponent.of("Error: " + type + " : " + message).color(NamedTextColor.RED));
                           }
                       });
             }
             return true;
         } else {
-            Utilities.getAudienceProvider().audience(commandSender).sendMessage(TextComponent.of("No Permission"));
+            Utilities.getAudienceProvider().sender(commandSender).sendMessage(TextComponent.of("No Permission"));
         }
         return false;
     }

@@ -117,8 +117,8 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		{
 			if(!sender.hasPermission("bungeechat.afk.others"))
 			{
-				Utilities.getAudienceProvider().audience(sender)
-					.sendMessage(TextComponent.of("You do not have permission to change other players AFK state.")
+				Utilities.getAudienceProvider().sender(sender)
+					.sendMessage(Component.text("You do not have permission to change other players AFK state.")
 						.color(NamedTextColor.RED));
 				return true;
 			}
@@ -126,8 +126,8 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			target = BungeeChat.getPlayerManager().getPlayer(args[0]);
 			if(target == null)
 			{
-				Utilities.getAudienceProvider().audience(sender)
-					.sendMessage(TextComponent.of("Unknown player " + args[0])
+				Utilities.getAudienceProvider().sender(sender)
+					.sendMessage(Component.text("Unknown player " + args[0])
 						.color(NamedTextColor.RED));
 				return true;
 			}
@@ -157,8 +157,8 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 			BungeeChat.getSyncManager().callSyncMethod("bchat:toggleAFK", null, PlayerManager.getUniqueId(target));
 		
 		if(target != sender)
-			Utilities.getAudienceProvider().audience(sender)
-				.sendMessage(TextComponent.of("Toggled " + target.getName() + "'s AFK state")
+			Utilities.getAudienceProvider().sender(sender)
+				.sendMessage(Component.text("Toggled " + target.getName() + "'s AFK state")
 					.color(NamedTextColor.GREEN));
 		return true;
 	}
@@ -189,7 +189,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 		if(player instanceof Player)
 		{
 			if(isAFK((Player)player))
-				Utilities.getAudienceProvider().audience(sender).sendMessage(message);
+				Utilities.getAudienceProvider().sender(sender).sendMessage(message);
 		}
 		else
 		{
@@ -205,7 +205,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 				public void onFinished( Boolean data )
 				{
 					if(data)
-						Utilities.getAudienceProvider().audience(sender).sendMessage(message);
+						Utilities.getAudienceProvider().sender(sender).sendMessage(message);
 				}
 				
 			}, PlayerManager.getUniqueId(player));
@@ -224,11 +224,11 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 	{
 		Component message;
 		Component name = LegacyComponentSerializer.legacySection().deserialize(player.getDisplayName()).color(NamedTextColor.GRAY);
-		TextComponent.Builder builder = TextComponent.builder().content("* ").color(NamedTextColor.GRAY).append(name);
+		TextComponent.Builder builder = Component.text().content("* ").color(NamedTextColor.GRAY).append(name);
 		if(isAFK)
-			builder.append(TextComponent.of(" is now AFK."));
+			builder.append(Component.text(" is now AFK."));
 		else
-			builder.append(TextComponent.of(" is no longer AFK."));
+			builder.append(Component.text(" is no longer AFK."));
 		message = builder.build();
 		BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 		
@@ -355,7 +355,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 						BungeeChat.getSyncManager().callSyncMethod("bchat:kick", null, player.getUniqueId(), String.format(kickMessage, kickTime));
 
 						Component consoleKickMessage = LegacyComponentSerializer.legacySection().deserialize(player.getDisplayName())
-							.append(TextComponent.of(" has been kicked for idling more than " + kickTime + " minutes"))
+							.append(Component.text(" has been kicked for idling more than " + kickTime + " minutes"))
 							.colorIfAbsent(NamedTextColor.GOLD);
 						BungeeChat.mirrorChat(consoleKickMessage, ChannelType.AFKKick.getName());
 						Utilities.localBroadCast(consoleKickMessage, "bungeechat.afk.kick.notify",object -> true);

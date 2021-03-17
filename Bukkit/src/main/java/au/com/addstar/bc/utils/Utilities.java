@@ -125,7 +125,7 @@ public class Utilities {
                         return permissible.hasPermission(permission);
                     }
                     return false;
-                }).forEach(permissible -> getAudienceProvider().audience((CommandSender) permissible).sendMessage(message));
+                }).forEach(permissible -> getAudienceProvider().sender((CommandSender) permissible).sendMessage(message));
     }
 
     /**

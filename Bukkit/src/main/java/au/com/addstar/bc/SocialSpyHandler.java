@@ -92,7 +92,7 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		
 		if(mKeywords.contains(command.toLowerCase()))
 		{
-			Component message = TextComponent.of(event.getPlayer().getName() + ": " + event.getMessage());
+			Component message = Component.text(event.getPlayer().getName() + ": " + event.getMessage());
 			Utilities.localBroadCast(message, "bungeechat.socialspy", event.getPlayer(), Utilities.SOCIAL_SPY_ENABLED);
 			BungeeChat.mirrorChat(message, ChannelType.SocialSpy.getName());
 		}
@@ -140,10 +140,10 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 		on = !on;
 		Component message;
 		if(on)
-			message = TextComponent.of("SocialSpy now on").color(NamedTextColor.GREEN);
+			message = Component.text("SocialSpy now on").color(NamedTextColor.GREEN);
 		else
-			message = TextComponent.of("SocialSpy now Off").color(NamedTextColor.RED);
-		Utilities.getAudienceProvider().audience(sender).sendMessage(message);
+			message = Component.text("SocialSpy now Off").color(NamedTextColor.RED);
+		Utilities.getAudienceProvider().sender(sender).sendMessage(message);
 
 		setStatus(sender, on);
 		

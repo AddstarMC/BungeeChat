@@ -66,22 +66,22 @@ public class SetChatNameCommand implements CommandExecutor {
         Player player = (Player) commandSender;
         if (args.length == 0) {
                 commandSender.sendMessage("Usage: /chatname <name>");
-                BungeeChat.getPlayerManager().setPlayerChatName(player, TextComponent.empty());
+                BungeeChat.getPlayerManager().setPlayerChatName(player, Component.empty());
                 commandSender.sendMessage(" Your chat name is cleared");
         } else {
                 String prefix = args[0];
             if (prefix.length() > 25)
             {
                 Utilities.getAudienceProvider()
-                      .audience(commandSender)
-                      .sendMessage(TextComponent.of( "Nickname cannot be longer than 25 characters").color(NamedTextColor.RED));
+                      .sender(commandSender)
+                      .sendMessage(Component.text( "Nickname cannot be longer than 25 characters").color(NamedTextColor.RED));
                 return true;
             }
                 Component colourPrefix = Utilities.colorize(prefix,commandSender);
                 BungeeChat.getPlayerManager().setPlayerChatName(player, colourPrefix);
             Utilities.getAudienceProvider()
-                  .audience(commandSender)
-                  .sendMessage(TextComponent.of( " Your chat name is set to ").append(colourPrefix));
+                  .sender(commandSender)
+                  .sendMessage(Component.text( " Your chat name is set to ").append(colourPrefix));
                 return true;
             }
         }else{

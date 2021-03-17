@@ -47,7 +47,6 @@ package au.com.addstar.bc.sync.packet;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
-import com.google.gson.Gson;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 

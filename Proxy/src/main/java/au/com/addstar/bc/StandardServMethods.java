@@ -52,7 +52,7 @@ import java.util.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.bungeecord.BungeeCordComponentSerializer;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -226,7 +226,7 @@ public class StandardServMethods implements SyncMethod
 					return false;
 			}
 			
-			message = net.kyori.adventure.text.TextComponent.of(player.getDisplayName() + " and alternate accounts have been muted for " + timeString).color(NamedTextColor.AQUA);
+			message = Component.text(player.getDisplayName() + " and alternate accounts have been muted for " + timeString).color(NamedTextColor.AQUA);
 
 			BungeeChat.instance.getPacketManager().broadcast(new MirrorPacket("~BC", message));
 			BungeeChat.instance.getMuteHandler().setIPMute(address, System.currentTimeMillis() + muteLength);
@@ -281,7 +281,7 @@ public class StandardServMethods implements SyncMethod
 		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
 		if(pplayer == null)
 			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":kickPlayer()."+player);
-		pplayer.disconnect(BungeeCordComponentSerializer.get().serialize(TextComponent.of(reason)));
+		pplayer.disconnect(BungeeComponentSerializer.get().serialize(Component.text(reason)));
 		
 		return null;
 	}

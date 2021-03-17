@@ -89,13 +89,13 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 			player = manager.getPlayer(args[0]);
 			if(!(player instanceof Player || player instanceof RemotePlayer))
 			{
-				Utilities.getAudienceProvider().audience(sender).sendMessage(TextComponent.of("Unknown player " + args[0]).color(NamedTextColor.RED));
+				Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Unknown player " + args[0]).color(NamedTextColor.RED));
 				return true;
 			}
 		}
 		else if(!(sender instanceof Player))
 		{
-			Utilities.getAudienceProvider().audience(sender).sendMessage(TextComponent.of("A player name must be specified if not called by a player.").color(NamedTextColor.RED));
+			Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("A player name must be specified if not called by a player.").color(NamedTextColor.RED));
 			return true;
 		}
 
@@ -103,12 +103,12 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 		if(name.equalsIgnoreCase("off"))
 		{
 			BungeeChat.getSyncManager().callSyncMethod("bchat:setSkin", null, PlayerManager.getUniqueId(player), null);
-			Utilities.getAudienceProvider().audience(sender).sendMessage(TextComponent.of("Restored " + player.getName() + "'s skin").color(NamedTextColor.GREEN));
+			Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Restored " + player.getName() + "'s skin").color(NamedTextColor.GREEN));
 
 		}
 		else
 		{
-			Utilities.getAudienceProvider().audience(sender).sendMessage(TextComponent.of("Looking up skin for " + name).color(NamedTextColor.GREEN));
+			Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Looking up skin for " + name).color(NamedTextColor.GREEN));
 
 			sender.sendMessage(ChatColor.GREEN + "Looking up skin for " + name);
 			final String playerName = player.getName();
@@ -126,13 +126,13 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 				@Override
 				public void onFinished( Void data )
 				{
-					Utilities.getAudienceProvider().audience(sender).sendMessage(TextComponent.of("Setting " + playerName + "'s skin to be " + name + "'s skin.").color(NamedTextColor.GREEN));
+					Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Setting " + playerName + "'s skin to be " + name + "'s skin.").color(NamedTextColor.GREEN));
 				}
 				
 				@Override
 				public void onError( String type, String message )
 				{
-					Utilities.getAudienceProvider().audience(sender).sendMessage(TextComponent.of(message).color(NamedTextColor.RED));
+					Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of(message).color(NamedTextColor.RED));
 				}
 			}, PlayerManager.getUniqueId(player), target);
 		}
