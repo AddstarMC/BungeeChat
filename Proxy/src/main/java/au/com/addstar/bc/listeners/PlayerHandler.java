@@ -49,7 +49,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import au.com.addstar.bc.BungeeChat;
-import au.com.addstar.bc.ColourTabList;
 import au.com.addstar.bc.Debugger;
 import au.com.addstar.bc.PlayerSettings;
 import au.com.addstar.bc.PlayerSettingsManager;
@@ -95,15 +94,6 @@ public class PlayerHandler implements Listener
 				player.setDisplayName(settings.nickname);
 
 			Debugger.log("Applying nickname to PP %s: '%s'", player.getName(), settings.nickname);
-
-			if (settings.skin != null && !settings.skin.isEmpty())
-			{
-				ColourTabList tablist = ((ColourTabList)player.getTabListHandler());
-				tablist.setOverrideSkin(BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync(UUID.fromString(settings.skin)));
-
-				if (tablist.hasInited())
-					BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
-			}
 		});
 	}
 	
@@ -111,8 +101,6 @@ public class PlayerHandler implements Listener
 	public void onFinishLogin(final PostLoginEvent event)
 	{
 		Debugger.log("PP join %s", event.getPlayer().getName());
-		
-		event.getPlayer().setTabListHandler(new ColourTabList(event.getPlayer()));
 		loadSettingsAsync(event.getPlayer());
 	}
 	
@@ -174,21 +162,7 @@ public class PlayerHandler implements Listener
 		if (message == null)
 			message = "";
 		mPackets.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
-		
-		// Give 1 second for plugins on the server to apply tab groups to this player
-		mProxy.getScheduler().schedule(BungeeChat.instance, () -> {
-            if (!isOnline(player))
-            {
-                Debugger.log("ServerConnected-task player not online %s", player.getName());
-                return;
-            }
-            
-            if(player.getTabListHandler() instanceof ColourTabList)
-            {
-                ((ColourTabList)player.getTabListHandler()).onJoinPeriodComplete();
-                BungeeChat.instance.getPacketManager().send(new PlayerRefreshPacket(player.getUniqueId()), player.getServer().getInfo());
-            }
-        }, 1, TimeUnit.SECONDS);
+
 	}
 	
 	// Post login request, still before actual server login
@@ -207,8 +181,6 @@ public class PlayerHandler implements Listener
             
             mSettings.updateSettings(event.getPlayer());
         }, 10, TimeUnit.MILLISECONDS);
-		
-		ColourTabList.updateAll();
 	}
 	
 	private boolean isOnline(ProxiedPlayer player)

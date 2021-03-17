@@ -62,8 +62,7 @@ public class Debugger extends Command
 {
 	private static boolean mDebugEnabled = false;
 	private static boolean mPacketDebugEnabled = false;
-	private static boolean mTabDebugEnabled = false;
-	
+
 	public static void setGeneralDebugState(boolean on)
 	{
 		mDebugEnabled = on;
@@ -74,10 +73,7 @@ public class Debugger extends Command
 		mPacketDebugEnabled = on;
 	}
 	
-	public static void setTabDebugState(boolean on)
-	{
-		mTabDebugEnabled = on;
-	}
+
 	
 	private static void log0(String category, String message)
 	{
@@ -104,64 +100,8 @@ public class Debugger extends Command
 		if (mPacketDebugEnabled)
 			log0("Packet", String.format(message, params));
 	}
-	
-	/**
-	 * TabList logging
-	 */
-	public static void logt(String message, Object... params)
-	{
-		if (mTabDebugEnabled)
-			log0("TabList", String.format(message, params).replace(ChatColor.COLOR_CHAR, '&'));
-	}
-	
-	public static void logTabItem(PlayerListItem packet, ProxiedPlayer to)
-	{
-		if (!mTabDebugEnabled)
-			return;
-		
-		boolean newTab = ColourTabList.isNewTab(to);
-		for (Item item : packet.getItems())
-		{
-			String name = item.getUsername();
-			if (!newTab)
-				name = BaseComponent.toLegacyText(item.getDisplayName());
-			
-			String message = null;
-			switch(packet.getAction())
-			{
-			case ADD_PLAYER:
-				message = String.format("%d,%d,%s", item.getPing(), item.getGamemode(), BaseComponent.toLegacyText(item.getDisplayName()));
-				break;
-			case REMOVE_PLAYER:
-				message = item.getUuid().toString();
-				break;
-			case UPDATE_DISPLAY_NAME:
-				message = BaseComponent.toLegacyText(item.getDisplayName());
-				break;
-			case UPDATE_GAMEMODE:
-				message = String.valueOf(item.getGamemode());
-				break;
-			case UPDATE_LATENCY:
-				message = String.valueOf(item.getPing());
-				break;
-			}
-			
-			if (packet.getAction() == Action.ADD_PLAYER)
-				message = String.format("%s %s-%s: %s", packet.getAction().name(), name, item.getUuid().toString(), message);
-			else if (name == null)
-				message = String.format("%s %s: %s", packet.getAction().name(), item.getUuid().toString(), message);
-			else
-				message = String.format("%s %s: %s", packet.getAction().name(), name, message);
-			
-			log0("TabList", String.format("to %s: %s", to.getName(), message).replace(ChatColor.COLOR_CHAR, '&'));
-		}
-	}
-	
-	public static void logTrue(boolean expression, String message, Object... params)
-	{
-		if (!expression)
-			log(message, params);
-}
+
+
 	
 	public Debugger()
 	{
@@ -203,14 +143,6 @@ public class Debugger extends Command
 			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
 			Utilities.audience.sender(sender).sendMessage(Component.text("Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
-		}
-		else if (args[0].equalsIgnoreCase("tab"))
-		{
-			if (args.length != 2)
-				return false;
-			boolean on = Boolean.parseBoolean(args[1]);
-			setTabDebugState(on);
-			Utilities.audience.sender(sender).sendMessage(Component.text("TabList debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
 		}
 		else
 			return false;

@@ -446,7 +446,6 @@ import java.util.UUID;
                 event.getPlayer().recalculatePermissions();
             }
         }
-        Bukkit.getScheduler().runTaskLater(BungeeChat.getInstance(), () -> updateTabColor(current), 2L);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -473,25 +472,6 @@ import java.util.UUID;
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    private void onPlayerChat(AsyncPlayerChatEvent event) {
-        updateTabColor(event.getPlayer());
-    }
-
-    private void updateTabColor(Player player) {
-        PermissionSetting level = Formatter.getPermissionLevel(player);
-        String colour = "";
-        if (level != null)
-            colour = level.color;
-
-        PlayerSettings settings = getPlayerSettings(player);
-
-        if (!settings.tabFormat.equals(colour)) {
-            Debugger.log("Tab colour change %s: '%s'-'%s'", player.getName(), settings.tabFormat, colour);
-            settings.tabFormat = colour;
-            BungeeChat.getSyncManager().callSyncMethod("bchat:setTabColor", null, player.getUniqueId(), settings.tabFormat);
-        }
-    }
 
     private void onUpdatePlayers(PlayerListPacket packet) {
         mAllProxied.clear();

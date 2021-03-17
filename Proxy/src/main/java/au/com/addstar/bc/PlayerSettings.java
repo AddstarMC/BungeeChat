@@ -74,10 +74,6 @@ public class PlayerSettings extends YamlConfig
 	
 	public long muteTime = 0;
 
-	//A minimessage formatted String that uses %NAME% as a placholder for the playername for the tab.
-	@NoSave
-	public String tabColor = "%NAME%";
-
 	@NoSave
 	public boolean isAFK = false;
 

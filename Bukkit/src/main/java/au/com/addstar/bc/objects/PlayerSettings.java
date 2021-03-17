@@ -65,9 +65,7 @@ public class PlayerSettings
 	public String nickname = "";
 	
 	public long muteTime = 0;
-	
-	public String tabFormat = "";
-	
+
 	public long lastActiveTime = Long.MAX_VALUE;
 	public long afkStartTime = 0;
 	

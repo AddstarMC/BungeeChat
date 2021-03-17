@@ -50,7 +50,6 @@ import java.util.UUID;
 
 import au.com.addstar.bc.BungeeChat;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -61,6 +60,7 @@ import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class RemotePlayer implements CommandSender
 {
@@ -201,6 +201,21 @@ public class RemotePlayer implements CommandSender
 		for(String m : message)
 			this.sendMessage(m);
 	}
+
+	@Override
+	public void sendMessage(@Nullable UUID sender, @NotNull String message) {
+		//todo BungeeChat doesnt not respect identities when cross server sending messages.
+		BungeeChat.sendRemoteMessage(this,MiniMessage.get().parse(message));
+	}
+
+	@Override
+	public void sendMessage(@Nullable UUID sender, @NotNull String[] messages) {
+		for (String m: messages
+			 ) {
+			this.sendMessage(sender,m);
+		}
+	}
+
 	private static class RemoteSpigot extends Spigot{
 		private final UUID uuid;
 

@@ -187,9 +187,7 @@ public class BungeeChat extends Plugin
 		mMuteHandler.updateSettings(mConfig);
 		
 		mSkins = new SkinLibrary();
-		
-		ColourTabList.initialize(this);
-		
+
 		mSyncManager.sendConfig("bungeechat");
 		mPacketManager.sendSchemas();
 	}
@@ -212,8 +210,6 @@ public class BungeeChat extends Plugin
 			{
 				loadKeywordFile(mConfig.keywordHighlighter.keywordFile);
 			}
-			
-			ColourTabList.updateAll();
 			if(mMuteHandler != null)
 				mMuteHandler.updateSettings(mConfig);
 			return true;
@@ -398,65 +394,7 @@ public class BungeeChat extends Plugin
 		else
 			mPacketManager.broadcast(packet);
 	}
-	
-	public Component getTabHeaderString(ProxiedPlayer player)
-	{
-		String header = null;
-		if (player.getServer() != null)
-		{
-			ServerConfig config = mConfig.servers.get(player.getServer().getInfo().getName()); 
-			if (config != null)
-				header = config.tabListHeader;
-		}
-		if (header == null)
-			header = mConfig.tabListHeader;
-		if (header == null)
-			return Component.empty();
-		
-		return formatHeaderString(header, player);
-	}
-	
-	public Component getTabFooterString(ProxiedPlayer player)
-	{
-		String header = null;
-		if (player.getServer() != null)
-		{
-			ServerConfig config = mConfig.servers.get(player.getServer().getInfo().getName()); 
-			if (config != null)
-				header = config.tabListFooter;
-		}
-		if (header == null)
-			header = mConfig.tabListFooter;
-		if (header == null)
-			return Component.empty();
-		
-		return formatHeaderString(header, player);
-	}
-	
-	private Component formatHeaderString(String string, ProxiedPlayer player)
-	{
-		PlayerSettings settings = mSettings.getSettings(player);
-		List<Template> templates = new ArrayList<>();
-		templates.add(Template.of("%PLAYER%",player.getName()));
-		templates.add(Template.of("%DISPLAYNAME%",player.getDisplayName()));
-		templates.add(Template.of("%TABNAME%", MiniMessage.get().parse(settings.tabColor,Template.of("%NAME%",player.getDisplayName()))));
-		templates.add(Template.of("%SERVER%",(player.getServer()!=null?player.getServer().getInfo().getName():"")));
-		templates.add(Template.of("%COUNT%", String.valueOf(getPlayerCount(player))));
-		templates.add(Template.of("%MAX%", String.valueOf(player.getPendingConnection().getListener().getMaxPlayers())));
-		return MiniMessage.get().parse(string,templates);
-	}
-	
-	private int getPlayerCount(ProxiedPlayer player)
-	{
-		int count = 0;
-		for(ProxiedPlayer other : getProxy().getPlayers())
-		{
-			if (ColourTabList.isVisible(player, other))
-				++count;
-		}
-		
-		return count;
-	}
+
 	
 	public ChatChannel getChannel(String name)
 	{

@@ -78,8 +78,6 @@ public class StandardServMethods implements SyncMethod
 				return setAFK((UUID) arguments[0], (Boolean) arguments[1]);
 			case "bchat:toggleAFK":
 				return toggleAFK((UUID) arguments[0]);
-			case "bchat:setTabColor":
-				return setTabColor((UUID) arguments[0], (String) arguments[1]);
 			case "bchat:setMute":
 				return setMute((UUID) arguments[0], (Long) arguments[1]);
 			case "bchat:setMuteIP":
@@ -154,19 +152,7 @@ public class StandardServMethods implements SyncMethod
 		
 		return null;
 	}
-	
-	public Void setTabColor(UUID player, String color) throws IllegalArgumentException
-	{
-		ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
-		if(pplayer == null)
-			throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setTabColor()."+player);
-		
-		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
-		settings.tabColor = color;
-		pplayer.getTabListHandler().onUpdateName();
-		
-		return null;
-	}
+
 	
 	public Void setMute(UUID player, long muteEnd) throws IllegalArgumentException
 	{
@@ -176,7 +162,6 @@ public class StandardServMethods implements SyncMethod
 		
 		PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
 		settings.muteTime = muteEnd;
-		
 		BungeeChat.instance.getManager().savePlayer(player);
 		BungeeChat.instance.getManager().updateSettings(player);
 		
@@ -294,7 +279,6 @@ public class StandardServMethods implements SyncMethod
 		
 		if (skin == null)
 		{
-			((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(null);
 			BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
 			BungeeChat.instance.getManager().getSettings(pplayer).skin = null;
 			BungeeChat.instance.getManager().savePlayer(pplayer);
@@ -309,7 +293,6 @@ public class StandardServMethods implements SyncMethod
 		
 		if (data != null)
 		{
-			((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(data);
 			BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
 			BungeeChat.instance.getManager().getSettings(pplayer).skin = data.id.toString();
 			BungeeChat.instance.getManager().savePlayer(pplayer);
