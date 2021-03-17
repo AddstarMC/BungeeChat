@@ -62,6 +62,7 @@ import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.ServerConnectedEvent;
@@ -96,7 +97,15 @@ public class PlayerHandler implements Listener
 			Debugger.log("Applying nickname to PP %s: '%s'", player.getName(), settings.nickname);
 		});
 	}
-	
+
+
+	@EventHandler
+	public void onLoginEvent(LoginEvent event) {
+		UUID uuid = UUID.fromString(event.getLoginResult().getId());
+		BungeeChat.instance.getSkinLibrary().storeSkinData(uuid,event.getLoginResult());
+	}
+
+
 	@EventHandler
 	public void onFinishLogin(final PostLoginEvent event)
 	{
@@ -164,7 +173,7 @@ public class PlayerHandler implements Listener
 		mPackets.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
 
 	}
-	
+
 	// Post login request, still before actual server login
 	@EventHandler
 	public void onServerSwitch(final ServerSwitchEvent event)

@@ -17,6 +17,11 @@
       <option name="url" value="https://repo.maven.apache.org/maven2" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="papermc" />
+      <option name="name" value="papermc" />
+      <option name="url" value="https://papermc.io/repo/repository/maven-public/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="vault-repo" />
       <option name="name" value="Public Releases" />
       <option name="url" value="http://nexus.hc.to/content/repositories/pub_releases/" />

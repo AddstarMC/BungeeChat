@@ -31,7 +31,7 @@
 
   <dependencies>
     <dependency>
-        <groupId>au.com.addstar</groupId>
+        <groupId>io.github.waterfallmc</groupId>
         <artifactId>waterfall-api</artifactId>
         <version>${bungee.version}</version>
         <scope>provided</scope>

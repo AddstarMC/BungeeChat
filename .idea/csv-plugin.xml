@@ -87,6 +87,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Proxy\src\main\java\au\com\addstar\bc\SkinLibrary.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Proxy\src\main\java\au\com\addstar\bc\listeners\PlayerHandler.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\Proxy\src\main\java\au\com\addstar\bc\util\Utilities.java">
           <value>
             <Attribute>

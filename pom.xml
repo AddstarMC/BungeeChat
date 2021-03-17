@@ -84,6 +84,10 @@
         <module>Core</module>
     </modules>
     <repositories>
+        <repository>
+            <id>papermc</id>
+            <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
         <!-- Addstar repos -->
         <repository>
             <id>addstar-repo</id>

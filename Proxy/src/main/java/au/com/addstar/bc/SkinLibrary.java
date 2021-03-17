@@ -66,12 +66,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.GameProfile.Property;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.connection.LoginResult;
+import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("UnstableApiUsage")
+
 public class SkinLibrary
 {
 	private Map<UUID, SkinData> mSkins;
@@ -83,17 +83,17 @@ public class SkinLibrary
 		mNames = Collections.synchronizedMap(Maps.newHashMap());
 	}
 	
-	public SkinData getSkin(ProxiedPlayer player)
+	public @Nullable SkinData storeSkinData(UUID player, LoginResult result)
 	{
-		SkinData skin = mSkins.get(player.getUniqueId());
+		SkinData skin = mSkins.get(player);
 		if (skin == null)
 		{
-			for (Property prop : player.getProfile().getProperties())
+			for (LoginResult.Property prop : result.getProperties())
 			{
 				if (prop.getName().equals("textures"))
 				{
 					skin = new SkinData(prop.getValue(), prop.getSignature());
-					mSkins.put(player.getUniqueId(), skin);
+					mSkins.put(player, skin);
 					break;
 				}
 			}
@@ -102,27 +102,9 @@ public class SkinLibrary
 		return skin;
 	}
 	
-	public SkinData getSkin(UUID id)
+	public @Nullable SkinData getSkin(UUID id)
 	{
-		SkinData skin = mSkins.get(id);
-		if (skin == null)
-		{
-			ProxiedPlayer player = ProxyServer.getInstance().getPlayer(id);
-			if (player != null)
-			{
-				for (Property prop : player.getProfile().getProperties())
-				{
-					if (prop.getName().equals("textures"))
-					{
-						skin = new SkinData(prop.getValue(), prop.getSignature());
-						mSkins.put(player.getUniqueId(), skin);
-						break;
-					}
-				}
-			}
-		}
-		
-		return skin;
+		return mSkins.get(id);
 	}
 	
 	public Future<SkinData> getSkinWithLookup(final String name)
