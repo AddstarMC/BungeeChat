@@ -114,8 +114,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 					return false;
 
 				if (BungeeChat.getPlayerManager().isPlayerMuted(sender)) {
-					Utilities.getAudienceProvider().sender(sender)
-						.sendMessage(Component.text("You are muted. You may not talk").color(NamedTextColor.AQUA));
+					sender.sendMessage(Component.text("You are muted. You may not talk").color(NamedTextColor.AQUA));
 					return true;
 				}
 

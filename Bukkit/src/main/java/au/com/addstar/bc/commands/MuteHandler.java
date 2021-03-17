@@ -184,7 +184,7 @@ public class MuteHandler implements CommandExecutor, TabCompleter
 					Component message = Component.text(name + " has been muted for " + timeString).color(NamedTextColor.AQUA);
 					BungeeChat.mirrorChat(message, ChannelType.Broadcast.getName());
 					Utilities.localBroadCast(message,null,target,object -> true);
-					Utilities.getAudienceProvider().all().sendMessage(message);
+					BungeeChat.getAudiences().all().sendMessage(message);
 					if(target != null) {
 						target.sendMessage(Component.text("You have been muted for " + timeString).color(NamedTextColor.AQUA));
 					}
