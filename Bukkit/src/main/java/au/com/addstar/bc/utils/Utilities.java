@@ -45,7 +45,9 @@ package au.com.addstar.bc.utils;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +92,7 @@ public class Utilities {
         if(permission != null) {
             targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
         } else {
-            targets = (Collection<Permissible>) Bukkit.getOnlinePlayers();
+            targets = new ArrayList<>(Bukkit.getOnlinePlayers());
         }
         sendWithPermission(targets,null,permission,message,object -> true);
     }
@@ -99,8 +101,7 @@ public class Utilities {
         if(permission != null) {
             targets = Bukkit.getPluginManager().getPermissionSubscriptions(permission);
         } else {
-            //noinspection unchecked
-            targets = (Collection<Permissible>) Bukkit.getOnlinePlayers();
+            targets = new ArrayList<>(Bukkit.getOnlinePlayers());
         }
         sendWithPermission(targets,null,permission,message,checker);
     }
@@ -411,7 +412,7 @@ public class Utilities {
         if (message.contains("&")) {
             result = LegacyComponentSerializer.legacyAmpersand().deserialize(message).toBuilder();
         } else {
-            return TextComponent.of(message);
+            return Component.text(message);
         }
         final boolean hasColor = sender.hasPermission("bungeechat.color");
         final boolean hasBold = sender.hasPermission("bungeechat.format.bold");

@@ -52,6 +52,7 @@ import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PlayerManager;
 import au.com.addstar.bc.objects.RemotePlayer;
 import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.ChatColor;
@@ -88,13 +89,13 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 			player = manager.getPlayer(args[0]);
 			if(!(player instanceof Player || player instanceof RemotePlayer))
 			{
-				Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Unknown player " + args[0]).color(NamedTextColor.RED));
+				Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Unknown player " + args[0]).color(NamedTextColor.RED));
 				return true;
 			}
 		}
 		else if(!(sender instanceof Player))
 		{
-			Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("A player name must be specified if not called by a player.").color(NamedTextColor.RED));
+			Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("A player name must be specified if not called by a player.").color(NamedTextColor.RED));
 			return true;
 		}
 
@@ -102,13 +103,13 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 		if(name.equalsIgnoreCase("off"))
 		{
 			manager.setPlayerNickname(player, "");
-			Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Removed " + player.getName() + "'s nickname").color(NamedTextColor.GREEN));
+			Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Removed " + player.getName() + "'s nickname").color(NamedTextColor.GREEN));
 		}
 		else
 		{
 			if(!mAllowed.matcher(name).matches())
 			{
-				Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Invalid characters in nickname. Can only use a-z 0-9 and _").color(NamedTextColor.RED));
+				Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Invalid characters in nickname. Can only use a-z 0-9 and _").color(NamedTextColor.RED));
 
 				sender.sendMessage(ChatColor.RED + "Invalid characters in nickname. Can only use a-z 0-9 and _");
 				return true;
@@ -116,7 +117,7 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 			
 			if (name.length() > 16)
 			{
-				Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Nickname cannot be longer than 16 characters").color(NamedTextColor.RED));
+				Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Nickname cannot be longer than 16 characters").color(NamedTextColor.RED));
 				return true;
 			}
 			
@@ -124,12 +125,12 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 			// Allow them to change the case of their name, but not to any other existing name
 			if(other != null && other != player)
 			{
-				Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("You cannot nickname someone to an existing name").color(NamedTextColor.RED));
+				Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("You cannot nickname someone to an existing name").color(NamedTextColor.RED));
 				return true;
 			}
 			
 			manager.setPlayerNickname(player, name);
-			Utilities.getAudienceProvider().sender(sender).sendMessage(TextComponent.of("Nickname changed").color(NamedTextColor.GREEN));
+			Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Nickname changed").color(NamedTextColor.GREEN));
 
 			sender.sendMessage(ChatColor.GREEN + "Nickname changed");
 		}

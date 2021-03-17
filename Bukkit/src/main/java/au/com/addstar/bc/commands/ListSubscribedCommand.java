@@ -85,7 +85,7 @@ public class ListSubscribedCommand implements CommandExecutor {
                                   if (entry.getValue().equals(subscribed)) {
                                       UUID uid = UUID.fromString(entry.getKey());
                                       CommandSender target = BungeeChat.getPlayerManager().getPlayer(uid);
-                                      TextComponent.Builder name = TextComponent.builder();
+                                      TextComponent.Builder name = Component.text();
                                       if (target != null) {
                                           Component chatName = BungeeChat.getPlayerManager().getPlayerSettings(target).chatName;
                                           if (target instanceof Player) {
@@ -95,34 +95,34 @@ public class ListSubscribedCommand implements CommandExecutor {
                                           } else {
                                               String nickname = BungeeChat.getPlayerManager().getPlayerNickname(target);
                                               if (nickname != null && !nickname.isEmpty()) {
-                                                  name.append("[").append(LegacyComponentSerializer.legacySection().deserialize(nickname)).append("] ");
+                                                  name.append(Component.text("[")).append(LegacyComponentSerializer.legacySection().deserialize(nickname)).append(Component.text("] "));
                                               }
                                           }
                                           name.append(chatName);
                                       }
-                                      if (name != TextComponent.empty()) {
+                                      if (name != Component.empty()) {
                                           result.add(name.build());
                                       }
                                   }
                               }
-                              TextComponent.Builder builder = TextComponent.builder()
-                                    .content(StringUtils.center("Players Currently Subscribed to " + subscribed, 40, '*')).color(NamedTextColor.GOLD).append(TextComponent.newline());
+                              TextComponent.Builder builder = Component.text()
+                                    .content(StringUtils.center("Players Currently Subscribed to " + subscribed, 40, '*')).color(NamedTextColor.GOLD).append(Component.newline());
                               for (Component s : result) {
-                                  builder.append(s).append(TextComponent.newline());
+                                  builder.append(s).append(Component.newline());
                               }
-                              builder.append(TextComponent.of(StringUtils.center("-----", 40, '-')));
+                              builder.append(Component.text(StringUtils.center("-----", 40, '-')));
                               Utilities.getAudienceProvider().sender(commandSender).sendMessage(builder.build());
                           }
 
                           @Override
                           public void onError(String type, String message) {
-                              Utilities.getAudienceProvider().sender(commandSender).sendMessage(TextComponent.of("Error: " + type + " : " + message).color(NamedTextColor.RED));
+                              Utilities.getAudienceProvider().sender(commandSender).sendMessage(Component.text("Error: " + type + " : " + message).color(NamedTextColor.RED));
                           }
                       });
             }
             return true;
         } else {
-            Utilities.getAudienceProvider().sender(commandSender).sendMessage(TextComponent.of("No Permission"));
+            Utilities.getAudienceProvider().sender(commandSender).sendMessage(Component.text("No Permission"));
         }
         return false;
     }

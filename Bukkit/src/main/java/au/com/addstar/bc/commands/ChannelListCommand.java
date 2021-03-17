@@ -115,7 +115,7 @@ public class ChannelListCommand implements CommandExecutor {
             }
             TextComponent.Builder builder = Component.text().color(NamedTextColor.WHITE).append(createHeader(sub));
             builder.append(Component.text(
-                    StringUtils.center("-Channel Name-:-Total Subscribed-",31)).color(NamedTextColor.GOLD)).append(TextComponent.newline());
+                    StringUtils.center("-Channel Name-:-Total Subscribed-",31)).color(NamedTextColor.GOLD)).append(Component.newline());
             for(Map.Entry<String, Integer> res: result.entrySet()){
                 builder.append(Component.text(StringUtils.rightPad(res.getKey(),15))
                         .append(Component.text(" : ").color(NamedTextColor.GOLD))
@@ -130,8 +130,8 @@ public class ChannelListCommand implements CommandExecutor {
         public void onError(String type, String error) {
             ChatChannelManager manager = instance.getChatChannelsManager();
             Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Error: " + type +" : " + error));
-            TextComponent.Builder builder = TextComponent.builder().append(createHeader(sub));
-            manager.getChannelNames(sub).forEach(c -> builder.append(Component.text(c)).append(TextComponent.newline()));
+            TextComponent.Builder builder = Component.text().append(createHeader(sub));
+            manager.getChannelNames(sub).forEach(c -> builder.append(Component.text(c)).append(Component.newline()));
             builder.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD));
             Utilities.getAudienceProvider().sender(sender).sendMessage(builder.build());
         }
@@ -140,12 +140,12 @@ public class ChannelListCommand implements CommandExecutor {
             TextComponent.Builder message = Component.text();
             if(!sub){
                 message.append(Component.text(StringUtils.center("***List of Channels**",31))
-                        .color(NamedTextColor.GOLD)).append(TextComponent.newline());
+                        .color(NamedTextColor.GOLD)).append(Component.newline());
             }else {
                 message.append(Component.text(StringUtils.center("***List of Available Channels**",31))
-                        .color(NamedTextColor.GOLD)).append(TextComponent.newline());
+                        .color(NamedTextColor.GOLD)).append(Component.newline());
             }
-            message.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD)).append(TextComponent.newline());
+            message.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD)).append(Component.newline());
             return message.build();
         }
 

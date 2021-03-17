@@ -40,12 +40,12 @@
         <build.number/>
         <plugin.version>${project.version}-${build.number}</plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spigot.version>1.16.1-R0.1-SNAPSHOT</spigot.version>
-        <bungee.version>1.16-R0.2-SNAPSHOT</bungee.version>
+        <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
+        <bungee.version>1.16-R0.4-SNAPSHOT</bungee.version>
         <spigot.api.version>1.16</spigot.api.version>
         <license.dir>${basedir}</license.dir>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
         <adventure.version>4.5.0</adventure.version>
     </properties>
     <scm>

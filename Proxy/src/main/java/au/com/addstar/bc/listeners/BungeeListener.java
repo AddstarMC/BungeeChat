@@ -62,6 +62,7 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * Created for the AddstarMC Project. Created by Narimm on 24/09/2018.
@@ -83,6 +84,7 @@ public class BungeeListener implements Listener {
     {
         if (event.getTag().equals(channelName) && event.getSender() instanceof Server)
         {
+            BungeeChat.instance.getLogger().log(Level.INFO,event.getTag()+" using PluginMessageChannel");
             ByteArrayInputStream stream = new ByteArrayInputStream(event.getData());
             DataInput input = new DataInputStream(stream);
             
