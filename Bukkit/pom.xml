@@ -114,12 +114,6 @@
                   </includes>
                 </filter>
               </filters>
-              <relocations>
-                <relocation>
-                  <pattern>net.kyori</pattern>
-                  <shadedPattern>au.com.addstar.bc.lib.kyori</shadedPattern>
-                </relocation>
-              </relocations>
             </configuration>
           </execution>
         </executions>

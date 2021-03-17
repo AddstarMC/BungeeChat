@@ -143,7 +143,7 @@ public class Debugger implements CommandExecutor
                     .append(createOnOffButtons(mDebugEnabled,"bchat general"));
             Component cp = Component.text("Packet debug |")
                     .append(createOnOffButtons(mPacketDebugEnabled,"bchat packet"));
-            Utilities.getAudienceProvider().sender(sender).sendMessage(c.append(Component.newline()).append(cp));
+            sender.sendMessage(c.append(Component.newline()).append(cp));
             return true;
         }
 
@@ -155,7 +155,7 @@ public class Debugger implements CommandExecutor
             }
 			Component c = Component.text("General debug |")
                     .append(createOnOffButtons(mDebugEnabled,"bchat general"));
-			Utilities.getAudienceProvider().sender(sender).sendMessage(c);
+			sender.sendMessage(c);
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
 		{
@@ -165,7 +165,7 @@ public class Debugger implements CommandExecutor
             }
             Component c = Component.text("Packet debug |")
                     .append(createOnOffButtons(mPacketDebugEnabled,"bchat packet"));
-            Utilities.getAudienceProvider().sender(sender).sendMessage(c);
+            sender.sendMessage(c);
         }
 		else if (args[0].equalsIgnoreCase("player"))
 		{
@@ -176,8 +176,7 @@ public class Debugger implements CommandExecutor
             UUID uuid = PlayerManager.getUniqueId(player);
 			if(uuid != null) {
                 Player bukkitPlayer = Bukkit.getPlayer(uuid);
-                Utilities.getAudienceProvider().sender(sender)
-                        .sendMessage(
+                sender.sendMessage(
                                 Component.text(String.format("State %s: %s", args[1], buildPlayerDebug(player, bukkitPlayer))));
             } else {
 			    return false;
@@ -186,16 +185,14 @@ public class Debugger implements CommandExecutor
 		}
 		else if (args[0].equalsIgnoreCase("allplayers"))
 		{
-            Utilities.getAudienceProvider().sender(sender)
-                    .sendMessage(
+            sender.sendMessage(
                             Component.text("Total tracked: " + BungeeChat.getPlayerManager().getPlayers().size()
                                     + " Bukkit players: " + Bukkit.getOnlinePlayers().size()));
 			// Check all tracked players
 			for (CommandSender player : BungeeChat.getPlayerManager().getPlayers()) {
                 UUID uuid = PlayerManager.getUniqueId(player);
                 if (uuid != null) {
-                    Utilities.getAudienceProvider().sender(sender)
-                            .sendMessage(
+                    sender.sendMessage(
                                     Component.text(String.format(" %s: %s", player.getName(),
                                             buildPlayerDebug(player, Bukkit.getPlayer(uuid)))));
                 }
@@ -206,15 +203,13 @@ public class Debugger implements CommandExecutor
 			{
 				CommandSender bplayer = BungeeChat.getPlayerManager().getPlayer(player.getUniqueId());
 				if (bplayer == null)
-                    Utilities.getAudienceProvider().sender(sender)
-                            .sendMessage(
+                    sender.sendMessage(
                                     Component.text(String.format(" %s: %s", player.getName(), buildPlayerDebug(null, player))));
 			}
 		}
 		else if (args[0].equalsIgnoreCase("resync"))
 		{
-            Utilities.getAudienceProvider().sender(sender)
-                    .sendMessage(
+            sender.sendMessage(
                             Component.text("Resynching BungeeChat"));
 			BungeeChat.getInstance().requestUpdate();
 		}

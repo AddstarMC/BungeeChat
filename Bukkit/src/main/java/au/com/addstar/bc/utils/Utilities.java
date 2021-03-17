@@ -1,3 +1,4 @@
+package au.com.addstar.bc.utils;
 /*
  * BungeeChat
  *
@@ -17,41 +18,14 @@
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package au.com.addstar.bc.utils;
-
-/*-
- * #%L
- * BungeeChat-Bukkit
- * %%
- * Copyright (C) 2015 - 2020 AddstarMC
- * %%
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import au.com.addstar.bc.BungeeChat;
+import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -84,7 +58,7 @@ public class Utilities {
     }
 
     public static void localBroadCast(Component message, Collection<CommandSender> targets) {
-        sendWithPermission(targets,null,null,message,object -> true);
+        sendWithPermission(null, targets,null,null,message,object -> true);
     }
 
     public static void localBroadCast(Component message, String permission) {
@@ -94,7 +68,7 @@ public class Utilities {
         } else {
             targets = new ArrayList<>(Bukkit.getOnlinePlayers());
         }
-        sendWithPermission(targets,null,permission,message,object -> true);
+        sendWithPermission(null, targets,null,permission,message,object -> true);
     }
     public static void localBroadCast(Component message, String permission, @NotNull ValidChecker<Permissible> checker) {
         Collection<Permissible> targets;
@@ -103,18 +77,18 @@ public class Utilities {
         } else {
             targets = new ArrayList<>(Bukkit.getOnlinePlayers());
         }
-        sendWithPermission(targets,null,permission,message,checker);
+        sendWithPermission(null,targets,null,permission,message,checker);
     }
 
     public static void localBroadCast(Component message, String permission, CommandSender except, @NotNull ValidChecker<Permissible> checker) {
-        localBroadCast(message, permission, null, except, checker);
+        localBroadCast(null,message, permission, null, except, checker);
     }
 
-    public static void localBroadCast(Component message, String permission, Collection<Permissible> recepients, CommandSender except, @NotNull ValidChecker<Permissible> checker) {
-        sendWithPermission(recepients,except,permission,message,checker);
+    public static void localBroadCast(UUID sender,Component message, String permission, Collection<Permissible> recepients, CommandSender except, @NotNull ValidChecker<Permissible> checker) {
+        sendWithPermission(sender,recepients,except,permission,message,checker);
     }
 
-    private static void sendWithPermission(Collection<? extends Permissible> targets, CommandSender except, String permission, Component message, @NotNull ValidChecker<Permissible> checker) {
+    private static void sendWithPermission(UUID sender, Collection<? extends Permissible> targets, CommandSender except, String permission, Component message, @NotNull ValidChecker<Permissible> checker) {
         targets.stream()
                 .filter(checker::isValid)
                 .filter(permissible -> {
@@ -126,7 +100,15 @@ public class Utilities {
                         return permissible.hasPermission(permission);
                     }
                     return false;
-                }).forEach(permissible -> getAudienceProvider().sender((CommandSender) permissible).sendMessage(message));
+                }).forEach(permissible -> {
+                     Identity id;
+                    if (sender != null) {
+                        id = Identity.identity(sender);
+                    } else {
+                        id = Identity.nil();
+                    }
+                    ((CommandSender) permissible).sendMessage(id, message);
+                });
     }
 
     /**

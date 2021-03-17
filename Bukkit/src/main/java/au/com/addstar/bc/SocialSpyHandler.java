@@ -143,7 +143,7 @@ public class SocialSpyHandler implements Listener, CommandExecutor
 			message = Component.text("SocialSpy now on").color(NamedTextColor.GREEN);
 		else
 			message = Component.text("SocialSpy now Off").color(NamedTextColor.RED);
-		Utilities.getAudienceProvider().sender(sender).sendMessage(message);
+		sender.sendMessage(message);
 
 		setStatus(sender, on);
 		

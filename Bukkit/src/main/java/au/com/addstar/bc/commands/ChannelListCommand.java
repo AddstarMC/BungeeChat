@@ -84,7 +84,7 @@ public class ChannelListCommand implements CommandExecutor {
             BungeeChat.getSyncManager().callSyncMethod("bchat:getSubscribed",new Subscribed(commandSender,sub));
                        return true;
         }else{
-            Utilities.getAudienceProvider().sender(commandSender).sendMessage(Component.text("No Permission").color(NamedTextColor.RED));
+            commandSender.sendMessage(Component.text("No Permission").color(NamedTextColor.RED));
         }
         return false;
     }
@@ -123,17 +123,17 @@ public class ChannelListCommand implements CommandExecutor {
                 .append(Component.newline());
             }
             builder.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD));
-            Utilities.getAudienceProvider().sender(sender).sendMessage(builder.build());
+            sender.sendMessage(builder.build());
         }
 
         @Override
         public void onError(String type, String error) {
             ChatChannelManager manager = instance.getChatChannelsManager();
-            Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Error: " + type +" : " + error));
+            sender.sendMessage(Component.text("Error: " + type +" : " + error));
             TextComponent.Builder builder = Component.text().append(createHeader(sub));
             manager.getChannelNames(sub).forEach(c -> builder.append(Component.text(c)).append(Component.newline()));
             builder.append(Component.text(StringUtils.center("-----------------------",31)).color(NamedTextColor.GOLD));
-            Utilities.getAudienceProvider().sender(sender).sendMessage(builder.build());
+            sender.sendMessage(builder.build());
         }
 
         private Component createHeader(boolean sub){

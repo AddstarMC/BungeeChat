@@ -51,13 +51,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PermissionSetting;
 import com.google.gson.reflect.TypeToken;
+import io.papermc.paper.chat.ChatFormatter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
@@ -76,6 +79,7 @@ import au.com.addstar.bc.config.PermissionSettingConfig;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.NoPermissionChecker;
 import au.com.addstar.bc.utils.Utilities;
+import org.jetbrains.annotations.NotNull;
 
 public class Formatter
 {
@@ -188,10 +192,10 @@ public class Formatter
 		else
 			return mDefaultFormat;
 	}
-	
-	public static Component getChatFormatForUse(Player player, PermissionSetting level)
+
+	public static ChatFormatter getChatFormatForUse(Player player, PermissionSetting level)
 	{
-		return replaceKeywords(getChatFormat(level), player, level);
+		return (displayName, message) -> replaceKeywords(getChatFormat(level),player,level);
 	}
 
 	private static Component getChatName(CommandSender sender){
@@ -297,38 +301,25 @@ public class Formatter
 			return replaceKeywords(mPMFormatOutbound, to, level);
 	}
 
-	/**
-	 * Adds Key word highlighting to a message.
-	 * @param message Component
-	 * @return Component or null if no highlighting performed
-	 */
-	public static Component highlightKeywords(Component message){
-		return highlightKeywords(message,null);
-	}
 
 	/**
 	 * Adds Key word highlighting to a message.
 	 * @param message Component
-	 * @param defaultColour TextColor to apply by default.
 	 * @return Component or null if no highlighting performed
 	 */
-	public static Component highlightKeywords(Component message, TextColor defaultColour)
+	public static Component highlightKeywords(Component message)
 	{
-		if(defaultColour != null) {
-			message.colorIfAbsent(defaultColour);
-		}
-		AtomicBoolean matched = new AtomicBoolean(false);
+		AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 		for(Entry<Pattern, Style> entry : keywordPatterns.entrySet()) {
-			message.replaceText(entry.getKey(), builder -> {
-				matched.set(true);
-				return builder.style(entry.getValue());
-			});
+			message = message.replaceText(builder -> builder.match(entry.getKey()).replacement(builder1 -> {
+				atomicBoolean.set(true);
+				return builder1.style(entry.getValue());
+			}));
 		}
-
-		if(matched.get()) {
-			return message;
+		if(!atomicBoolean.get()) {
+			return null;
 		}
-		return null;
+		return message;
 	}
 	
 	public static void localBroadcast(Component message)

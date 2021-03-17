@@ -3,7 +3,56 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="C:\Users\benjamincharlton\.m2\repository\com\destroystokyo\paper\paper-api\1.16.5-R0.1-SNAPSHOT\paper-api-1.16.5-R0.1-SNAPSHOT-sources.jar!\io\papermc\paper\chat\ChatFormatter.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="C:\Users\benjamincharlton\.m2\repository\com\destroystokyo\paper\paper-api\1.16.5-R0.1-SNAPSHOT\paper-api-1.16.5-R0.1-SNAPSHOT-sources.jar!\io\papermc\paper\event\player\AsyncChatEvent.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="C:\Users\benjamincharlton\.m2\repository\net\kyori\adventure-api\4.5.0\adventure-api-4.5.0-sources.jar!\net\kyori\adventure\text\TextReplacementConfigImpl.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="C:\Users\benjamincharlton\.m2\repository\net\kyori\adventure-text-serializer-gson\4.7.0\adventure-text-serializer-gson-4.7.0-sources.jar!\net\kyori\adventure\text\serializer\gson\GsonComponentSerializerImpl.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Bukkit\src\main\java\au\com\addstar\bc\listeners\ChatHandler.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Bukkit\src\main\java\au\com\addstar\bc\objects\ChatChannel.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Bukkit\src\main\java\au\com\addstar\bc\objects\Formatter.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Bukkit\src\main\java\au\com\addstar\bc\utils\Utilities.java">
           <value>
             <Attribute>
               <option name="separator" value=";" />

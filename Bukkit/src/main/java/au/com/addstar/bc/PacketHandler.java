@@ -58,6 +58,9 @@ import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.SendPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+import org.bukkit.scheduler.BukkitTask;
+
+import java.io.BufferedReader;
 
 
 public class PacketHandler implements IPacketHandler
@@ -83,7 +86,10 @@ public class PacketHandler implements IPacketHandler
 	private void handleSend(SendPacket packet)
 	{
 			Debugger.log("Sending message to %s: '%s'", packet.getUUID(), packet.getMessage());
-			Utilities.getAudienceProvider().player(packet.getUUID()).sendMessage(packet.getMessage());
+		 	Player player = Bukkit.getPlayer(packet.getUUID());
+		 	if(player != null) {
+				player.sendMessage(packet.getMessage());
+			}
 	}
 	
 	private void handleUpdateName(UpdateNamePacket packet)

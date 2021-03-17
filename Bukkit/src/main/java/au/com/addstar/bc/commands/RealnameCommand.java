@@ -78,14 +78,14 @@ public class RealnameCommand implements CommandExecutor, TabCompleter
 		CommandSender player = BungeeChat.getPlayerManager().getPlayer(args[0]);
 		if(player == null || player instanceof ConsoleCommandSender)
 		{
-			Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text("Unknown player " + args[0]).color(NamedTextColor.RED));
+			sender.sendMessage(Component.text("Unknown player " + args[0]).color(NamedTextColor.RED));
 			return true;
 		}
 		
 		String nick = BungeeChat.getPlayerManager().getPlayerNickname(player);
 		if (nick == null)
 			nick = player.getName();
-		Utilities.getAudienceProvider().sender(sender).sendMessage(Component.text(nick).color(NamedTextColor.GOLD)
+		sender.sendMessage(Component.text(nick).color(NamedTextColor.GOLD)
 			.append(Component.text(" is actually ").color(NamedTextColor.GRAY))
 			.append(Component.text(player.getName()).color(NamedTextColor.GOLD)));
 		return true;

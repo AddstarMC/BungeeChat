@@ -20,21 +20,23 @@
 package au.com.addstar.bc.listeners;
 
 import au.com.addstar.bc.BungeeChat;
-import au.com.addstar.bc.ChatChannelManager;
+import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.PermissionSetting;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.server.TabCompleteEvent;
 
 import au.com.addstar.bc.event.ChatChannelEvent;
 import au.com.addstar.bc.utils.Utilities;
-
-import java.util.HashSet;
+import org.bukkit.permissions.Permissible;
 
 public class ChatHandler implements Listener{
 
@@ -44,34 +46,65 @@ public class ChatHandler implements Listener{
 		this.instance = instance;
 	}
 
-	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
-	private void onPlayerChat(AsyncPlayerChatEvent event)
+	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
+	private void onPlayerChatLowest(AsyncChatEvent event)
 	{
         String channel = BungeeChat.getPlayerManager().getDefaultChatChannel(event.getPlayer());
-
         if(!channel.isEmpty()){
             if(instance.getChatChannelsManager().hasChannel(channel)){
-                if(BungeeChat.forceGlobalprefix.equals(event.getMessage().substring(0,1))){
-                    event.setMessage(event.getMessage().substring(1));
+                if(BungeeChat.forceGlobalprefix.equals(PlainComponentSerializer.plain().serialize(event.message()).substring(0,1))){
+                    event.message(event.message().replaceText(builder -> builder.match("!").replacement("").once()));
                 }else{
                 	ChatChannel out = instance.getChatChannelsManager().getChatChannel(channel);
                 	if(out != null) {
+                		out.say(event.getPlayer(),event.message());
 						event.setCancelled(true);
-						ChatChannelManager.callBungeeChatChannelEvent(event.getPlayer(),new HashSet<>(event.getRecipients()),Utilities.colorize(event.getMessage(), event.getPlayer()),out);
+						//ChatChannelManager.callBungeeChatChannelEvent(event.getPlayer(),new HashSet<>(event.getRecipients()),Utilities.colorize(event.getMessage(), event.getPlayer()),out);
 						return;
 					}
                 }
             }else{
                 instance.getLogger().info("Channel Manager did not have the default channel...." + channel);
             }
-        }
-        //this is now a global chat message.
-
+		}
 		PermissionSetting level = Formatter.getPermissionLevel(event.getPlayer());
-		Component format = Formatter.getChatFormatForUse(event.getPlayer(),level);
-		Component mess = Utilities.colorize(event.getMessage(),event.getPlayer());
-		ChatChannelManager.callBungeeChatEvent(event.getPlayer(),new HashSet<>(event.getRecipients()),format,mess);
-		event.getRecipients().clear();
+		event.formatter(Formatter.getChatFormatForUse(event.getPlayer(), level));
+		String plain = PlainComponentSerializer.plain().serialize(event.message());
+		if(plain.trim().isEmpty())
+			event.setCancelled(true);
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST,ignoreCancelled = true)
+	void onPlayerChatHighest(AsyncChatEvent event) {
+
+		if(!Formatter.keywordsEnabled)
+			return;
+
+		Component newMessage = Formatter.highlightKeywords(event.message());
+		if(newMessage == null)
+			return;
+
+		for(Permissible permissible : Bukkit.getPluginManager().getPermissionSubscriptions(Formatter.keywordPerm))
+		{
+			if(!(permissible instanceof Player) && permissible.hasPermission(Formatter.keywordPerm)) {
+				continue;
+			}
+			event.recipients().remove(permissible);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR,ignoreCancelled = true)
+	void onPlayerChatFinal(AsyncChatEvent event){
+		if(!Formatter.keywordsEnabled)
+			return;
+		Component newMessage = Formatter.highlightKeywords(event.message());
+		if(newMessage == null) {
+			BungeeChat.mirrorChat(event.message(), ChannelType.KeywordHighlight.getName());
+		} else {
+			newMessage = event.formatter().chat(event.getPlayer().displayName(),newMessage);
+			Utilities.localBroadCast(newMessage,Formatter.keywordPerm,Utilities.NO_CONSOLE);
+			BungeeChat.mirrorChat(newMessage,ChannelType.KeywordHighlight.getName());
+		}
 	}
 
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)

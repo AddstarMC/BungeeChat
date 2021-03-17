@@ -75,7 +75,7 @@ public class SubscribeCommand implements CommandExecutor {
         }
         Player player = (Player) commandSender;
         if (args.length == 0) {
-            Utilities.getAudienceProvider().player(player).sendMessage(Component.text("Usage: ")
+            player.sendMessage(Component.text("Usage: ")
                         .color(NamedTextColor.DARK_AQUA).append(Component.text("/chat <channel>").color(NamedTextColor.GOLD)));
             return false;
         } else {
@@ -86,15 +86,15 @@ public class SubscribeCommand implements CommandExecutor {
                     String perm = instance.getChatChannelsManager().getChannelSpeakPerm(subscribed);
                     BungeeChat.getPlayerManager().unsubscribeAll(player, true);
                     if (!player.hasPermission(perm)) {
-                        Utilities.getAudienceProvider().player(player).sendMessage(Component.text("Unsubscribed from ")
+                        player.sendMessage(Component.text("Unsubscribed from ")
                               .color(NamedTextColor.DARK_AQUA).append(Component.text(subscribed).color(NamedTextColor.GREEN)));
                     } else {
-                        Utilities.getAudienceProvider().player(player).sendMessage(Component.text("Could not unsubscribe from ")
+                        player.sendMessage(Component.text("Could not unsubscribe from ")
                               .color(NamedTextColor.DARK_AQUA).append(Component.text(subscribed).color(NamedTextColor.GREEN)));
                     }
                 } else {
                     BungeeChat.getPlayerManager().unsubscribeAll(player, true);
-                    Utilities.getAudienceProvider().player(player).sendMessage(Component.text("You are not subscribed to any channels.").color(NamedTextColor.DARK_AQUA));
+                    player.sendMessage(Component.text("You are not subscribed to any channels.").color(NamedTextColor.DARK_AQUA));
                 }
                 return true;
             }
@@ -105,7 +105,7 @@ public class SubscribeCommand implements CommandExecutor {
                     String perm = chatChannel.permission;
                     if (perm == null) {
                         instance.getLogger().warning("The speak permission for " + chatChannel.name + " is null");
-                        Utilities.getAudienceProvider().player(player).sendMessage(Component.text("Error with Channel permission please contact admin")
+                        player.sendMessage(Component.text("Error with Channel permission please contact admin")
                               .color(NamedTextColor.RED));
                         return false;
                     }
@@ -135,16 +135,16 @@ public class SubscribeCommand implements CommandExecutor {
                                 }
                                 builder.append(Component.text("Set your roleplay name using")).append(Component.text("/chatname <RolePlayName>").color(NamedTextColor.GOLD));
                             }
-                            Utilities.getAudienceProvider().player(player).sendMessage(builder.build());
+                            player.sendMessage(builder.build());
 
                         }
                     } else {
                         if (!instance.getChatChannelsManager().isSubscribable(channelName)) {
-                            Utilities.getAudienceProvider().player(player).sendMessage(Component.text("That channel is either not available or you do not have permission.").color(NamedTextColor.RED));
+                            player.sendMessage(Component.text("That channel is either not available or you do not have permission.").color(NamedTextColor.RED));
                             return false;
                         }
                         if (commandSender.hasPermission(perm)) {
-                            Utilities.getAudienceProvider().player(player).sendMessage(
+                            player.sendMessage(
                                     Component.text().content("You are already subscribed to ").color(NamedTextColor.DARK_AQUA)
                                   .append(Component.text(channelName).color(NamedTextColor.GREEN))
                                   .append(Component.text(" with perm "))
@@ -155,7 +155,7 @@ public class SubscribeCommand implements CommandExecutor {
                     }
                     return true;
                 } else {
-                    Utilities.getAudienceProvider().player(player).sendMessage(
+                    player.sendMessage(
                           Component.text().content("Channel ").color(NamedTextColor.DARK_AQUA)
                                 .append(Component.text(channelName).color(NamedTextColor.RED))
                                 .append(Component.text(" does not exist."))
@@ -163,7 +163,7 @@ public class SubscribeCommand implements CommandExecutor {
                     return false;
                 }
             } else {
-                Utilities.getAudienceProvider().player(player).sendMessage(Component.text("No Permission for that command.").color(NamedTextColor.RED));
+                player.sendMessage(Component.text("No Permission for that command.").color(NamedTextColor.RED));
                 return false;
             }
         }

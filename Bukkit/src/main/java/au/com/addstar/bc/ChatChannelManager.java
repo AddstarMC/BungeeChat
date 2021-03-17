@@ -49,23 +49,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import au.com.addstar.bc.commands.Debugger;
-import au.com.addstar.bc.event.AsyncBungeeChatEvent;
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.ChatChannel;
-import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.utils.Utilities;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -265,49 +259,6 @@ public class ChatChannelManager implements Listener, CommandExecutor {
     public ChatChannel getChatChannel(String channelName) {
         String channelNameToFind = getChannelNameIgnoreCase(channelName);
         return mChannels.getOrDefault(channelNameToFind, null);
-    }
-
-    public static void callBungeeChatChannelEvent(CommandSender sender, Set<CommandSender> recipients, Component message, ChatChannel channel) {
-        AsyncBungeeChatEvent asyncChatEvent = new AsyncBungeeChatEvent(sender, recipients, channel.format, message, channel);
-        Bukkit.getScheduler().runTaskAsynchronously(BungeeChat.getInstance(), () -> {
-            Bukkit.getPluginManager().callEvent(asyncChatEvent);
-        });
-        if (asyncChatEvent.isCancelled()) {
-            return;
-        }
-        if (asyncChatEvent.getChatChannel() != null) {
-            asyncChatEvent.getChatChannel().say(asyncChatEvent.getChatSender(), asyncChatEvent.getMessage());
-        }
-    }
-
-    public static void callBungeeChatEvent(CommandSender sender, Set<CommandSender> recipients, Component format, Component message) {
-        AsyncBungeeChatEvent asyncChatEvent = new AsyncBungeeChatEvent(sender, recipients, format, message, null);
-        Bukkit.getScheduler().runTaskAsynchronously(BungeeChat.getInstance(), () -> Bukkit.getPluginManager().callEvent(asyncChatEvent));
-        if (asyncChatEvent.isCancelled()) {
-            return;
-        }
-        PermissionSetting level = Formatter.getPermissionLevel(asyncChatEvent.getChatSender());
-        if (asyncChatEvent.getChatChannel() != null) {
-            asyncChatEvent.getChatChannel().say(asyncChatEvent.getChatSender(), asyncChatEvent.getMessage());
-            return;
-        }
-        Component formattedMessage;
-        if (Formatter.keywordsEnabled) {
-            Component newMessage = Formatter.highlightKeywords(asyncChatEvent.getMessage(), NamedTextColor.WHITE);
-            Component replacedFormat = Formatter.replaceKeywords(asyncChatEvent.getFormat(), asyncChatEvent.getChatSender(), level);
-            if (newMessage != null) {
-                formattedMessage = Formatter.replaceMessage(replacedFormat, newMessage);
-                Utilities.localBroadCast(formattedMessage, Formatter.keywordPerm, Utilities.NO_CONSOLE);
-            } else {
-                formattedMessage = Formatter.replaceMessage(replacedFormat, asyncChatEvent.getMessage());
-            }
-        } else {
-            Component replacedFormat = Formatter.replaceKeywords(asyncChatEvent.getFormat(), asyncChatEvent.getChatSender(), level);
-            formattedMessage = Formatter.replaceMessage(replacedFormat, asyncChatEvent.getMessage());
-            Utilities.localBroadCast(formattedMessage, asyncChatEvent.getRecipients());
-            Utilities.getAudienceProvider().sender(sender).sendMessage(formattedMessage);
-        }
-        BungeeChat.mirrorChat(formattedMessage, ChannelType.KeywordHighlight.getName());
     }
 }
 
