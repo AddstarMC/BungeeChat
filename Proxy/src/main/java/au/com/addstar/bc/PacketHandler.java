@@ -48,6 +48,7 @@ package au.com.addstar.bc;
 import au.com.addstar.bc.util.Utilities;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -61,6 +62,8 @@ import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerListRequestPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
+
+import java.util.UUID;
 
 public class PacketHandler implements IPacketHandler
 {
@@ -116,17 +119,7 @@ public class PacketHandler implements IPacketHandler
 		}else{
 			BungeeChat.instance.getSubHandler().setSubscribed(player.getUniqueId(),defaultChannel);
 		}
-		String oldName = settings.nickname;
-		if(settings.nickname.isEmpty())
-			player.setDisplayName(player.getName());
-		else
-			player.setDisplayName(settings.nickname);
-		
-		if(!oldName.equals(settings.nickname))
-		{
-			Debugger.log("Updating player name %s to '%s'", player.getName(), settings.nickname);
-			getPacketManager().broadcast(new UpdateNamePacket(packet.getID(), settings.nickname));
-		}
+		broadcastNameUpdate(packet.getID(),settings,player);
 	}
 	
 	private void handleUpdateName(UpdateNamePacket packet)
@@ -139,20 +132,24 @@ public class PacketHandler implements IPacketHandler
 		settings.nickname = packet.getName();
 		
 		getManager().savePlayer(player);
-		
-		String oldName = settings.nickname;
-		if(settings.nickname.isEmpty())
+
+		broadcastNameUpdate(packet.getID(),settings,player);
+	}
+
+	private void broadcastNameUpdate(UUID oldPacketId, PlayerSettings settings, ProxiedPlayer player){
+		Component oldName = settings.nickname;
+		if(Component.empty().equals(settings.nickname))
 			player.setDisplayName(player.getName());
 		else
-			player.setDisplayName(settings.nickname);
-		
-		if(!oldName.equals(settings.nickname))
+			player.setDisplayName(PlainComponentSerializer.plain().serialize(settings.nickname));
+
+		if(!oldName.equals(settings.nickname)) //????
 		{
 			Debugger.log("Updating player name %s to '%s'", player.getName(), settings.nickname);
-			getPacketManager().broadcast(new UpdateNamePacket(packet.getID(), settings.nickname));
+			getPacketManager().broadcast(new UpdateNamePacket(oldPacketId, settings.nickname));
 		}
 	}
-	
+
 	private void handleGMute(GlobalMutePacket packet)
 	{
 		BungeeChat.instance.getMuteHandler().setGMute(packet.getTime());

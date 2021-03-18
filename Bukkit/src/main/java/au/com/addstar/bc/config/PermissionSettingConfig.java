@@ -50,11 +50,12 @@ import java.util.Map;
 
 import au.com.addstar.bc.PermissionSetting;
 import au.com.addstar.bc.sync.SyncSerializable;
+import net.kyori.adventure.text.format.TextColor;
 
 public class PermissionSettingConfig implements SyncSerializable
 {
 	public String format;
-	public String color;
+	public TextColor color;
 	public int priority;
 	public String permission;
 	
@@ -63,7 +64,7 @@ public class PermissionSettingConfig implements SyncSerializable
 	{
 		HashMap<String, Object> map = new HashMap<>();
 		map.put("fmt", format);
-		map.put("c", color);
+		map.put("c", color.asHexString());
 		map.put("pri", priority);
 		map.put("perm", permission);
 		
@@ -74,7 +75,7 @@ public class PermissionSettingConfig implements SyncSerializable
 	{
 		PermissionSettingConfig setting = new PermissionSettingConfig();
 		setting.format = (String)map.get("fmt");
-		setting.color = (String)map.get("c");
+		setting.color = TextColor.fromHexString((String)map.get("c"));
 		setting.permission = (String)map.get("perm");
 		setting.priority = (Integer)map.get("pri");
 		

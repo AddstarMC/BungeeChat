@@ -49,12 +49,14 @@ import java.util.UUID;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class PlayerJoinPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("id=UUID,name=String,nickname=String,defaultChannel=String");
+	public static final PacketSchema schema = PacketSchema.from("id=UUID,name=Component,nickname=Component,defaultChannel=String");
 
-	public PlayerJoinPacket(UUID id, String name, String nickname, String defaultChannel){
+	public PlayerJoinPacket(UUID id, Component name, Component nickname, String defaultChannel){
 		super(id, name, nickname, defaultChannel);
 	}
 
@@ -68,14 +70,14 @@ public class PlayerJoinPacket extends Packet
 		return (UUID)getData(0);
 	}
 	
-	public String getName()
+	public Component getName()
 	{
-		return (String)getData(1);
+		return (Component)getData(1);
 	}
 	
-	public String getNickname()
+	public Component getNickname()
 	{
-		return (String)getData(2);
+		return (Component)getData(2);
 	}
 
 	public String getDefaultChannel() {

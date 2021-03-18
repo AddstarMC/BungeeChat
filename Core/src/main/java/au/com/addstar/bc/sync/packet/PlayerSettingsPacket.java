@@ -49,12 +49,15 @@ import java.util.UUID;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.checkerframework.checker.units.qual.C;
 
 public class PlayerSettingsPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("id=UUID,nickname=String,lmt=UUID,socialspy=Byte,msgtoggle=Boolean,mute=Long,afk=Boolean,roleplayprefix=String,defaultChannel=String");
+	public static final PacketSchema schema = PacketSchema.from("id=UUID,nickname=Component,lmt=UUID,socialspy=Byte,msgtoggle=Boolean,mute=Long,afk=Boolean,roleplayprefix=String,defaultChannel=String");
 	
-	public PlayerSettingsPacket(UUID id, String nickname, UUID lastMessageTarget, int socialSpyState, boolean msgToggle, long muteTime, boolean afk, String roleplayprefix, String defaultChannel)
+	public PlayerSettingsPacket(UUID id, Component nickname, UUID lastMessageTarget, int socialSpyState, boolean msgToggle, long muteTime, boolean afk, Component roleplayprefix, String defaultChannel)
 	{
 		super(id, nickname, lastMessageTarget, (byte)socialSpyState, msgToggle, muteTime, afk, roleplayprefix,defaultChannel);
 	}
@@ -69,9 +72,9 @@ public class PlayerSettingsPacket extends Packet
 		return (UUID)getData(0);
 	}
 	
-	public String getNickname()
+	public Component getNickname()
 	{
-		return (String)getData(1);
+		return (Component) getData(1);
 	}
 	
 	public UUID getLastMessageTarget()
@@ -99,8 +102,8 @@ public class PlayerSettingsPacket extends Packet
 		return (Boolean)getData(6);
 	}
 
-	public String getChatName() {
-		return (String)getData(7);
+	public Component getChatName() {
+		return (Component)getData(7);
 	}
 
 	public String getDefaultChannel() {

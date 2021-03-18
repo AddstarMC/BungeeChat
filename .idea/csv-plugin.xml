@@ -38,7 +38,28 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Bukkit\src\main\java\au\com\addstar\bc\PlayerManager.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Bukkit\src\main\java\au\com\addstar\bc\commands\MessageCommand.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\Bukkit\src\main\java\au\com\addstar\bc\commands\MuteHandler.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Bukkit\src\main\java\au\com\addstar\bc\commands\NicknameCommand.java">
           <value>
             <Attribute>
               <option name="separator" value="&#9;" />
@@ -73,6 +94,27 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Core\src\main\java\au\com\addstar\bc\sync\Packet.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Core\src\main\java\au\com\addstar\bc\sync\packet\PlayerListPacket.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Proxy\src\main\java\au\com\addstar\bc\BungeeChat.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\Proxy\src\main\java\au\com\addstar\bc\ColourTabList.java">
           <value>
             <Attribute>
@@ -84,6 +126,13 @@
           <value>
             <Attribute>
               <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Proxy\src\main\java\au\com\addstar\bc\PacketHandler.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
             </Attribute>
           </value>
         </entry>

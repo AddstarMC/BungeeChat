@@ -55,6 +55,10 @@
       <artifactId>adventure-platform-bungeecord</artifactId>
       <version>4.0.0-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>net.kyori</groupId>
+      <artifactId>adventure-text-serializer-plain</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

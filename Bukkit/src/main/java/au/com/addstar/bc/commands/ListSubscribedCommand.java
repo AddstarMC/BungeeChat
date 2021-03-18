@@ -90,12 +90,12 @@ public class ListSubscribedCommand implements CommandExecutor {
                                           Component chatName = BungeeChat.getPlayerManager().getPlayerSettings(target).chatName;
                                           if (target instanceof Player) {
                                               if (((Player) commandSender).canSee((Player) target)) {
-                                                  name.append(LegacyComponentSerializer.legacySection().deserialize(((Player) target).getDisplayName()));
+                                                  name.append(((Player) target).displayName());
                                               }
                                           } else {
-                                              String nickname = BungeeChat.getPlayerManager().getPlayerNickname(target);
-                                              if (nickname != null && !nickname.isEmpty()) {
-                                                  name.append(Component.text("[")).append(LegacyComponentSerializer.legacySection().deserialize(nickname)).append(Component.text("] "));
+                                              Component nickname = BungeeChat.getPlayerManager().getPlayerNickname(target);
+                                              if (!Component.empty().equals(nickname)) {
+                                                  name.append(Component.text("[")).append(nickname).append(Component.text("] "));
                                               }
                                           }
                                           name.append(chatName);

@@ -98,7 +98,7 @@ public class AFKHandler implements CommandExecutor, TabCompleter, Listener, IPac
 	public List<String> onTabComplete( CommandSender sender, Command command, String label, String[] args )
 	{
 		if(args.length == 1 && sender.hasPermission("bungeechat.afk.others"))
-			return BungeeChat.getPlayerManager().matchNames(args[0]);
+			return BungeeChat.getPlayerManager().matchPlainNames(args[0]);
 		return null;
 	}
 

@@ -78,6 +78,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.*;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
+import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.config.ServerInfo;
@@ -377,13 +378,13 @@ public class BungeeChat extends Plugin
 	{
 		Collection<ProxiedPlayer> players = getProxy().getPlayers();
 		ArrayList<UUID> ids = new ArrayList<>(players.size());
-		ArrayList<String> names = new ArrayList<>(players.size());
-		ArrayList<String> nicknames = new ArrayList<>(players.size());
+		ArrayList<Component> names = new ArrayList<>(players.size());
+		ArrayList<Component> nicknames = new ArrayList<>(players.size());
 		
 		for(ProxiedPlayer player : players)
 		{
 			ids.add(player.getUniqueId());
-			names.add(player.getName());
+			names.add(Component.text(player.getName()));
 			PlayerSettings settings = mSettings.getSettings(player);
 			nicknames.add(settings.nickname);
 		}

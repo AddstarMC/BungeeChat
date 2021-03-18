@@ -79,6 +79,7 @@ import au.com.addstar.bc.config.PermissionSettingConfig;
 import au.com.addstar.bc.sync.SyncConfig;
 import au.com.addstar.bc.utils.NoPermissionChecker;
 import au.com.addstar.bc.utils.Utilities;
+import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.NotNull;
 
 public class Formatter
@@ -214,20 +215,18 @@ public class Formatter
 
 		if(consoleOverride != null && sender == Bukkit.getConsoleSender())
 			return consoleOverride;
-		final String displayName;
+		Component displayName;
 		if(sender instanceof Player)
-			displayName = ((Player)sender).getDisplayName();
+			displayName = ((Player)sender).displayName();
 		else if(sender instanceof RemotePlayer)
 			displayName = ((RemotePlayer)sender).getDisplayName();
 		else
-			displayName = sender.getName();
+			displayName = Component.text(sender.getName());
 		Component result;
 		if(level != null) {
-			result = MiniMessage.get().parse(level.color, Template.of("%NAME%", displayName));
-		} else {
-			result = Component.text(displayName);
+			displayName = displayName.color(level.color);
 		}
-		return result;
+		return displayName;
 	}
 
 	public static Component replaceMessage(Component format,final Component message){

@@ -45,18 +45,21 @@ package au.com.addstar.bc.sync.packet;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 @SuppressWarnings( "unchecked" )
 public class PlayerListPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("ids=List<UUID>,names=List<String>,nicknames=List<String>");
+	public static final PacketSchema schema = PacketSchema.from("ids=List<UUID>,names=List<Component>,nicknames=List<Component>");
 	
-	public PlayerListPacket(List<UUID> ids, List<String> names, List<String> nicknames)
+	public PlayerListPacket(List<UUID> ids, List<Component> names, List<Component> nicknames)
 	{
 		super(ids, names, nicknames);
 	}
@@ -71,13 +74,13 @@ public class PlayerListPacket extends Packet
 		return (List<UUID>)getData(0);
 	}
 	
-	public List<String> getNames()
+	public List<Component> getNames()
 	{
-		return (List<String>)getData(1);
+		return (List<Component>)getData(1);
 	}
 	
-	public List<String> getNicknames()
+	public List<Component> getNicknames()
 	{
-		return (List<String>)getData(2);
+		return (List<Component>) getData(2);
 	}
 }

@@ -70,7 +70,7 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 	public List<String> onTabComplete( CommandSender sender, Command cmd, String label, String[] args )
 	{
 		if(args.length == 1)
-			return BungeeChat.getPlayerManager().matchNames(args[0]);
+			return BungeeChat.getPlayerManager().matchPlainNames(args[0]);
 		return null;
 	}
 
@@ -102,7 +102,7 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 		String name = args[args.length-1];
 		if(name.equalsIgnoreCase("off"))
 		{
-			manager.setPlayerNickname(player, "");
+			manager.setPlayerNickname(player, Component.empty());
 			sender.sendMessage(Component.text("Removed " + player.getName() + "'s nickname").color(NamedTextColor.GREEN));
 		}
 		else
@@ -129,7 +129,7 @@ public class NicknameCommand implements CommandExecutor, TabCompleter
 				return true;
 			}
 			
-			manager.setPlayerNickname(player, name);
+			manager.setPlayerNickname(player, Component.text(name));
 			sender.sendMessage(Component.text("Nickname changed").color(NamedTextColor.GREEN));
 
 			sender.sendMessage(ChatColor.GREEN + "Nickname changed");

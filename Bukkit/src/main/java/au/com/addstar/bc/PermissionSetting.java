@@ -46,6 +46,7 @@ package au.com.addstar.bc;
  */
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.permissions.Permission;
@@ -55,7 +56,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class PermissionSetting implements Comparable<PermissionSetting>
 {
-	public PermissionSetting(String permission, int priority, String format, String color)
+	public PermissionSetting(String permission, int priority, String format, TextColor color)
 	{
 		if(permission != null && !permission.isEmpty())
 		{
@@ -88,7 +89,7 @@ public class PermissionSetting implements Comparable<PermissionSetting>
 	/**
 	 * MiniMessage formatted string for colouring displayname
 	 */
-	public String color;
+	public TextColor color;
 	public int priority;
 	public String permission;
 	

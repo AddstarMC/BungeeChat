@@ -54,14 +54,14 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class SendPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("id=UUID,message=String");
+	public static final PacketSchema schema = PacketSchema.from("id=UUID,message=Component");
 	
 	private static final int ID = 0;
 	private static final int MESSAGE = 1;
 	
 	public SendPacket(UUID id, Component message)
 	{
-		super(id, GsonComponentSerializer.gson().serialize(message));
+		super(id, message);
 	}
 	
 	protected SendPacket(Object[] data)
@@ -76,6 +76,6 @@ public class SendPacket extends Packet
 	
 	public Component getMessage()
 	{
-		return GsonComponentSerializer.gson().deserialize((String)getData(MESSAGE));
+		return (Component) getData(MESSAGE);
 	}
 }

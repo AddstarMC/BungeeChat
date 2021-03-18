@@ -49,7 +49,6 @@ import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.event.ProxyJoinEvent;
 import au.com.addstar.bc.event.ProxyLeaveEvent;
 import au.com.addstar.bc.objects.ChatChannel;
-import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.objects.PlayerSettings;
 import au.com.addstar.bc.objects.RemotePlayer;
 import au.com.addstar.bc.sync.IPacketHandler;
@@ -62,22 +61,20 @@ import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 import au.com.addstar.bc.sync.packet.PlayerSettingsPacket;
 import au.com.addstar.bc.sync.packet.UpdateNamePacket;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.util.StringUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,15 +85,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-  public class PlayerManager implements Listener, IPacketHandler
+public class PlayerManager implements Listener, IPacketHandler
 {
 	private BungeeChat plugin;
-	private Map<UUID, CommandSender> mAllProxied = new HashMap<>();
-	private Set<UUID> uuidProxied = new HashSet<>();
-	private Map<UUID, String> mNicknames = new HashMap<>();
-	private Map<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
-	private Map<UUID, String> mDefaultChannel = new HashMap<>();
+	private final Map<UUID, CommandSender> mAllProxied = new HashMap<>();
+	private final Set<UUID> uuidProxied = new HashSet<>();
+	private final Map<UUID, Component> mNicknames = new HashMap<>();
+	private final Map<UUID, PlayerSettings> mPlayerSettings = new HashMap<>();
+	private final Map<UUID, String> mDefaultChannel = new HashMap<>();
 
 	public PlayerManager(BungeeChat plugin)
 	{
@@ -152,13 +150,14 @@ import java.util.UUID;
 			if (!includeAliases)
 				continue;
 
-			String nick = mNicknames.get(getUniqueId(player));
+			Component nick = mNicknames.get(getUniqueId(player));
+			String plainNick = PlainComponentSerializer.plain().serialize(nick);
 
-			if (StringUtils.isNotBlank(nick))
+			if (StringUtils.isNotBlank(plainNick))
 			{
-				if(StringUtils.containsIgnoreCase(nick, name))
+				if(StringUtils.containsIgnoreCase(plainNick, name))
 				{
-					int diff = nick.length() - name.length();
+					int diff = plainNick.length() - name.length();
 					if(diff < best)
 					{
 						best = diff;
@@ -195,11 +194,12 @@ import java.util.UUID;
 			if (!includeAliases)
 				continue;
 
-			String nick = mNicknames.get(getUniqueId(player));
+			Component nick = mNicknames.get(getUniqueId(player));
+            String plainNick = PlainComponentSerializer.plain().serialize(nick);
 
-			if (StringUtils.isNotBlank(nick))
+			if (StringUtils.isNotBlank(plainNick))
 			{
-				if (nick.equalsIgnoreCase(name))
+				if (plainNick.equalsIgnoreCase(name))
 				{
 					Debugger.logCorrect(player);
 					return player;
@@ -215,31 +215,35 @@ import java.util.UUID;
 		return Collections.unmodifiableCollection(mAllProxied.values());
 	}
 
-	public List<String> matchNames(String name)
+	public List<Component> matchNames(String name)
 	{
 		return matchNames(name, true);
 	}
 
-	public List<String> matchNames(String name, boolean includeAliases)
+    public List<String> matchPlainNames(String name)
+    {
+        return matchNames(name, true).stream().map(
+                component -> PlainComponentSerializer.plain().serialize(component))
+                .collect(Collectors.toList());
+    }
+
+	public List<Component> matchNames(String name, boolean includeAliases)
 	{
 		name = name.toLowerCase();
-		List<String> matches = new ArrayList<>();
+		List<Component> matches = new ArrayList<>();
 
 		for(CommandSender player : mAllProxied.values())
 		{
 			if(StringUtil.startsWithIgnoreCase(player.getName(), name))
-				matches.add(player.getName());
+				matches.add(Component.text(player.getName()));
 
 			if (!includeAliases)
 				continue;
 
-			String nick = mNicknames.get(getUniqueId(player));
-
-			if (StringUtils.isNotBlank(nick))
-			{
-				if(StringUtil.startsWithIgnoreCase(nick, name))
-					matches.add(nick);
-			}
+			Component nick = mNicknames.get(getUniqueId(player));
+            if(PlainComponentSerializer.plain().serialize(nick).contains(name)){
+                matches.add(nick);
+            }
 		}
 
 		return matches;
@@ -274,12 +278,12 @@ import java.util.UUID;
 
 	}
 
-	public String getPlayerNickname(CommandSender player)
+	public Component getPlayerNickname(CommandSender player)
 	{
 		return mNicknames.get(getUniqueId(player));
 	}
 
-	public void setPlayerNickname(CommandSender player, String name)
+	public void setPlayerNickname(CommandSender player, Component name)
 	{
 		if(player instanceof Player)
 		{
@@ -296,7 +300,7 @@ import java.util.UUID;
 		}
 	}
 
-	public void setPlayerNickname0(CommandSender player, String name)
+	public void setPlayerNickname0(CommandSender player, Component name)
 	{
 		if (!(player instanceof Player))
 			return;
@@ -304,10 +308,10 @@ import java.util.UUID;
 		PlayerSettings settings = getPlayerSettings(player);
 		settings.nickname = name;
 
-		if(name.isEmpty())
-			((Player)player).setDisplayName(player.getName());
+		if(name == null || name.equals(Component.empty()))
+			((Player)player).displayName(((Player) player).playerListName());
 		else
-			((Player)player).setDisplayName(name);
+			((Player)player).displayName(name);
 
 		Debugger.log("Setting nickname local %s to '%s'", player.getName(), name);
 
@@ -366,7 +370,7 @@ import java.util.UUID;
         if (!packet.getDefaultChannel().isEmpty())
             mDefaultChannel.put(packet.getID(), packet.getDefaultChannel());
 
-        if (!packet.getNickname().isEmpty())
+        if (!Component.empty().equals(packet.getNickname()))
             mNicknames.put(packet.getID(), packet.getNickname());
 
         Player local = Bukkit.getPlayer(packet.getID());
@@ -378,8 +382,8 @@ import java.util.UUID;
             Debugger.log("Proxy join %s. Add as local player", packet.getName());
             mAllProxied.put(packet.getID(), local);
 
-            if (!packet.getNickname().isEmpty())
-                local.setDisplayName(packet.getNickname());
+            if (!Component.empty().equals(packet.getNickname()))
+                local.displayName(packet.getNickname());
         }
     }
 
@@ -394,9 +398,9 @@ import java.util.UUID;
 
     private void onFireEvent(FireEventPacket packet) {
         Player player = Bukkit.getPlayer(packet.getID());
-        String message = packet.getMessage();
+        Component message = packet.getMessage();
 
-        if (message.isEmpty())
+        if (Component.empty().equals(message))
             message = null;
 
         if (player != null) {
@@ -419,7 +423,7 @@ import java.util.UUID;
         }
 
         if (message != null)
-            BungeeChat.networkBroadcast(LegacyComponentSerializer.legacySection().deserialize(message));
+            BungeeChat.networkBroadcast(message);
     }
 
     private void onRefresh(PlayerRefreshPacket packet) {
@@ -434,9 +438,9 @@ import java.util.UUID;
         Debugger.log("Server join %s. Add as local", event.getPlayer().getName());
         mAllProxied.put(current.getUniqueId(), current);
 
-        String nickname = mNicknames.get(current.getUniqueId());
+        Component nickname = mNicknames.get(current.getUniqueId());
         if (nickname != null)
-            current.setDisplayName(nickname);
+            current.displayName(nickname);
         String chan = mDefaultChannel.getOrDefault(current.getUniqueId(), "");
         if (!chan.isEmpty()) {
             if (BungeeChat.getInstance().getChatChannelsManager().hasChannel(chan)) {
@@ -460,7 +464,7 @@ import java.util.UUID;
 
         // Prevent re-adding the player when they leave the proxy
         if (uuidProxied.contains(player.getUniqueId())) {
-            CommandSender current = new RemotePlayer(player.getUniqueId(), player.getName());
+            CommandSender current = new RemotePlayer(player.getUniqueId(), player.playerListName());
             mAllProxied.put(player.getUniqueId(), current);
             Debugger.log("Server leave %s. Add as remote", event.getPlayer().getName());
         } else {
@@ -480,25 +484,25 @@ import java.util.UUID;
         Debugger.log("Resetting online players:");
 
         List<UUID> ids = packet.getIDs();
-        List<String> names = packet.getNames();
-        List<String> nicknames = packet.getNicknames();
+        List<Component> names = packet.getNames();
+        List<Component> nicknames = packet.getNicknames();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             mAllProxied.put(player.getUniqueId(), player);
             Debugger.log("Add %s as local", player.getName());
 
             PlayerSettings settings = getPlayerSettings(player);
-            if (!settings.nickname.isEmpty()) {
+            if (!Component.empty().equals(settings.nickname)) {
                 mNicknames.put(player.getUniqueId(), settings.nickname);
-                player.setDisplayName(settings.nickname);
+                player.displayName(settings.nickname);
             } else
-                player.setDisplayName(player.getName());
+                player.displayName(player.playerListName());
         }
 
         for (int i = 0; i < ids.size(); ++i) {
             UUID id = ids.get(i);
-            String name = names.get(i);
-            String nickname = nicknames.get(i);
+            Component name = names.get(i);
+            Component nickname = nicknames.get(i);
 
             if (mAllProxied.containsKey(id))
                 continue;
@@ -508,7 +512,7 @@ import java.util.UUID;
 
             Debugger.log("Add %s as remote", player.getName());
 
-            if (!nickname.isEmpty())
+            if (!Component.empty().equals(nickname))
                 mNicknames.put(id, nickname);
 
         }
@@ -532,11 +536,11 @@ import java.util.UUID;
             PlayerSettings settings = getPlayerSettings(player);
             settings.read(packet);
 
-            if (settings.nickname.isEmpty()) {
-                player.setDisplayName(player.getName());
-                onPlayerNameChange(player.getUniqueId(), "");
+            if (Component.empty().equals(settings.nickname)) {
+                player.displayName(Component.text(player.getName()));
+                onPlayerNameChange(player.getUniqueId(), Component.empty());
             } else {
-                player.setDisplayName(settings.nickname);
+                player.displayName(settings.nickname);
                 onPlayerNameChange(player.getUniqueId(), settings.nickname);
             }
             if (settings.defaultChannel.isEmpty()) {
@@ -554,8 +558,8 @@ import java.util.UUID;
         BungeeChat.getPacketManager().sendNoQueue(settings.toPacket(getUniqueId(player)));
     }
 
-    private void onPlayerNameChange(UUID uuid, String newName) {
-        if (newName.isEmpty())
+    private void onPlayerNameChange(UUID uuid, @Nullable Component newName) {
+        if (newName == null || newName.equals(Component.empty()))
             mNicknames.remove(uuid);
         else
             mNicknames.put(uuid, newName);

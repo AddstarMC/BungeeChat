@@ -45,6 +45,9 @@ package au.com.addstar.bc.sync;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -59,8 +62,9 @@ import java.util.Map.Entry;
 
 public class SyncUtil
 {
-	private static HashMap<Class<?>, String> mClassMappings = new HashMap<>();
-	private static HashMap<String, Class<?>> mClassMappingsInverse = new HashMap<>();
+	private final static GsonComponentSerializer componentSerializer = GsonComponentSerializer.gson();
+	private final static HashMap<Class<?>, String> mClassMappings = new HashMap<>();
+	private final static HashMap<String, Class<?>> mClassMappingsInverse = new HashMap<>();
 	
 	public static void addSerializer(Class<? extends SyncSerializable> clazz, String typename)
 	{
@@ -147,6 +151,10 @@ public class SyncUtil
 			output.writeByte(12);
 			output.writeUTF(value.toString());
 		}
+		else if (value instanceof Component) {
+			output.writeByte(13);
+			output.writeUTF(componentSerializer.serialize((Component)value));
+		}
 		else
 			throw new IllegalArgumentException("Unable to use type " + value.getClass().getName() + ". Make it a SyncSerializable if you want to use it directly.");
 	}
@@ -211,6 +219,8 @@ public class SyncUtil
 			return readSerializable(input);
 		case 12:
 			return UUID.fromString(input.readUTF());
+		case 13:
+			return componentSerializer.deserialize(input.readUTF());
 		default:
 			throw new AssertionError("Encountered unknown type " + type + " when reading object");
 		}

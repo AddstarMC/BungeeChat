@@ -52,6 +52,7 @@ import au.com.addstar.bc.BungeeChat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.bungeecord.BungeeComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -65,18 +66,18 @@ import org.jetbrains.annotations.Nullable;
 public class RemotePlayer implements CommandSender
 {
 	private UUID mId;
-	private String mName;
+	private Component mName;
 	
-	public RemotePlayer(UUID id, String name)
+	public RemotePlayer(UUID id, Component name)
 	{
 		mId = id;
 		mName = name;
 	}
 	
-	public String getDisplayName()
+	public Component getDisplayName()
 	{
-		String name = BungeeChat.getPlayerManager().getPlayerNickname(this);
-		if(name == null || name.isEmpty())
+		Component name = BungeeChat.getPlayerManager().getPlayerNickname(this);
+		if(Component.empty().equals(name))
 			return mName;
 		return name;
 	}
@@ -84,7 +85,7 @@ public class RemotePlayer implements CommandSender
 	public Component getChatName(){
 		Component name = BungeeChat.getPlayerManager().getPlayerChatName(this);
 		if(name == Component.empty())
-			return Component.text(mName);
+			return mName;
 		return name;
 	}
 	
@@ -164,10 +165,12 @@ public class RemotePlayer implements CommandSender
 	}
 
 	@Override
-	public String getName()
+	public @NotNull String getName()
 	{
-		return mName;
+		return PlainComponentSerializer.plain().serialize(mName);
 	}
+
+
 
 	@Override
 	public @NotNull Spigot spigot() {

@@ -45,15 +45,16 @@ package au.com.addstar.bc.event;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Event;
 
 public class BCPlayerJoinEvent extends Event
 {
 	private ProxiedPlayer mPlayer;
-	private String mJoinMessage;
+	private Component mJoinMessage;
 	
-	public BCPlayerJoinEvent(ProxiedPlayer player, String message)
+	public BCPlayerJoinEvent(ProxiedPlayer player, Component message)
 	{
 		mPlayer = player;
 		mJoinMessage = message;
@@ -64,12 +65,12 @@ public class BCPlayerJoinEvent extends Event
 		return mPlayer;
 	}
 	
-	public String getJoinMessage()
+	public Component getJoinMessage()
 	{
 		return mJoinMessage;
 	}
-	
-	public void setJoinMessage(String message)
+
+	public void setJoinMessage(Component message)
 	{
 		mJoinMessage = message;
 	}

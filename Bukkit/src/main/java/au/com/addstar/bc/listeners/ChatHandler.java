@@ -110,7 +110,7 @@ public class ChatHandler implements Listener{
 	@EventHandler(priority=EventPriority.LOWEST, ignoreCancelled=true)
 	private void onTabComplete(TabCompleteEvent event)
 	{
-		event.getCompletions().addAll(BungeeChat.getPlayerManager().matchNames(event.getBuffer().toLowerCase()));
+		event.getCompletions().addAll(BungeeChat.getPlayerManager().matchPlainNames(event.getBuffer().toLowerCase()));
 	}
 	
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)

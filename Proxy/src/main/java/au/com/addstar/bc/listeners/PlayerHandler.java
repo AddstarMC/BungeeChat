@@ -58,8 +58,9 @@ import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.packet.FireEventPacket;
 import au.com.addstar.bc.sync.packet.PlayerJoinPacket;
 import au.com.addstar.bc.sync.packet.PlayerLeavePacket;
-import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.LoginEvent;
@@ -89,10 +90,10 @@ public class PlayerHandler implements Listener
 			// Load this players settings
 			PlayerSettings settings = mSettings.getSettings(player);
 
-			if(settings.nickname.isEmpty())
+			if(Component.empty().equals(settings.nickname))
 				player.setDisplayName(player.getName());
 			else
-				player.setDisplayName(settings.nickname);
+				player.setDisplayName(PlainComponentSerializer.plain().serialize(settings.nickname));
 
 			Debugger.log("Applying nickname to PP %s: '%s'", player.getName(), settings.nickname);
 		});
@@ -124,7 +125,7 @@ public class PlayerHandler implements Listener
 		if (player.getServer() != null)
 		{
 			boolean showQuitMessage = BungeeChat.instance.getSyncManager().getPropertyBoolean(player, "hasQuitMessage", true); 
-			String quitMessage = ChatColor.YELLOW + ChatColor.stripColor(player.getDisplayName()) + " left the game.";
+			Component quitMessage = Component.text(player.getDisplayName() + " left the game.").color(NamedTextColor.YELLOW);
 			
 			if(!showQuitMessage)
 				quitMessage = null;
@@ -134,8 +135,7 @@ public class PlayerHandler implements Listener
 			quitMessage = qevent.getQuitMessage();
 			
 			if (quitMessage == null)
-				quitMessage = "";
-			
+				quitMessage = Component.empty();
 			mPackets.send(new FireEventPacket(FireEventPacket.EVENT_QUIT, id, quitMessage), player.getServer().getInfo());
 		}
 		else
@@ -161,15 +161,15 @@ public class PlayerHandler implements Listener
 		if(player.getServer() != null)
 			return;
 		
-		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(), player.getName(), mSettings.getSettings(player).nickname, mSettings.getSettings(player).defaultChannel)
+		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(), Component.text(player.getName()), mSettings.getSettings(player).nickname, mSettings.getSettings(player).defaultChannel)
 		);
 		
-		BCPlayerJoinEvent jevent = new BCPlayerJoinEvent(player, ChatColor.YELLOW + ChatColor.stripColor(event.getPlayer().getDisplayName()) + " joined the game.");
+		BCPlayerJoinEvent jevent = new BCPlayerJoinEvent(player, Component.text(event.getPlayer().getDisplayName() + " joined the game.").color(NamedTextColor.YELLOW));
 		mProxy.getPluginManager().callEvent(jevent);
-		
-		String message = jevent.getJoinMessage();
+
+		Component message = jevent.getJoinMessage();
 		if (message == null)
-			message = "";
+			message = Component.empty();
 		mPackets.send(new FireEventPacket(FireEventPacket.EVENT_JOIN, player.getUniqueId(), message), event.getServer().getInfo());
 
 	}

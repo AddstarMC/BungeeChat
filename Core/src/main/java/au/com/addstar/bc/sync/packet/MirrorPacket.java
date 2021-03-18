@@ -49,17 +49,18 @@ import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.checkerframework.checker.units.qual.C;
 
 public class MirrorPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("channel=String,message=String");
+	public static final PacketSchema schema = PacketSchema.from("channel=String,message=Component");
 	
 	private static final int CHANNEL = 0;
 	private static final int MESSAGE = 1;
 	
 	public MirrorPacket(String channel, Component message)
 	{
-		super(channel, GsonComponentSerializer.gson().serialize(message));
+		super(channel, message);
 	}
 	
 	protected MirrorPacket(Object... data)
@@ -74,6 +75,6 @@ public class MirrorPacket extends Packet
 	
 	public Component getMessage()
 	{
-		return GsonComponentSerializer.gson().deserialize((String)getData(MESSAGE));
+		return (Component) getData(MESSAGE);
 	}
 }

@@ -48,6 +48,7 @@ package au.com.addstar.bc;
 import au.com.addstar.bc.commands.Debugger;
 import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.utils.Utilities;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -97,9 +98,9 @@ public class PacketHandler implements IPacketHandler
 		CommandSender player = BungeeChat.getPlayerManager().getPlayer(packet.getID());
 		if (!(player instanceof Player))
 			return;
-		
+		Component oldNick = BungeeChat.getPlayerManager().getPlayerNickname(player);
 		BungeeChat.getPlayerManager().setPlayerNickname0(player, packet.getName());
-		Debugger.log("Received nickname %s to '%s'", BungeeChat.getPlayerManager().getPlayer(packet.getID()), packet.getName());
+		Debugger.log("Received nickname %s to '%s'", oldNick, packet.getName());
 	}
 	
 	

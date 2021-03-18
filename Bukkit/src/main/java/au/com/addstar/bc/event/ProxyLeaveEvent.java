@@ -45,6 +45,7 @@ package au.com.addstar.bc.event;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -69,9 +70,9 @@ public class ProxyLeaveEvent extends Event
 	}
 	
 	private Player mPlayer;
-	private String mMessage;
+	private Component mMessage;
 	
-	public ProxyLeaveEvent(Player player, String message)
+	public ProxyLeaveEvent(Player player, Component message)
 	{
 		mPlayer = player;
 		mMessage = message;
@@ -82,12 +83,12 @@ public class ProxyLeaveEvent extends Event
 		return mPlayer;
 	}
 	
-	public String getQuitMessage()
+	public Component getQuitMessage()
 	{
 		return mMessage;
 	}
 	
-	public void setQuitMessage(String message)
+	public void setQuitMessage(Component message)
 	{
 		mMessage = message;
 	}

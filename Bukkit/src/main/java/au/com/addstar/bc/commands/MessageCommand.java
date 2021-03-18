@@ -73,7 +73,7 @@ public class MessageCommand implements CommandExecutor, TabCompleter
 		if(command.getName().equals("tell"))
 		{
 			if(args.length == 1)
-				return BungeeChat.getPlayerManager().matchNames(args[0]);
+				return BungeeChat.getPlayerManager().matchPlainNames(args[0]);
 		}
 		
 		return null;

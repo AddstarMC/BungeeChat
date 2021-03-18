@@ -49,14 +49,16 @@ import java.util.UUID;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class UpdateNamePacket extends Packet
 {
 	public static final PacketSchema schema = PacketSchema.from("id=UUID,name=String");
 	
-	public UpdateNamePacket(UUID id, String name)
+	public UpdateNamePacket(UUID id, Component name)
 	{
-		super(id,name);
+		super(id,GsonComponentSerializer.gson().serialize(name));
 	}
 	
 	protected UpdateNamePacket(Object[] data)
@@ -68,9 +70,13 @@ public class UpdateNamePacket extends Packet
 	{
 		return (UUID)getData(0);
 	}
-	
-	public String getName()
+
+	/**
+	 * Gson String - component name
+	 * @return String
+	 */
+	public Component getName()
 	{
-		return (String)getData(1);
+		return GsonComponentSerializer.gson().deserialize((String)getData(1));
 	}
 }

@@ -65,7 +65,7 @@ public class RealnameCommand implements CommandExecutor, TabCompleter
 	public List<String> onTabComplete( CommandSender sender, Command command, String label, String[] args )
 	{
 		if(args.length == 1)
-			return BungeeChat.getPlayerManager().matchNames(args[0]);
+			return BungeeChat.getPlayerManager().matchPlainNames(args[0]);
 		return null;
 	}
 
@@ -82,10 +82,10 @@ public class RealnameCommand implements CommandExecutor, TabCompleter
 			return true;
 		}
 		
-		String nick = BungeeChat.getPlayerManager().getPlayerNickname(player);
+		Component nick = BungeeChat.getPlayerManager().getPlayerNickname(player);
 		if (nick == null)
-			nick = player.getName();
-		sender.sendMessage(Component.text(nick).color(NamedTextColor.GOLD)
+			nick = Component.text(player.getName());
+		sender.sendMessage(nick.color(NamedTextColor.GOLD)
 			.append(Component.text(" is actually ").color(NamedTextColor.GRAY))
 			.append(Component.text(player.getName()).color(NamedTextColor.GOLD)));
 		return true;

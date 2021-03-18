@@ -49,15 +49,16 @@ import java.util.UUID;
 
 import au.com.addstar.bc.sync.Packet;
 import au.com.addstar.bc.sync.PacketSchema;
+import net.kyori.adventure.text.Component;
 
 public class FireEventPacket extends Packet
 {
-	public static final PacketSchema schema = PacketSchema.from("event=Byte,id=UUID,message=String");
+	public static final PacketSchema schema = PacketSchema.from("event=Byte,id=UUID,message=Component");
 	
 	public static final int EVENT_JOIN = 0;
 	public static final int EVENT_QUIT = 1;
 	
-	public FireEventPacket(int event, UUID id, String message)
+	public FireEventPacket(int event, UUID id, Component message)
 	{
 		super((byte)event, id, message);
 	}
@@ -77,8 +78,8 @@ public class FireEventPacket extends Packet
 		return (UUID)getData(1);
 	}
 	
-	public String getMessage()
+	public Component getMessage()
 	{
-		return (String)getData(2);
+		return (Component)getData(2);
 	}
 }

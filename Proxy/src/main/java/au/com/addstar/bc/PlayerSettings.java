@@ -65,7 +65,7 @@ public class PlayerSettings extends YamlConfig
 	public int socialSpyState = 2;
 	public boolean msgEnabled = true;
 	
-	public String nickname = "";
+	public Component nickname = Component.empty();
 	
 	public String skin = null;
 	
@@ -97,12 +97,12 @@ public class PlayerSettings extends YamlConfig
 		msgEnabled = packet.getMsgToggle();
 		muteTime = packet.getMuteTime();
 		isAFK = packet.getAFK();
-		chatName = Utilities.SERIALIZER.deserialize(packet.getChatName());
+		chatName = packet.getChatName();
 		defaultChannel = packet.getDefaultChannel();
 	}
 	
 	public PlayerSettingsPacket getUpdatePacket(UUID id)
 	{
-		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, Utilities.SERIALIZER.serialize(chatName),defaultChannel);
+		return new PlayerSettingsPacket(id, nickname, lastMsgTarget, socialSpyState, msgEnabled, muteTime, isAFK, chatName,defaultChannel);
 	}
 }

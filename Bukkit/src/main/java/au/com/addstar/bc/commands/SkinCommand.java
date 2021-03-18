@@ -46,6 +46,8 @@ package au.com.addstar.bc.commands;
  */
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import au.com.addstar.bc.BungeeChat;
 import au.com.addstar.bc.PlayerManager;
@@ -53,6 +55,7 @@ import au.com.addstar.bc.objects.RemotePlayer;
 import au.com.addstar.bc.utils.Utilities;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -70,7 +73,7 @@ public class SkinCommand implements CommandExecutor, TabCompleter
 	public List<String> onTabComplete( CommandSender sender, Command cmd, String label, String[] args )
 	{
 		if(args.length == 1)
-			return BungeeChat.getPlayerManager().matchNames(args[0]);
+			return BungeeChat.getPlayerManager().matchPlainNames(args[0]);
 		return null;
 	}
 
