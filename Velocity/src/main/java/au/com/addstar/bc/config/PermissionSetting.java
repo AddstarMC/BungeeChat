@@ -1,8 +1,8 @@
 package au.com.addstar.bc.config;
 
 import au.com.addstar.bc.sync.SyncSerializable;
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 import java.util.HashMap;
 import java.util.Map;

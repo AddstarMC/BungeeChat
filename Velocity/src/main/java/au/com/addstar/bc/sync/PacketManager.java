@@ -2,7 +2,7 @@ package au.com.addstar.bc.sync;
 
 import com.google.common.collect.HashMultimap;
 
-import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.ProxyChat;
 import au.com.addstar.bc.Debugger;
 
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -27,12 +27,12 @@ public class PacketManager implements IDataReceiver, ServerComLink.ConnectionSta
     private HashMap<RegisteredServer, PacketCodec> mCodecs;
     private HashMultimap<Class<? extends Packet>, IPacketHandler> mHandlers;
     private ProxyComLink mComLink;
-    private BungeeChat plugin;
+    private ProxyChat plugin;
 
     // Packets that arrived before the schema did
     private LinkedList<SimpleEntry<ServerInfo, DataInput>> mPendingPackets;
 
-    public PacketManager(BungeeChat plugin)
+    public PacketManager(ProxyChat plugin)
     {
         this.plugin = plugin;
         mCodecs = new HashMap<>();

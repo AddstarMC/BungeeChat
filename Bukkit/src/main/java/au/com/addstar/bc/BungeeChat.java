@@ -100,7 +100,7 @@ public class BungeeChat extends JavaPlugin implements Listener
 	public static Permission permissionManager;
 	
 	public static String serverName = "ERROR";
-	private static BungeeChat mInstance;
+    private static BungeeChat mInstance;
 
 	private ChatChannelManager mChatChannels;
 	private SocialSpyHandler mSocialSpyHandler;

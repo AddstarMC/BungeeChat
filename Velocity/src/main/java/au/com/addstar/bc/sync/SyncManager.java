@@ -1,6 +1,6 @@
 package au.com.addstar.bc.sync;
 
-import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.ProxyChat;
 import au.com.addstar.bc.sync.packet.CallFailedResponsePacket;
 import au.com.addstar.bc.sync.packet.CallPacket;
 import au.com.addstar.bc.sync.packet.CallSuccessResponsePacket;
@@ -31,11 +31,11 @@ public class SyncManager implements EventHandler<DisconnectEvent>, IPacketHandle
 {
     private HashMap<String, SyncMethod> mMethods;
     private HashMap<String, SyncConfig> mConfigs;
-    private BungeeChat plugin;
+    private ProxyChat plugin;
 
     private WeakHashMap<Player, HashMap<String, Object>> mPlayerProperties;
 
-    public SyncManager(BungeeChat plugin)
+    public SyncManager(ProxyChat plugin)
     {
         //todo do we need to register this listener??
         this.plugin = plugin;

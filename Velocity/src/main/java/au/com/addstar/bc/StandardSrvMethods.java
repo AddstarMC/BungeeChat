@@ -4,18 +4,17 @@ import au.com.addstar.bc.sync.SyncMethod;
 import au.com.addstar.bc.sync.packet.MirrorPacket;
 import au.com.addstar.bc.sync.packet.PlayerRefreshPacket;
 
+import au.com.addstar.bc.util.Utilities;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Predicate;
+import java.util.*;
 
 /**
  * Created for the AddstarMC Project.
@@ -23,6 +22,12 @@ import java.util.function.Predicate;
  */
 public class StandardSrvMethods implements SyncMethod
 {
+    private final ProxyServer server;
+
+    public StandardSrvMethods(ProxyServer server) {
+        this.server = server;
+    }
+
     @Override
     public Object run(String name, RegisteredServer server, Object... arguments ) throws IllegalArgumentException
     {
@@ -63,7 +68,7 @@ public class StandardSrvMethods implements SyncMethod
     }
 
     private HashMap<String, String> getSubscribed() {
-        HashMap<String, String> result = new HashMap<>(BungeeChat.instance.getSubHandler().getAllSubscriptions());
+        HashMap<String, String> result = new HashMap<>(ProxyChat.instance.getSubHandler().getAllSubscriptions());
         return result;
     }
 
@@ -74,41 +79,41 @@ public class StandardSrvMethods implements SyncMethod
 
     public boolean isAFK(UUID player) throws IllegalArgumentException
     {
-        ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
-        if(pplayer == null)
+        Optional<Player> pplayer = server.getPlayer(player);
+        if(!pplayer.isPresent())
             throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":isAFK()."+player);
 
-        PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
+        PlayerSettings settings = ProxyChat.instance.getManager().getSettings(pplayer.get());
         return settings.isAFK;
     }
 
     public boolean canMsg(UUID player) throws IllegalArgumentException
     {
-        ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
-        if(pplayer == null)
+        Optional<Player> pplayer = server.getPlayer(player);
+        if(!pplayer.isPresent())
             throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":canMsg()."+player);
 
-        return BungeeChat.instance.getManager().getSettings(pplayer).msgEnabled;
+        return ProxyChat.instance.getManager().getSettings(pplayer.get()).msgEnabled;
     }
 
     public Void setAFK(UUID player, boolean afk) throws IllegalArgumentException
     {
-        ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
-        if(pplayer == null)
+        Optional<Player> pplayer = server.getPlayer(player);
+        if(!pplayer.isPresent())
             throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setAFK()."+player);
 
-        BungeeChat.instance.getManager().getSettings(pplayer).isAFK = afk;
+        ProxyChat.instance.getManager().getSettings(pplayer.get()).isAFK = afk;
 
         return null;
     }
 
     public Void toggleAFK(UUID player) throws IllegalArgumentException
     {
-        ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
-        if(pplayer == null)
+        Optional<Player> pplayer = server.getPlayer(player);
+        if(!pplayer.isPresent())
             throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":toggleAFK()."+player);
 
-        PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
+        PlayerSettings settings = ProxyChat.instance.getManager().getSettings(pplayer.get());
         settings.isAFK = !settings.isAFK;
 
         return null;
@@ -116,13 +121,13 @@ public class StandardSrvMethods implements SyncMethod
 
     public Void setTabColor(UUID player, String color) throws IllegalArgumentException
     {
-        Player pplayer = BungeeChat.instance.getServer().getPlayer(player).orElse(null);
+        Player pplayer = server.getPlayer(player).orElse(null);
         if(pplayer == null)
             throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setTabColor()."+player);
 
-        PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
+        PlayerSettings settings = ProxyChat.instance.getManager().getSettings(pplayer);
 
-        settings.tabColor = BungeeChat.instance.fromCharArray(color.toCharArray());
+        settings.tabColor = ProxyChat.instance.fromCharArray(color.toCharArray());
         //Call tablist update here.
 
         return null;
@@ -130,15 +135,15 @@ public class StandardSrvMethods implements SyncMethod
 
     public Void setMute(UUID player, long muteEnd) throws IllegalArgumentException
     {
-        ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
-        if(pplayer == null)
+        Optional<Player> pplayer = server.getPlayer(player);
+        if(!pplayer.isPresent())
             throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setMute()."+player);
 
-        PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
+        PlayerSettings settings = ProxyChat.instance.getManager().getSettings(pplayer.get());
         settings.muteTime = muteEnd;
 
-        BungeeChat.instance.getManager().savePlayer(player);
-        BungeeChat.instance.getManager().updateSettings(player);
+        ProxyChat.instance.getManager().savePlayer(player);
+        ProxyChat.instance.getManager().updateSettings(player);
 
         return null;
     }
@@ -149,11 +154,11 @@ public class StandardSrvMethods implements SyncMethod
         Player player = null;
         if (who instanceof UUID)
         {
-            player = ProxyServer.getInstance().getPlayer((UUID)who);
+            player = server.getPlayer((UUID)who).orElse(null);
             if(player == null)
                 throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setMuteIP()."+who);
 
-            address = player.getAddress().getAddress();
+            address = player.getRemoteAddress().getAddress();
         }
         else
         {
@@ -171,12 +176,12 @@ public class StandardSrvMethods implements SyncMethod
         {
             String timeString = Utilities.timeDiffToString(muteLength);
 
-            String message;
+            Component message;
             if (player == null)
             {
-                for (ProxiedPlayer p : ProxyServer.getInstance().getPlayers())
+                for (Player p :server.getAllPlayers())
                 {
-                    if (p.getAddress().getAddress().equals(address))
+                    if (p.getRemoteAddress().getAddress().equals(address))
                     {
                         player = p;
                         break;
@@ -186,38 +191,39 @@ public class StandardSrvMethods implements SyncMethod
                     return false;
             }
 
-            message = ChatColor.AQUA + player.getDisplayName() + " and alternate accounts have been muted for " + timeString;
-            BungeeChat.instance.getPacketManager().broadcast(new MirrorPacket("~BC", message));
-            BungeeChat.instance.getMuteHandler().setIPMute(address, System.currentTimeMillis() + muteLength);
+            message = Component.text(player.getUsername() + " and alternate accounts have been muted for " + timeString)
+                    .color(NamedTextColor.AQUA);
+            ProxyChat.instance.getPacketManager().broadcast(new MirrorPacket("~BC", message));
+            ProxyChat.instance.getMuteHandler().setIPMute(address, System.currentTimeMillis() + muteLength);
         }
         else
-            BungeeChat.instance.getMuteHandler().setIPMute(address, 0);
+            ProxyChat.instance.getMuteHandler().setIPMute(address, 0);
 
         return true;
     }
 
     public Void setGMute(long time)
     {
-        BungeeChat.instance.getMuteHandler().setGMute(time);
+        ProxyChat.instance.getMuteHandler().setGMute(server,time);
         return null;
     }
 
     public Void toggleGMute()
     {
-        BungeeChat.instance.getMuteHandler().toggleGMute();
+        ProxyChat.instance.getMuteHandler().toggleGMute(server);
         return null;
     }
 
     public Void setMsgTarget(UUID player, UUID target) throws IllegalArgumentException
     {
-        ProxiedPlayer pplayer = ProxyServer.getInstance().getPlayer(player);
+        Player pplayer = server.getPlayer(player).orElse(null);
         if(pplayer == null)
             throw new IllegalArgumentException("That player is not online" + this.getClass().getCanonicalName() + ":setMsgTarget()."+player);
 
-        PlayerSettings settings = BungeeChat.instance.getManager().getSettings(pplayer);
+        PlayerSettings settings = ProxyChat.instance.getManager().getSettings(pplayer);
         settings.lastMsgTarget = target;
 
-        BungeeChat.instance.getManager().updateSettings(pplayer);
+        ProxyChat.instance.getManager().updateSettings(pplayer);
 
         return null;
     }
@@ -227,7 +233,7 @@ public class StandardSrvMethods implements SyncMethod
         ArrayList<String> muted = new ArrayList<>();
         for(ProxiedPlayer player : ProxyServer.getInstance().getPlayers())
         {
-            PlayerSettings settings = BungeeChat.instance.getManager().getSettings(player);
+            PlayerSettings settings = ProxyChat.instance.getManager().getSettings(player);
             if(System.currentTimeMillis() < settings.muteTime)
                 muted.add(player.getDisplayName() + ":" + settings.muteTime);
         }
@@ -254,24 +260,24 @@ public class StandardSrvMethods implements SyncMethod
         if (skin == null)
         {
             ((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(null);
-            BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
-            BungeeChat.instance.getManager().getSettings(pplayer).skin = null;
-            BungeeChat.instance.getManager().savePlayer(pplayer);
+            ProxyChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
+            ProxyChat.instance.getManager().getSettings(pplayer).skin = null;
+            ProxyChat.instance.getManager().savePlayer(pplayer);
             return null;
         }
 
         SkinData data;
         if (skin instanceof UUID)
-            data = BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync((UUID)skin);
+            data = ProxyChat.instance.getSkinLibrary().getSkinWithLookupSync((UUID)skin);
         else
-            data = BungeeChat.instance.getSkinLibrary().getSkinWithLookupSync((String)skin);
+            data = ProxyChat.instance.getSkinLibrary().getSkinWithLookupSync((String)skin);
 
         if (data != null)
         {
             ((ColourTabList)pplayer.getTabListHandler()).setOverrideSkin(data);
-            BungeeChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
-            BungeeChat.instance.getManager().getSettings(pplayer).skin = data.id.toString();
-            BungeeChat.instance.getManager().savePlayer(pplayer);
+            ProxyChat.instance.getPacketManager().broadcast(new PlayerRefreshPacket(pplayer.getUniqueId()));
+            ProxyChat.instance.getManager().getSettings(pplayer).skin = data.id.toString();
+            ProxyChat.instance.getManager().savePlayer(pplayer);
         }
         else
             throw new IllegalStateException("Unable to find skin");

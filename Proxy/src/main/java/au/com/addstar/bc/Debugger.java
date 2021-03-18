@@ -45,18 +45,10 @@ package au.com.addstar.bc;
  * #L%
  */
 
-import au.com.addstar.bc.util.Utilities;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.protocol.packet.PlayerListItem;
-import net.md_5.bungee.protocol.packet.PlayerListItem.Action;
-import net.md_5.bungee.protocol.packet.PlayerListItem.Item;
 
 public class Debugger extends Command
 {
@@ -113,11 +105,11 @@ public class Debugger extends Command
 	{
 		if (!onCommand(sender, args))
 		{
-			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug general <true|false>"));
-			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug packet <true|false>"));
-			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug tab <true|false>"));
-			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug player <name>"));
-			Utilities.audience.sender(sender).sendMessage(Component.text("/!bchatdebug allplayers"));
+			BungeeChat.audience.sender(sender).sendMessage(Component.text("/!bchatdebug general <true|false>"));
+			BungeeChat.audience.sender(sender).sendMessage(Component.text("/!bchatdebug packet <true|false>"));
+			BungeeChat.audience.sender(sender).sendMessage(Component.text("/!bchatdebug tab <true|false>"));
+			BungeeChat.audience.sender(sender).sendMessage(Component.text("/!bchatdebug player <name>"));
+			BungeeChat.audience.sender(sender).sendMessage(Component.text("/!bchatdebug allplayers"));
 		}
 	}
 	
@@ -133,7 +125,7 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setGeneralDebugState(on);
-			Utilities.audience.sender(sender).sendMessage(Component.text("General debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
+			BungeeChat.audience.sender(sender).sendMessage(Component.text("General debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
 		}
 		else if (args[0].equalsIgnoreCase("packet"))
 		{
@@ -142,7 +134,7 @@ public class Debugger extends Command
 			
 			boolean on = Boolean.parseBoolean(args[1]);
 			setPacketDebugState(on);
-			Utilities.audience.sender(sender).sendMessage(Component.text("Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
+			BungeeChat.audience.sender(sender).sendMessage(Component.text("Packet debug is now " + (on ? "on" : "off")).color(NamedTextColor.GOLD));
 		}
 		else
 			return false;

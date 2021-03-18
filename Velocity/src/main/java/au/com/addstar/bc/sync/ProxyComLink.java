@@ -1,6 +1,6 @@
 package au.com.addstar.bc.sync;
 
-import au.com.addstar.bc.BungeeChat;
+import au.com.addstar.bc.ProxyChat;
 
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -44,7 +44,7 @@ public class ProxyComLink extends ServerComLink {
 
     @Override
     protected void initializeQueueHandler(BlockingQueue<Map.Entry<String, byte[]>> queue) {
-        task = server.getScheduler().buildTask(BungeeChat.getInstance(),new DataSender(queue)).schedule();
+        task = server.getScheduler().buildTask(ProxyChat.getInstance(),new DataSender(queue)).schedule();
 
     }
 

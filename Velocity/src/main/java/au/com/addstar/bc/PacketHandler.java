@@ -20,9 +20,9 @@ import com.velocitypowered.api.proxy.server.ServerInfo;
  */
 public class PacketHandler implements IPacketHandler
 {
-    private BungeeChat plugin;
+    private ProxyChat plugin;
 
-    public PacketHandler(BungeeChat plugin) {
+    public PacketHandler(ProxyChat plugin) {
         this.plugin = plugin;
     }
 
@@ -63,7 +63,7 @@ public class PacketHandler implements IPacketHandler
         ProxiedPlayer player = ProxyServer.getInstance().getPlayer(packet.getID());
         if (player == null)
         {
-            BungeeChat.instance.getLogger().severe("!!!!! A request to update settings for offline player " + packet.getID() + " was made. This is an error !!!!");
+            ProxyChat.instance.getLogger().severe("!!!!! A request to update settings for offline player " + packet.getID() + " was made. This is an error !!!!");
             return;
         }
 
@@ -73,9 +73,9 @@ public class PacketHandler implements IPacketHandler
         getManager().savePlayer(player);
         String defaultChannel = settings.defaultChannel;
         if(defaultChannel.isEmpty()){
-            BungeeChat.instance.getSubHandler().unSubscribe(packet.getID());
+            ProxyChat.instance.getSubHandler().unSubscribe(packet.getID());
         }else{
-            BungeeChat.instance.getSubHandler().setSubscribed(player.getUniqueId(),defaultChannel);
+            ProxyChat.instance.getSubHandler().setSubscribed(player.getUniqueId(),defaultChannel);
         }
         String oldName = settings.nickname;
         if(settings.nickname.isEmpty())
@@ -116,12 +116,12 @@ public class PacketHandler implements IPacketHandler
 
     private void handleGMute(GlobalMutePacket packet)
     {
-        BungeeChat.instance.getMuteHandler().setGMute(packet.getTime());
+        ProxyChat.instance.getMuteHandler().setGMute(packet.getTime());
     }
 
     private void handlePlayerListRequest(PlayerListRequestPacket packet, ServerInfo sender )
     {
         Debugger.log("Server %s requested player list", sender.getName());
-        BungeeChat.instance.sendPlayerUpdates(sender);
+        ProxyChat.instance.sendPlayerUpdates(sender);
     }
 }

@@ -1,9 +1,9 @@
 package au.com.addstar.bc.config;
 
 import au.com.addstar.bc.sync.SyncConfig;
+import org.spongepowered.configurate.objectmapping.meta.Comment;
+import org.spongepowered.configurate.objectmapping.meta.Setting;
 
-import ninja.leaping.configurate.objectmapping.Setting;
-import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,51 +16,52 @@ import java.util.Map;
  * Created for the AddstarMC Project.
  * Created by Narimm on 4/06/2019.
  */
-@ConfigSerializable
 public class Config
 {
 
-    @Setting(comment = "You can override the name of the console here. Leave blank for no change")
+    @Comment("You can override the name of the console here. Leave blank for no change")
     public String consoleName = "";
 
-    @Setting(value = "PM-format-in")
+    @Setting("PM-format-in")
     public String pmFormatIn = "[{DISPLAYNAME}&r -> Me]: {MESSAGE}";
-    @Setting(value = "PM-format-out")
+    @Setting("PM-format-out")
     public String pmFormatOut = "[Me -> {DISPLAYNAME}&r]: {MESSAGE}";
 
-    @Setting(comment = "Here you can set up permission based formats")
+    @Comment("Here you can set up permission based formats")
     public Map<String, PermissionSetting> permSettings;
 
-    @Setting(comment = "Channels allow you to set up layers of chat based on permissions")
+    @Comment("Channels allow you to set up layers of chat based on permissions")
     public Map<String, ChatChannel> channels;
 
-    @Setting(comment = "Keyword highlighter allows you to show some words as highlighted to some users")
+    @Comment("Keyword highlighter allows you to show some words as highlighted to some users")
     public KeywordHighlighterSettings keywordHighlighter;
 
     public List<String> socialSpyKeywords;
 
-    @Setting(comment = "List of commands to be included in mute")
+    @Comment("List of commands to be included in mute")
     public List<String> mutedCommands;
 
-    @Setting(comment = "The time in seconds of no activity that someone is considered afk.", value = "afk-delay")
+    @Comment("The time in seconds of no activity that someone is considered afk.")
+    @Setting("afk-delay")
     public int afkDelay = 30;
 
-    @Setting(value = "afk-kick-enabled")
+    @Setting("afk-kick-enabled")
     public boolean afkKickEnabled = false;
 
-    @Setting(value = "debug")
+    @Setting("debug")
     public boolean debug = false;
 
-    @Setting(comment = "The time in minutes of being afk that someone is kicked", value = "afk-kick-delay")
+    @Comment("The time in minutes of being afk that someone is kicked")
+    @Setting("afk-kick-delay")
     public int afkKickDelay = 30;
 
-    @Setting(comment = "afk-kick-message")
+    @Setting("afk-kick-message")
     public String afkKickMessage = "You have been kicked for idling more than %d minutes.";
 
-    @Setting(comment = "Settings for redis so that")
+    @Comment("Settings for redis so that")
     public RedisSettings redis = new RedisSettings();
 
-    public Config(File file)
+    public Config()
     {
         permSettings = new LinkedHashMap<>();
         channels = new LinkedHashMap<>();

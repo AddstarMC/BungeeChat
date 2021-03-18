@@ -10,6 +10,8 @@ import au.com.addstar.bc.sync.PacketManager;
 import au.com.addstar.bc.sync.ProxyComLink;
 import au.com.addstar.bc.sync.SyncManager;
 
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -20,6 +22,9 @@ import net.kyori.text.format.TextDecoration;
 import net.kyori.text.format.TextFormat;
 
 import org.slf4j.Logger;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.yaml.NodeStyle;
+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,14 +47,15 @@ import java.util.regex.PatternSyntaxException;
  * Created for the AddstarMC IT Project.
  * Created by Narimm on 4/06/2019.
  */
-@Plugin(id = "BungeeChat", name = "ProxyChat", version = "1.0-SNAPSHOT",
-        description = "A centralized Chat Plugin", authors = {"Me"})
-public class BungeeChat {
+@Plugin(id = "ProxyChat", name = "ProxyChat", version = "1.0-SNAPSHOT", description = "A centralized Chat Plugin", authors = {"Me"})
+public class ProxyChat {
     private Config mConfig;
     private HashMap<String, List<TextFormat>> mKeywordSettings = new HashMap<>();
 
-    protected static BungeeChat instance;
+    protected static ProxyChat instance;
     private PacketManager mPacketManager;
+    private MuteHandler mMuteHandler;
+    private PlayerSettingsManager playerSettingsManager;
     public ProxyServer getServer() {
         return server;
     }
@@ -62,33 +68,31 @@ public class BungeeChat {
 
     private final Logger logger;
     private ProxyComLink mComLink;
-    private Path dataFolder;
+    protected Path dataFolder;
 
-    public static BungeeChat getInstance() {
+    public static ProxyChat getInstance() {
         return instance;
     }
 
     @Inject
-    public BungeeChat(ProxyServer server, Logger logger, @DataDirectory Path dataFolder) {
+    public ProxyChat(ProxyServer server, Logger logger, @DataDirectory Path dataFolder) {
         this.server = server;
-        String name;
         this.logger = logger;
         this.dataFolder = dataFolder;
-        Path configPath = Paths.get(dataFolder.toString(),"config.yml");
-        if(Files.notExists(configPath)) {
-            try {
-                Files.createFile(configPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        saveResource(dataFolder,"keyword.txt",false);
-        ColourTabList.initialize(this);
-        mConfig = new Config(configPath.toFile());
-        loadConfig();
         instance =  this;
+
+
+    }
+
+    @Subscribe
+    public void onInitialize(ProxyInitializeEvent event) {
+        Path configPath = Paths.get(dataFolder.toString(),"config.yml");
+        loadConfig();
+        saveResource(dataFolder,"keyword.txt",false);
         mComLink = new ProxyComLink(server);
+        playerSettingsManager = new PlayerSettingsManager(server);
         final CountDownLatch setupWait = new CountDownLatch(1);
+        mMuteHandler = new MuteHandler(this);
         server.getScheduler().buildTask(this, () -> {
             try
             {
@@ -110,14 +114,19 @@ public class BungeeChat {
         mPacketManager = new PacketManager(this);
         mPacketManager.initialize();
         mPacketManager.addHandler(new PacketHandler(this), (Class<? extends Packet>[])null);
-
     }
+
 
     public boolean loadConfig()
     {
+        Path path = dataFolder.resolve("config.yml");
+        YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
+                .indent(2).nodeStyle(NodeStyle.BLOCK).path(path).build();
+
         try
         {
-            mConfig.init();
+            ConfigurationNode node = loader.load();
+            mConfig = node.get(Config.class,new Config());
 
             for(ChatChannel channel : mConfig.channels.values())
             {
@@ -132,16 +141,9 @@ public class BungeeChat {
                 loadKeywordFile(dataFolder,mConfig.keywordHighlighter.keywordFile);
             }
 
-            ColourTabList.updateAll();
             if(mMuteHandler != null)
                 mMuteHandler.updateSettings(mConfig);
             return true;
-        }
-        catch ( InvalidConfigurationException e )
-        {
-            logger.warn("Could not load config");
-            e.printStackTrace();
-            return false;
         }
         catch (IOException e)
         {
@@ -187,6 +189,7 @@ public class BungeeChat {
             reader.close();
         }
     }
+
 
     protected List<TextFormat> fromCharArray(char[] string){
         List<TextFormat> formats = new ArrayList<>();

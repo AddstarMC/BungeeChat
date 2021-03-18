@@ -2,11 +2,12 @@ package au.com.addstar.bc;
 
 import com.velocitypowered.api.proxy.Player;
 
-import net.cubespace.Yamler.Config.InvalidConfigurationException;
-
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.yaml.NodeStyle;
+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
@@ -17,14 +18,18 @@ import java.util.WeakHashMap;
 public class PlayerSettingsManager
 {
     private WeakHashMap<Player, PlayerSettings> mLoadedSettings = new WeakHashMap<>();
-    private File mFolder;
-    private BungeeChat plugin;
+    private Path mFolder;
+    private ProxyChat plugin;
+    private YamlConfigurationLoader.Builder builder;
 
-    public PlayerSettingsManager(File folder,BungeeChat plugin)
+    public PlayerSettingsManager(ProxyChat plugin)
     {
         this.plugin = plugin;
-        mFolder = folder;
-        mFolder.mkdirs();
+        builder = YamlConfigurationLoader.builder().indent(2).nodeStyle(NodeStyle.BLOCK);
+        mFolder = plugin.dataFolder.resolve("players");
+        if(!mFolder.toFile().exists()) {
+            mFolder.toFile().mkdirs();
+        }
     }
     @Nullable
     public PlayerSettings getSettings(UUID player)
@@ -36,8 +41,9 @@ public class PlayerSettingsManager
     {
         if(mLoadedSettings.containsKey(player))
             return mLoadedSettings.get(player);
-
-        PlayerSettings settings = new PlayerSettings(new File(mFolder, player.getUniqueId().toString() + ".yml"));
+        YamlConfigurationLoader loader  = builder.path(mFolder.resolve(player.getUniqueId().toString() + ".yml")).build();
+        PlayerSettings settings = loader.load().get(PlayerSettings.class,new PlayerSettings());
+        PlayerSettings settings = new PlayerSettings(new File(mFolder, ));
 
         try
         {

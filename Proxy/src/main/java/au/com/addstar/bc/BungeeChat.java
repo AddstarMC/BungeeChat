@@ -73,6 +73,7 @@ import au.com.addstar.bc.sync.SyncManager;
 import au.com.addstar.bc.sync.SyncUtil;
 import au.com.addstar.bc.sync.packet.PlayerListPacket;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
+import net.kyori.adventure.platform.bungeecord.BungeeAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.*;
@@ -109,7 +110,10 @@ public class BungeeChat extends Plugin
 	private SkinLibrary mSkins;
 	
 	private ProxyComLink mComLink;
-	
+
+	public static BungeeAudiences audience = BungeeAudiences.create(BungeeChat.instance);
+
+
 	@Override
 	public void onEnable()
 	{

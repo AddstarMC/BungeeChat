@@ -3,6 +3,13 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="C:\Users\benja\.m2\repository\com\velocitypowered\velocity-api\1.1.4\velocity-api-1.1.4-sources.jar!\com\velocitypowered\api\event\command\PlayerAvailableCommandsEvent.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="C:\Users\benjamincharlton\.m2\repository\com\destroystokyo\paper\paper-api\1.16.5-R0.1-SNAPSHOT\paper-api-1.16.5-R0.1-SNAPSHOT-sources.jar!\io\papermc\paper\chat\ChatFormatter.java">
           <value>
             <Attribute>
@@ -129,6 +136,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Proxy\src\main\java\au\com\addstar\bc\MuteHandler.java">
+          <value>
+            <Attribute>
+              <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\Proxy\src\main\java\au\com\addstar\bc\PacketHandler.java">
           <value>
             <Attribute>
@@ -154,6 +168,48 @@
           <value>
             <Attribute>
               <option name="separator" value="&#9;" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Velocity\src\main\java\au\com\addstar\bc\BungeeChat.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Velocity\src\main\java\au\com\addstar\bc\MuteHandler.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Velocity\src\main\java\au\com\addstar\bc\PlayerSettings.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Velocity\src\main\java\au\com\addstar\bc\PlayerSettingsManager.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Velocity\src\main\java\au\com\addstar\bc\ProxyChat.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\Velocity\src\main\java\au\com\addstar\bc\StandardSrvMethods.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>

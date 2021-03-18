@@ -45,12 +45,9 @@ package au.com.addstar.bc;
  * #L%
  */
 
-import au.com.addstar.bc.util.Utilities;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import au.com.addstar.bc.event.BCChatEvent;
@@ -97,7 +94,7 @@ public class PacketHandler implements IPacketHandler
 		Component message = packet.getMessage();
 		ProxyServer.getInstance().getPluginManager().callEvent(new BCChatEvent(packet.getChannel(),message));
 		if(!packet.getChannel().startsWith("~"))
-			Utilities.audience.console().sendMessage(message);
+			BungeeChat.audience.console().sendMessage(message);
 	}
 	
 	private void handlePlayerSettings(PlayerSettingsPacket packet)

@@ -31,9 +31,9 @@ public class Debugger implements Command
     private static void log0(String category, String message)
     {
         if (category == null || category.isEmpty())
-            BungeeChat.instance.getLogger().info(String.format("[Debug] %s", message));
+            ProxyChat.instance.getLogger().info(String.format("[Debug] %s", message));
         else
-            BungeeChat.instance.getLogger().info(String.format("[Debug-%s] %s", category, message));
+            ProxyChat.instance.getLogger().info(String.format("[Debug-%s] %s", category, message));
     }
 
     /**
