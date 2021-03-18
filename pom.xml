@@ -82,6 +82,7 @@
         <module>Proxy</module>
         <module>Bukkit</module>
         <module>Core</module>
+        <module>Velocity</module>
     </modules>
     <repositories>
         <repository>

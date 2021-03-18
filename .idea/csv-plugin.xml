@@ -157,6 +157,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\Velocity\src\main\java\au\com\addstar\bc\config\Config.java">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\pom.xml">
           <value>
             <Attribute>

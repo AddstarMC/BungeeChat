@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="BungeeChat-Velocity" />
         <module name="BungeeChat-Bukkit" />
         <module name="BungeeChat-Proxy" />
         <module name="BungeeChat-Core" />
@@ -16,6 +17,7 @@
       <module name="BungeeChat-Bukkit" target="1.8" />
       <module name="BungeeChat-Core" target="1.8" />
       <module name="BungeeChat-Proxy" target="1.8" />
+      <module name="BungeeChat-Velocity" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -2,7 +2,7 @@ package au.com.addstar.bc.config;
 
 import au.com.addstar.bc.sync.SyncSerializable;
 
-import net.cubespace.Yamler.Config.YamlConfig;
+import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,8 @@ import java.util.Map;
  * Created for the AddstarMC Project.
  * Created by Narimm on 4/06/2019.
  */
-public class PermissionSetting extends YamlConfig implements SyncSerializable
+@ConfigSerializable
+public class PermissionSetting implements SyncSerializable
 {
     public PermissionSetting() {}
     public PermissionSetting(String format, String color, int priority)

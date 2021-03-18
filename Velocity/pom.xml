@@ -5,7 +5,7 @@
     <parent>
         <artifactId>BungeeChat</artifactId>
         <groupId>au.com.addstar</groupId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.5.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.velocitypowered</groupId>
             <artifactId>velocity-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.1.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -42,19 +42,6 @@
             <artifactId>BungeeChat-Core</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.cubespace</groupId>
-            <artifactId>Yamler-Core</artifactId>
-            <version>2.4.0-SNAPSHOTSNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.cubespace</groupId>
-            <artifactId>Yamler-Core</artifactId>
-            <version>2.4.0-SNAPSHOT</version>
-            <scope>provided</scope>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

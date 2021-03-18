@@ -26,9 +26,10 @@ package au.com.addstar.bc.config;
  * #L%
  */
 
-import net.cubespace.Yamler.Config.YamlConfig;
+import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
-public class RedisSettings extends YamlConfig
+@ConfigSerializable
+public class RedisSettings
 {
 	public String host = "localhost";
 	public int port = 6379;

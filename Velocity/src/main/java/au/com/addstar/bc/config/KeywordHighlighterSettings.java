@@ -27,15 +27,15 @@ package au.com.addstar.bc.config;
  */
 
 import au.com.addstar.bc.sync.SyncSerializable;
-
-import net.cubespace.Yamler.Config.YamlConfig;
+import ninja.leaping.configurate.objectmapping.serialize.ConfigSerializable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KeywordHighlighterSettings extends YamlConfig implements SyncSerializable
+@ConfigSerializable
+public class KeywordHighlighterSettings implements SyncSerializable
 {
 	public String permission = "bungeechat.keywords";
 	public boolean enabled = false;
