@@ -102,7 +102,13 @@ public class PlayerHandler implements Listener
 
 	@EventHandler
 	public void onLoginEvent(LoginEvent event) {
-		UUID uuid = UUID.fromString(event.getLoginResult().getId());
+		// Need to convert UUID to include dashes - It's required for UUID.fromStrong()
+		// (eg. 64aa4424d44c43ad81c00350c62a8d99 -> 64aa4424-d44c-43ad-81c0-0350c62a8d99")
+		String newuuid = event.getLoginResult().getId().replaceFirst(
+			"([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)",
+			"$1-$2-$3-$4-$5");
+
+		UUID uuid = UUID.fromString(newuuid);
 		BungeeChat.instance.getSkinLibrary().storeSkinData(uuid,event.getLoginResult());
 	}
 
@@ -161,7 +167,10 @@ public class PlayerHandler implements Listener
 		if(player.getServer() != null)
 			return;
 		
-		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(), Component.text(player.getName()), mSettings.getSettings(player).nickname, mSettings.getSettings(player).defaultChannel)
+		mPackets.broadcast(new PlayerJoinPacket(player.getUniqueId(),
+				Component.text(player.getName()),
+				mSettings.getSettings(player).nickname,
+				mSettings.getSettings(player).defaultChannel)
 		);
 		
 		BCPlayerJoinEvent jevent = new BCPlayerJoinEvent(player, Component.text(event.getPlayer().getDisplayName() + " joined the game.").color(NamedTextColor.YELLOW));

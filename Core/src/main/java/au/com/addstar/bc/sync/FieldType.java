@@ -45,6 +45,8 @@ package au.com.addstar.bc.sync;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
+
 public enum FieldType
 {
 	String(String.class, false, true),
@@ -59,8 +61,9 @@ public enum FieldType
 	UUID(java.util.UUID.class, false, true),
 	Object(Object.class, false, true),
 	List(java.util.List.class, true, false),
-	SyncConfig(SyncConfig.class, false, false);
-	
+	SyncConfig(SyncConfig.class, false, false),
+	Component(Component.class, false, false);
+
 	private Class<?> mClass;
 	private boolean mHasSubType;
 	private boolean mNullable;

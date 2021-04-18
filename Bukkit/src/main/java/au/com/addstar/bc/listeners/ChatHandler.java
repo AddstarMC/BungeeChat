@@ -24,6 +24,8 @@ import au.com.addstar.bc.objects.ChannelType;
 import au.com.addstar.bc.objects.ChatChannel;
 import au.com.addstar.bc.objects.Formatter;
 import au.com.addstar.bc.PermissionSetting;
+import io.papermc.paper.chat.ChatComposer;
+import io.papermc.paper.chat.ChatFormatter;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;

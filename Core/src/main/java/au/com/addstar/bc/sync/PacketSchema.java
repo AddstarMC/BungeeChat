@@ -45,6 +45,9 @@ package au.com.addstar.bc.sync;
  * #L%
  */
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -84,9 +87,9 @@ public class PacketSchema
 		{
 			FieldDefinition field = mFields.get(i);
 			Object object = data[i];
-			
+
 			if(!write(field.type, field.subType, object, output))
-				throw new IllegalArgumentException("Type did not match on field " + field.name);
+				throw new IllegalArgumentException("Type " + field.type + " did not match on field " + field.name);
 		}
 	}
 	
@@ -163,11 +166,37 @@ public class PacketSchema
 		input.readFully(data);
 		return new String(data, "UTF-8");
 	}
-	
+
+	private void writeComponent(Component input, DataOutput output) throws IOException
+	{
+		if(input == null)
+			output.writeShort(-1);
+		else
+		{
+			String string = GsonComponentSerializer.gson().serialize(input);
+			byte[] data = string.getBytes("UTF-8");
+			output.writeShort(data.length);
+			output.write(data);
+		}
+	}
+
+	private Component readComponent(DataInput input) throws IOException
+	{
+		short count = input.readShort();
+		if(count == -1)
+			return null;
+
+		byte[] data = new byte[count];
+		input.readFully(data);
+		return GsonComponentSerializer.gson().deserialize(new String(data, "UTF-8"));
+	}
+
 	private boolean write(FieldType type, FieldType subType, Object object, DataOutput output) throws IOException
 	{
-		if(!type.isCorrectType(object))
+		if(!type.isCorrectType(object)) {
+			System.out.println("write incorrect type: " + type + " (object " + object.getClass().getName() + ")");
 			return false;
+		}
 		
 		switch(type)
 		{
@@ -213,8 +242,11 @@ public class PacketSchema
 		case List:
 			writeList((List<?>)object, subType, output);
 			break;
+		case Component:
+			writeComponent((Component)object, output);
+			break;
 		default:
-			throw new AssertionError("Invalid type " + type.name());
+			throw new AssertionError("Invalid type \"" + type.name() + "\"");
 		}
 		
 		return true;
@@ -266,8 +298,13 @@ public class PacketSchema
 		}
 		case List:
 			return readList(subType, input);
+		case Component:
+			return readComponent(input);
 		default:
-			throw new AssertionError("Invalid type " + type.name());
+			System.out.println("Type: " + type.name());
+			System.out.println("class: " + type.getClass());
+			System.out.println("Declaring class: " + type.getDeclaringClass());
+			throw new AssertionError("Invalid type \"" + type.name() + "\"");
 		}
 	}
 	

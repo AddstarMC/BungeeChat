@@ -80,6 +80,12 @@ public class PlayerSettingsManager
 		{
 			settings.init();
 		}
+		catch(org.yaml.snakeyaml.error.YAMLException e)
+		{
+			System.err.println("Error initialising PlayerSettings for " + player.getName() + " (" + player.getUniqueId() + ")");
+			System.err.println(e.getMessage());
+			//e.printStackTrace();
+		}
 		catch(InvalidConfigurationException e)
 		{
 			System.err.println("Could not load player data for " + player.getName());
